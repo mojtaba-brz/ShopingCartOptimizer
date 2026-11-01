@@ -30,6 +30,8 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: '11076708'
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
       - name: Check shared pricing engine
         run: python -m unittest tests.test_mobile_engine -v
       - name: Install Android platform
