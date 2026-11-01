@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shopping-cart-optimizer"
+version = "0.1.0"
+description = "Local Digikala Supermarket cart planner with a browser GUI"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+cartoptimizer = "cartoptimizer.server:main"
+
+[tool.setuptools.packages.find]
+include = ["cartoptimizer*"]
+
+[tool.setuptools.package-data]
+cartoptimizer = ["web/*.html", "web/*.css", "web/*.js", "demo.json"]
