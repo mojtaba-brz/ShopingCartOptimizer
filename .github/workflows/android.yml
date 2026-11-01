@@ -27,6 +27,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '11076708'
       - name: Check shared pricing engine
         run: python -m unittest tests.test_mobile_engine -v
       - name: Install Android platform
