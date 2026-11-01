@@ -122,6 +122,10 @@ function editCoupon(couponId) {
   form.scrollIntoView({behavior:'smooth', block:'start'});
 }
 function download(value, filename) {
+  if (window.CartwiseAndroid) {
+    window.CartwiseAndroid.saveJSON(filename, JSON.stringify(value, null, 2));
+    return;
+  }
   const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], {type: 'application/json'}));
   const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -236,7 +240,17 @@ $('reset').addEventListener('click', () => {
 });
 $('export').addEventListener('click', () => download(state, 'cartoptimizer-snapshot.json'));
 $('export-plan').addEventListener('click', () => { if (plan) download({snapshot: state, plan}, 'cartoptimizer-plan.json'); });
-$('import').addEventListener('click', () => $('file').click());
+$('import').addEventListener('click', () => {
+  if (window.CartwiseAndroid) window.CartwiseAndroid.pickSnapshot();
+  else $('file').click();
+});
+window.addEventListener('cartwise:import', async (event) => {
+  try {
+    const validated = await api('/api/validate', JSON.parse(event.detail));
+    if ((state.items.length || dirty.size) && !confirm('Replace this workspace with the imported snapshot?')) return;
+    replaceWorkspace(validated.snapshot); message('Snapshot imported. Check the source, timestamp and location before planning.');
+  } catch (error) { message(error.message, true); }
+});
 $('file').addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;

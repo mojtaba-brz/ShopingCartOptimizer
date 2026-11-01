@@ -12,3 +12,9 @@ data/
 *-plan.json
 node_modules/
 .openai/
+.gradle/
+**/build/
+local.properties
+*.apk
+*.keystore
+*.jks

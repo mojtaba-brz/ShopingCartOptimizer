@@ -2,6 +2,15 @@
 
 A local **Digikala Supermarket** shopping planner with a browser GUI. Enter your shopping list, review product offers, set coupon and delivery terms, then compare complete checkout plans.
 
+## Android app
+
+An offline Android version is included in [`android/`](android/README.md), with
+the same shopping-list GUI and pricing rules. Install the downloadable
+`Cartwise-Android-0.1.0-debug.apk`; no PC or Python server is needed on the phone.
+Requires Android 8.0+ and an up-to-date Android System WebView. Native document
+pickers handle JSON import/export. The `Android APK` GitHub Actions workflow
+provides a signed APK artifact and an Android emulator smoke test.
+
 **First milestone:** the pricing optimizer and GUI work with reviewed snapshots. Public product-link import is implemented, but live, location-specific Fresh catalog access has **not** been verified. Manual entry and JSON snapshots are supported. The app does not log into Digikala, populate the retailer's cart, or purchase anything.
 
 ## Start on Windows
@@ -110,5 +119,5 @@ tests/                  Pricing, adapter and HTTP regression tests
 - Model supports a normal price plus one promotional tier and fixed checkout fees. More price tiers, weight-based items, bundle promotions, payment-method offers, expiring coupons, gift credits and account-specific delivery subscriptions need explicit extensions.
 - No automatic product equivalence, retailer-cart creation, login, checkout or payment.
 - Interface text is English; Persian product names use automatic text direction. A complete Persian interface can be added separately.
-- The GUI assets and HTTP endpoints are tested, but interactive browser QA was unavailable in this development environment.
+- The desktop GUI assets and HTTP endpoints are tested; desktop interactive browser QA was unavailable in the development environment. The Android workflow separately runs an emulator UI smoke test; check its run result for device validation.
 - SnappMarket and Tapsi Market can be added through adapters sharing the same normalized model.
