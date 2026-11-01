@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "currency": "IRR",
+  "source": "demo",
+  "captured_at": "2026-10-01T08:00:00+03:30",
+  "context": "DEMO — invented prices, Tehran example",
+  "max_carts": 2,
+  "items": [
+    {"id": "milk", "name": "شیر یک لیتری", "quantity": 3},
+    {"id": "rice", "name": "برنج یک کیلوگرمی", "quantity": 1},
+    {"id": "tuna", "name": "کنسرو تن ماهی", "quantity": 2}
+  ],
+  "stores": [
+    {"id": "digikala", "name": "Digikala Supermarket", "delivery_fee": 100000, "service_fee": 0,
+     "minimum_order": 0, "free_delivery_over": 5000000, "threshold_basis": "before_coupon"}
+  ],
+  "offers": [
+    {"id": "milk-a", "item_id": "milk", "store_id": "digikala", "title": "شیر — برند نمونه A",
+     "regular_price": 500000, "promo_price": 300000, "promo_limit": 1, "promo_scope": "account", "stock": 6, "confirmed": true},
+    {"id": "milk-b", "item_id": "milk", "store_id": "digikala", "title": "شیر — برند نمونه B",
+     "regular_price": 450000, "promo_price": null, "promo_limit": 0, "promo_scope": "account", "stock": 6, "confirmed": true},
+    {"id": "rice-a", "item_id": "rice", "store_id": "digikala", "title": "برنج — برند نمونه",
+     "regular_price": 2000000, "promo_price": 1500000, "promo_limit": 1, "promo_scope": "account", "stock": 3, "confirmed": true},
+    {"id": "tuna-a", "item_id": "tuna", "store_id": "digikala", "title": "تن ماهی — برند نمونه",
+     "regular_price": 800000, "promo_price": 600000, "promo_limit": 1, "promo_scope": "account", "stock": 5, "confirmed": true}
+  ],
+  "coupons": [
+    {"id": "demo-coupon", "store_id": "digikala", "code": "DEMO70", "kind": "fixed", "value": 700000,
+     "minimum_spend": 2000000, "maximum_discount": null, "max_uses": 1, "removes_promotions": true}
+  ]
+}

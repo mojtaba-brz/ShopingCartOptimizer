@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Compare Digikala supermarket cart plans, promotions, coupons and delivery costs.">
+  <title>Cart Optimizer · Digikala Supermarket</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<aside class="sidebar">
+  <a href="#" class="brand"><span class="brand-icon">▣</span><span>cart<span class="brand-light">wise</span><small>SHOPPING CART OPTIMIZER</small></span></a>
+  <div class="market"><span class="market-dot"></span><div>Digikala Supermarket<small>Your local planning workspace</small></div></div>
+  <nav aria-label="Workspace">
+    <button class="nav active" data-tab="list"><span>01</span> Shopping list <b id="list-count">0</b></button>
+    <button class="nav" data-tab="offers"><span>02</span> Product offers <b id="offer-count">0</b></button>
+    <button class="nav" data-tab="rules"><span>03</span> Coupons & delivery</button>
+    <button class="nav" data-tab="results"><span>04</span> Your cart plan</button>
+  </nav>
+  <div class="sidebar-foot"><span class="local-dot"></span> Stored on this browser<small>Export a snapshot to keep a backup.<br>Prices are supplied or imported by you.</small><a href="https://www.digikala.com/fresh/" target="_blank" rel="noopener noreferrer">Open Digikala ↗</a></div>
+</aside>
+<main>
+  <header class="topbar"><span>YOUR WORKSPACE <span class="slash">/</span> <strong id="tab-label">Shopping list</strong></span><div class="toolbar"><button id="demo" class="quiet">Load demo</button><button id="import" class="quiet">Import JSON</button><button id="export" class="quiet">Export JSON ↗</button><button id="reset" class="quiet danger">Reset</button><input type="file" id="file" accept=".json,application/json" hidden></div></header>
+  <section class="hero"><div><p class="eyebrow">LESS GUESSWORK. BETTER CARTS.</p><h1>Make every toman count.</h1><p>Find a better mix of offers, coupons and delivery costs.<br>One shopping list. Every eligible cart combination.</p></div><div class="hero-art" aria-hidden="true"><div class="receipt"><span>YOUR NEXT SHOP</span><i></i><i></i><i></i><strong>smarter, together.</strong></div><div class="hero-stamp">✓<small>ADD IT ALL UP</small></div></div></section>
+  <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+  <div class="snapshot-strip"><span id="source-badge" class="badge">Manual snapshot</span><span id="snapshot-time">No prices imported</span><span class="spacer"></span><span>Display: <strong>toman</strong> · JSON: rials</span></div>
+
+  <section id="tab-list" class="tab-panel">
+    <div class="section-heading"><div><p class="eyebrow">STEP 01</p><h2>What’s on your list?</h2><p>Add exact items, or group acceptable alternatives under one item.</p></div></div>
+    <div class="workspace-grid"><section class="card"><form id="item-form" class="inline-form"><label class="grow">Item name<input name="name" required maxlength="300" placeholder="e.g. شیر یک لیتری" dir="auto"></label><label class="qty-field">Quantity<input name="quantity" type="number" min="1" max="50" value="1" required></label><button class="primary" type="submit">+ Add item</button></form><div id="items"></div></section>
+    <aside class="card guide"><div class="icon-disc">↗</div><h3>Same need, more options.</h3><p>An item can have several acceptable brands or sellers. Add each as an offer in the next step.</p><hr><p>Match package size and quality yourself. The optimizer treats every offer linked to the same item as an acceptable substitute.</p><button class="text-button" data-tab="offers">Continue to product offers →</button></aside></div>
+  </section>
+
+  <section id="tab-offers" class="tab-panel" hidden>
+    <div class="section-heading"><div><p class="eyebrow">STEP 02</p><h2>Give each item its options.</h2><p>Normal and promotional prices can differ by quantity. All prices below are in toman.</p></div></div>
+    <section class="card import-card"><form id="link-form" class="inline-form"><label class="grow">Import a public product link<input name="url" type="url" required placeholder="https://www.digikala.com/product/dkp-…/"></label><button class="secondary" type="submit" id="fetch-product">Read product page ↗</button></form><p class="hint">Imports supported public product metadata. Review the location, seller, price tiers and stock before confirming. A blocked page will show an error.</p></section>
+    <section class="card"><h3 id="offer-form-title">Add an offer</h3><form id="offer-form"><input name="id" type="hidden"><div class="form-grid">
+      <label>Shopping-list item<select name="item_id" id="offer-item" required></select></label><label>Store / fulfilment group<select name="store_id" id="offer-store" required></select></label>
+      <label class="span2">Product / brand / package<input name="title" required maxlength="300" placeholder="Exact product and size" dir="auto"></label>
+      <label>Normal unit price (toman)<input name="regular_price" type="number" min="0.1" step="0.1" required></label><label>Promotional unit price (optional)<input name="promo_price" type="number" min="0" step="0.1"></label>
+      <label>Units at promotional price<input name="promo_limit" type="number" min="0" max="50" value="0" required></label><label>Promotional limit applies<select name="promo_scope"><option value="account">Across all carts (account-wide)</option><option value="cart">Per cart (only if verified)</option></select></label>
+      <label>Available units (total stock)<input name="stock" type="number" min="0" max="500" value="1" required></label><label>Product URL (optional)<input name="url" type="url" placeholder="https://www.digikala.com/…"></label>
+    </div><label class="checkbox"><input name="confirmed" type="checkbox" required> I checked this seller, the normal price, promotional quota and stock.</label><div class="form-actions"><button class="primary" type="submit">Save offer</button><button class="quiet" type="button" id="cancel-offer">Clear form</button></div></form></section>
+    <div id="offers" class="offer-grid"></div>
+  </section>
+
+  <section id="tab-rules" class="tab-panel" hidden>
+    <div class="section-heading"><div><p class="eyebrow">STEP 03</p><h2>The small print matters.</h2><p>Use the fees and coupon terms shown for your selected location and account.</p></div></div>
+    <div class="workspace-grid"><section class="card"><h3>Delivery & order rules</h3><form id="store-form"><label>Store / fulfilment group<select name="id" id="store-edit"></select></label><div class="form-grid">
+      <label class="span2">Store name<input name="name" required maxlength="300"></label><label>Delivery per cart (toman)<input name="delivery_fee" type="number" min="0" step="0.1" required></label><label>Service fee per cart (toman)<input name="service_fee" type="number" min="0" step="0.1" required></label>
+      <label>Minimum order (toman)<input name="minimum_order" type="number" min="0" step="0.1" required></label><label>Free delivery from (optional)<input name="free_delivery_over" type="number" min="0" step="0.1"></label>
+      <label class="span2">Minimum order & free delivery are measured<select name="threshold_basis"><option value="before_coupon">Before coupon, after item promotions</option><option value="after_coupon">After coupon and item promotions</option></select></label>
+    </div><div class="form-actions"><button class="primary" type="submit">Save delivery rules</button><button class="quiet" id="add-store" type="button">+ Add group</button><button class="quiet danger" id="delete-store" type="button">Remove group</button></div></form></section>
+    <aside class="card"><h3>Planning settings</h3><form id="settings-form"><label>Location / account context<input name="context" required maxlength="300" placeholder="e.g. Tehran · scheduled delivery"></label><label>Maximum total carts<select name="max_carts"><option value="1">1 — one checkout</option><option value="2">2 — allow splitting</option><option value="3">3 — allow more splitting</option></select></label><button class="secondary" type="submit">Save settings</button></form><hr><p class="hint">Every cart pays its own fees. Coupon use limits and account-wide promotional quotas are shared across carts. Cart 1 is purchased first.</p><p class="hint">Set a per-cart promotion limit only when the retailer explicitly allows it. Unknown restrictions should be checked before planning.</p></aside></div>
+    <section class="card"><h3 id="coupon-form-title">Add a coupon</h3><form id="coupon-form"><input name="id" type="hidden"><div class="form-grid four">
+      <label>Store<select name="store_id" id="coupon-store"></select></label><label>Coupon code<input name="code" required maxlength="100"></label><label>Discount type<select name="kind" id="coupon-kind"><option value="fixed">Fixed amount (toman)</option><option value="percent">Percentage (%)</option></select></label><label>Amount / percent<input name="value" type="number" min="0.01" step="0.01" required></label>
+      <label>Minimum subtotal (toman)<input name="minimum_spend" type="number" min="0" step="0.1" value="0" required></label><label>Discount cap (optional, toman)<input name="maximum_discount" type="number" min="0" step="0.1"></label><label>Allowed uses across all carts<input name="max_uses" type="number" min="1" max="3" value="1" required></label>
+    </div><label class="checkbox"><input name="removes_promotions" type="checkbox" checked> Applying this coupon removes promotional item prices.</label><p class="hint">One coupon per cart. Minimum coupon spend is measured before the coupon and after any remaining item promotions. Percentages use basis points; fractional rials are rounded down.</p><div class="form-actions"><button class="primary" type="submit">Save coupon</button><button class="quiet" type="button" id="cancel-coupon">Clear form</button></div></form></section>
+    <div id="coupons" class="offer-grid"></div>
+  </section>
+
+  <section id="tab-results" class="tab-panel" hidden><div class="section-heading"><div><p class="eyebrow">STEP 04</p><h2>Your next supermarket run.</h2><p>Every total includes the supplied delivery and service fees.</p></div><button id="export-plan" class="secondary" hidden>Export plan ↗</button></div><div id="results"><div class="empty card"><span class="empty-icon">▤</span><h3>Your plan will appear here.</h3><p>Add your list, offers and checkout rules, then find the best cart.</p></div></div></section>
+
+  <footer class="run-bar"><div><strong id="summary">0 items · 0 confirmed offers</strong><small id="run-hint">Add your list and prices to get started.</small></div><button class="primary" id="optimize">Find the best cart <span>→</span></button></footer>
+</main>
+</body></html>
