@@ -37,8 +37,8 @@ public class DeliverySessionTest {
         fail("Timed out: "+script);
     }
     private void fixture(ActivityScenario<DigikalaActivity> scenario,String location) throws Exception {
-        scenario.onActivity(a->{WebView v=shop(a);v.stopLoading();v.loadDataWithBaseURL("https://www.digikala.com/supermarket/search/shop?q=fixture",
-            "<div id='root'><div><p>ارسال به</p><p>"+location+"</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>","text/html","UTF-8",null);});
+        scenario.onActivity(a->{WebView v=shop(a);v.stopLoading();v.getSettings().setBlockNetworkLoads(true);v.loadDataWithBaseURL("https://www.digikala.com/supermarket/search/shop?q=fixture",
+            "<div id='root'><div><p>ارسال به</p><p>"+location+"</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>","text/html","UTF-8","https://www.digikala.com/supermarket/search/shop?q=fixture");});
         waitFor(scenario,"Boolean(document.querySelector('[data-cro-id]'))");
     }
     @Before public void clean() {
@@ -57,9 +57,9 @@ public class DeliverySessionTest {
         AtomicReference<WebView> original=new AtomicReference<>();
         try(ActivityScenario<DigikalaActivity> first=ActivityScenario.launch(intent("شیر"))) {
             fixture(first,"ونک");first.onActivity(a->original.set(shop(a)));
-            System.out.println("BEFORE_MARKER "+eval(first,"JSON.stringify({url:location.href,root:!!document.getElementById(\"root\"),origin:location.origin})"));
+            assertEquals("true",eval(first,"!!document.getElementById(\"root\")"));
             eval(first,"window.deliveryMarker='selected';sessionStorage.setItem('delivery-test','vanak');true");
-            System.out.println("AFTER_MARKER "+eval(first,"JSON.stringify({marker:window.deliveryMarker,saved:sessionStorage.getItem(\"delivery-test\")})"));
+            assertEquals("true",eval(first,"window.deliveryMarker==='selected' && sessionStorage.getItem('delivery-test')==='vanak'"));
         }
         try(ActivityScenario<DigikalaActivity> next=ActivityScenario.launch(intent("پنیر"))) {
             next.onActivity(a->assertSame(original.get(),shop(a)));
@@ -76,13 +76,15 @@ public class DeliverySessionTest {
             fixture(scenario,"ونک");
             AtomicReference<String> reader=new AtomicReference<>();
             scenario.onActivity(a->{try(java.io.InputStream in=a.getAssets().open("digikala-capture.js")){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);reader.set(out.toString("UTF-8"));}catch(Exception e){throw new RuntimeException(e);}});
-            System.out.println("CAPTURE_BEFORE "+eval(scenario,reader.get()));
+            String captured=eval(scenario,reader.get());
+            AtomicReference<String> nativeUrl=new AtomicReference<>("");scenario.onActivity(a->nativeUrl.set(shop(a).getUrl()));
+            assertTrue("Native fixture URL: "+nativeUrl.get(),DigikalaActivity.retailer(android.net.Uri.parse(nativeUrl.get())));
             scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);((Button)((ViewGroup)root.getChildAt(0)).getChildAt(1)).performClick();});
             long until=System.currentTimeMillis()+10000;
             while(scenario.getState()!=Lifecycle.State.DESTROYED && System.currentTimeMillis()<until)Thread.sleep(100);
             AtomicReference<String> nativeStatus=new AtomicReference<>("");
             if(scenario.getState()!=Lifecycle.State.DESTROYED) scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);nativeStatus.set(((android.widget.TextView)root.getChildAt(1)).getText().toString());});
-            assertEquals("Repeated import status: "+nativeStatus.get(),Lifecycle.State.DESTROYED,scenario.getState());
+            assertEquals("Repeated import status: "+nativeStatus.get()+"; capture: "+captured,Lifecycle.State.DESTROYED,scenario.getState());
             assertEquals(Activity.RESULT_OK,scenario.getResult().getResultCode());
             JSONObject data=new JSONObject(scenario.getResult().getResultData().getStringExtra("live_data"));
             assertEquals("scheduled",data.getString("shipment_type"));assertEquals("ارسال به ونک",data.getString("location"));
