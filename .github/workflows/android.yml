@@ -33,7 +33,12 @@ jobs:
           packages: 'platform-tools'
           log-accepted-android-sdk-licenses: false
       - name: Check shared pricing engine
-        run: python -m unittest tests.test_mobile_engine -v
+        run: python -m unittest discover -v
+      - name: Check browser scripts
+        run: |
+          node --check cartoptimizer/web/live.js
+          node --check cartoptimizer/web/digikala-capture.js
+          node android/tests/live-reader.cjs
       - name: Install Android platform
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build installable APK and test APK
@@ -43,7 +48,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.1.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.2.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -82,7 +87,7 @@ jobs:
             adb install apks/debug/app-debug.apk
             adb install apks/androidTest/debug/app-debug-androidTest.apk
             adb shell am instrument -w com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation.txt
-            grep -q 'OK (1 test)' instrumentation.txt
+            grep -Eq 'OK \([0-9]+ tests?\)' instrumentation.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

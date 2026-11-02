@@ -1,3 +1,10 @@
+> **Android 0.2.0:** The Android app now opens Digikala’s current supermarket
+> inside a separate browser screen, including its delivery address/map picker,
+> and imports displayed product prices without typing offers. See
+> [Android instructions](android/README.md) for usage and current limits.
+> Imported products have a conservative one-unit planning cap because the page
+> does not publish stock/promotion counts. Delivery rules still require review.
+
 # Shopping Cart Optimizer
 
 A local **Digikala Supermarket** shopping planner with a browser GUI. Enter your shopping list, review product offers, set coupon and delivery terms, then compare complete checkout plans.

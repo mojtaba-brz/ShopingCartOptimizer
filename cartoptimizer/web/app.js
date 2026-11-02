@@ -196,6 +196,7 @@ submit('store-form', async (form) => {
     free_delivery_over: amount(form.get('free_delivery_over'), true), threshold_basis: form.get('threshold_basis')};
   const next = {...state, stores: state.stores.map((s) => s.id === store.id ? store : s)};
   await api('/api/validate', next); state = next; dirty.delete('store-form'); save();
+  window.dispatchEvent(new CustomEvent('cartwise:store-saved',{detail:{store,checked:form.has('live_fees_checked')}}));
 });
 submit('settings-form', (form) => {
   const context = form.get('context').trim();
@@ -284,6 +285,8 @@ $('link-form').addEventListener('submit', async (event) => {
 $('optimize').addEventListener('click', async () => {
   if (busy) return;
   if (dirty.size) return message('Save or clear your edited forms before finding a cart. Unsaved form changes are not included.', true);
+  const liveError=window.CartwiseLive?.checkBeforeOptimize(state);
+  if(liveError) return message(liveError,true);
   if (!state.items.length || !state.offers.some((o) => o.confirmed)) return message('Add your shopping list and at least one reviewed offer first.', true);
   busy = true; $('optimize').textContent = 'Comparing cart plans…';
   const controls = [...document.querySelectorAll('button,input,select')].filter((el) => !el.disabled);

@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
-    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11;
+    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12;
     private static final int MAX_BYTES = 1_000_000;
     private static final String HOST = "appassets.androidplatform.net";
     private WebView webView;
@@ -103,6 +103,12 @@ public final class MainActivity extends Activity {
     private void toast(String text) { runOnUiThread(() -> Toast.makeText(this, text, Toast.LENGTH_LONG).show()); }
 
     private final class Bridge {
+        @JavascriptInterface public void openDigikala(String itemId, String query, boolean locationOnly) {
+            if (itemId == null || itemId.length() > 100 || query == null || query.length() > 300) return;
+            runOnUiThread(() -> startActivityForResult(new Intent(MainActivity.this, DigikalaActivity.class)
+                .putExtra("item_id",itemId).putExtra("query",query).putExtra("location_only",locationOnly), LIVE_DIGIKALA));
+        }
+
         @JavascriptInterface public void pickSnapshot() {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json")
@@ -126,6 +132,14 @@ public final class MainActivity extends Activity {
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == LIVE_DIGIKALA) {
+            if (resultCode == RESULT_OK && data != null) {
+                String json = data.getStringExtra("live_data");
+                if (json != null && json.getBytes(StandardCharsets.UTF_8).length <= 500_000)
+                    webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:live',{detail:" + JSONObject.quote(json) + "}));", null);
+            }
+            return;
+        }
         if (resultCode != RESULT_OK || data == null || data.getData() == null) { pendingExport = null; return; }
         Uri uri = data.getData();
         if (requestCode == EXPORT_JSON) {

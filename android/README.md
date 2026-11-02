@@ -1,82 +1,97 @@
-# Cartwise for Android
+# Cartwise for Android 0.2.0
 
-An installable Android version of the Digikala supermarket cart planner. It runs
-the responsive GUI and pricing calculations **on the phone**, without Python,
-a PC, an account or a server.
+Android 8.0+ (API 26) and an updated Android System WebView. The planner and
+optimizer run on the phone; live product lookup needs an internet connection.
 
-## Install
+## Use live Digikala prices
 
-Use the supplied `Cartwise-Android-0.1.0-debug.apk`. Open it on your Android phone
-and allow installation from the browser/file manager when Android asks. This is
-a signed development APK, distributed outside Google Play. Minimum OS:
-**Android 8.0 (API 26)** with an up-to-date Android System WebView / Chrome.
+1. Add an item to your shopping list.
+2. Tap **Choose location / map**. Digikala's own supermarket opens inside the app.
+   Select the delivery address using its address search/map. Select instant or
+   scheduled delivery on the site. Tap **Use this location** and confirm the mode
+   currently selected on the site. GPS is optional; its permission is requested
+   only after you choose to use your device's location.
+3. Tap **Search Digikala** beside the item. Check the site's address and delivery
+   mode, search if needed, and wait for the product prices to load. Tap **Read
+   products**, then confirm the delivery mode currently shown on the site.
+4. Back in the planner, select acceptable brands and package sizes with **Add
+   option**. Displayed normal/discounted prices fill automatically in rials and
+   are shown in toman. Read-only imports never add to a retailer cart.
+5. Under **Coupons & delivery**, select the imported delivery group. Enter its
+   checkout delivery fee, service fee, minimum order and free-delivery threshold,
+   tick the verification box, and save. Add any coupon and its actual terms.
+6. Find the best cart. Refresh live prices after 30 minutes. Changing delivery
+   location or mode marks previously imported live prices for refresh.
 
-The APK supports all CPU architectures because it contains no native CPU code.
-The app name is **Cartwise**; package ID is `com.mojtababrz.cartoptimizer`.
+## What the live reader knows
 
-## What works
+It reads **rendered product cards** on Digikala's current `/supermarket/` site:
+product name, current price and crossed-out normal price. It uses the exact
+location displayed in the site's header and asks you to confirm the active mode.
+Digikala stores the selected address/session in its own WebView cookies/storage.
+The planner does not read its login tokens, cookies, account, or checkout data.
 
-- Create shopping lists and acceptable product alternatives; Persian names work.
-- Enter and review normal/promotional prices, promotional quotas and stock.
-- Configure coupons, delivery fees, order minimums, free-delivery thresholds and
-  up to three carts.
-- Optimize offline and inspect the full price breakdown in toman.
-- Persist the workspace in the app's private WebView storage.
-- Import snapshots with Android's document picker; export snapshots and plans
-  with Android's Save dialog. Desktop and Android use the same JSON contract.
-- Open Digikala product/store links in the phone's external browser.
+Product cards do not publish remaining stock or promotional quotas. Every live
+product is therefore capped at **one unit across all carts**, with a maximum of
+one promotional unit. This is a conservative planning cap, not a reported stock
+count. Multiple alternatives can fulfill larger quantities. The same product
+cannot be assigned twice to different list items to multiply its cap. For
+reviewed larger quotas, remove the live option and create a manual option with
+the verified terms. Coupon use limits and shared promotion caps still apply.
 
-No app network or broad storage permissions are requested. Clearing the app's
-data or uninstalling deletes its private workspace; export a backup first.
+Delivery charges, order thresholds, account coupons and exact promotional quotas
+are **not automatically retrieved**. Unknown delivery charges never silently
+become zero: planning is blocked until checkout rules are explicitly reviewed.
+Totals are estimates from the displayed product prices and supplied rules;
+verify the checkout before paying. Import/export keeps pricing snapshots; live
+verification metadata stays on the device, so imported live snapshots may need
+refreshing. Resetting a planner workspace does not sign you out of Digikala.
 
-This first Android version uses **reviewed snapshots**, not live Digikala search,
-login or checkout. Read current prices in Digikala, choose your location there,
-and enter the rules here. The bundled demo is clearly labelled as invented.
+The adapter currently recognizes Digikala's supermarket card markup. A retailer
+layout change, empty search, region restriction, failed connection or site
+verification can prevent reading. Errors are shown; invented prices are never
+substituted. The bundled demo remains explicitly invented and works offline.
 
-## Architecture
+## Security and privacy
 
-The Android container is Java plus AndroidX WebKit. It serves only packaged
-assets at `https://appassets.androidplatform.net/assets/` using
-`WebViewAssetLoader`. File/content access, mixed content and arbitrary WebView
-navigation are disabled; external HTTPS links open in the browser. The JavaScript
-bridge exposes only document import/export and never loads a remote page.
+The packaged planner uses `WebViewAssetLoader` at the appassets origin. Only it
+has the narrow native bridge for document import/export and opening Digikala.
+The separate, non-exported retailer activity has **no JavaScript interfaces**.
+Its native Read button evaluates the bundled DOM reader; the retailer cannot
+call native methods. Imports are bounded and revalidated, and rendered as text.
+Top-level navigation is restricted to HTTPS Digikala origins, TLS errors are not
+bypassed, file/content access is off, and mixed content is blocked. Location is
+shared with Digikala only after a native explanation and Android permission;
+manual address/map selection does not require GPS. No storage permissions or
+server are required. Clear Android app data to remove both saved workspaces and
+the retailer's session, or sign out on Digikala.
 
-`cartoptimizer/web/engine.js` implements the Python pricing model in JavaScript.
-The browser adapts local API calls to this engine inside Android. Desktop still
-uses its Python backend. One build task copies the shared GUI assets, preventing
-a separate drifting copy of the UI.
+## Install / update
 
-The Android engine uses exact integer-rial calculations (including BigInt for
-percentage multiplication), enforces the same limits as Python, and yields
-periodically so search does not lock the interface. Search has a five-second /
-200,000-state budget and clearly distinguishes best-found from proven-optimal
-plans.
+Download `Cartwise-Android-0.2.0-debug.apk` and open it. Allow installation from
+that browser/file manager when Android asks. This is a signed development build,
+not a Play Store release. The package ID is `com.mojtababrz.cartoptimizer`.
 
-## Build
+**Export your existing workspace before installing.** GitHub runners use fresh
+debug keys, so Android may require uninstalling version 0.1.0 before this APK can
+be installed. Uninstalling removes local data. Reimport your exported snapshot.
+A stable private release-signing key is needed for regular in-place updates.
 
-Prerequisites: JDK 17, Gradle 8.9, Android SDK platform 35 and build tools 35.0.0.
-Android Studio can open this `android` directory; configure Gradle 8.9 if asked.
+## Build and validate
+
+JDK 17, Gradle 8.9, Android platform/build tools 35:
 
 ```bash
+python -m unittest discover -v
+node android/tests/live-reader.cjs
 cd android
-gradle assembleDebug
+gradle assembleDebug assembleDebugAndroidTest
 ```
 
-Output: `app/build/outputs/apk/debug/app-debug.apk`. Debug signing is automatic;
-the debug certificate is **not a production publishing identity**. A later APK
-built with a different debug key may require uninstalling the older build first.
-Export your workspace before uninstalling. A stable private release-signing key
-should be configured before regular update distribution.
-
-The `Android APK` GitHub Actions workflow builds and verifies the APK, uploads
-`Cartwise-Android-APK` for download, and runs a UI smoke test on an Android 15
-emulator. The smoke test loads the demo, checks the 375,000-toman result, then
-recreates the activity and verifies that the workspace was saved.
-
-```bash
-python -m unittest tests.test_mobile_engine -v
-```
-
-The parity test compares 62 fixtures with the Python engine, including randomized
-stock, coupons, multiple items/stores, delivery rules and high-value integer-rial
-rounding. Android tests live under `app/src/androidTest`.
+The Android APK workflow builds and verifies the signed APK and runs emulator
+tests covering the offline demo, live import/fee checks/location invalidation,
+workspace restoration, origin restrictions and the bridge-free DOM reader.
+Fixtures exercise the import flow without depending on external availability.
+Real search and price-card markup have also been inspected on the public site;
+GPS permission, the retailer's full map and delivery coverage still depend on
+your phone, connection and Digikala's current service area.

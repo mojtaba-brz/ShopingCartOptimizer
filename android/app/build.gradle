@@ -8,8 +8,8 @@ android {
         applicationId 'com.mojtababrz.cartoptimizer'
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
@@ -25,7 +25,8 @@ tasks.register('syncWebAssets', Copy) {
         filter { line -> line.replace('href="/style.css"', 'href="/assets/style.css"')
             .replace('src="/app.js"', 'src="/assets/app.js"')
             .replace('src="/engine.js"', 'src="/assets/engine.js"')
-            .replace('src="/mobile.js"', 'src="/assets/mobile.js"') }
+            .replace('src="/mobile.js"', 'src="/assets/mobile.js"')
+            .replace('src="/live.js"', 'src="/assets/live.js"') }
     }
     from('../../cartoptimizer') { include 'demo.json' }
     into(layout.buildDirectory.dir('generated/webAssets'))

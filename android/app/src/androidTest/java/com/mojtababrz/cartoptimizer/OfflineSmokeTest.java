@@ -35,7 +35,7 @@ public class OfflineSmokeTest {
     @Test public void demoWorksOfflineAndWorkspaceSurvivesRecreation() throws Exception {
         try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
             waitFor(scenario, "Boolean(window.CartwiseEngine && document.getElementById('demo'))");
-            eval(scenario, "localStorage.clear();document.getElementById('demo').click();true");
+            eval(scenario, "localStorage.clear();state=initialState();dirty.clear();save();document.getElementById('demo').click();true");
             waitFor(scenario, "document.getElementById('source-badge').textContent.includes('DEMO')");
             eval(scenario, "document.getElementById('optimize').click();true");
             waitFor(scenario, "document.getElementById('results').textContent.includes('375,000')");
@@ -45,4 +45,26 @@ public class OfflineSmokeTest {
             assertTrue(eval(scenario, "document.querySelectorAll('.item-row').length === 3").equals("true"));
         }
     }
+    @Test public void liveImportAddsPricesChecksFeesAndSurvivesRecreation() throws Exception {
+        try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            waitFor(scenario,"Boolean(window.CartwiseLive && document.getElementById('live-location-button'))");
+            eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر',quantity:1}];dirty.clear();save();true");
+            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به ونک',shipment_type:'scheduled',page_url:'https://www.digikala.com/supermarket/search/shop',item_id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000}]}}));true");
+            waitFor(scenario,"document.querySelectorAll('[data-live-add]').length===1");
+            eval(scenario,"document.querySelector('[data-live-add]').click();true");
+            assertTrue(eval(scenario,"state.offers.length===1 && state.offers[0].promo_price===1353000 && state.offers[0].stock===1").equals("true"));
+            eval(scenario,"document.getElementById('optimize').click();true");
+            waitFor(scenario,"document.getElementById('message').textContent.includes('delivery and order rules')");
+            eval(scenario,"showTab('rules');document.getElementById('store-edit').value=state.offers[0].store_id;document.getElementById('store-edit').dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('store-form').elements.delivery_fee.value='10000';document.getElementById('live-fees-checked').checked=true;document.getElementById('store-form').requestSubmit();true");
+            waitFor(scenario,"state.stores.find(s=>s.id===state.offers[0].store_id).delivery_fee===100000 && !dirty.size");
+            eval(scenario,"document.getElementById('optimize').click();true");
+            waitFor(scenario,"document.getElementById('results').textContent.includes('145,300')");
+            scenario.recreate();
+            waitFor(scenario,"Boolean(window.CartwiseLive && state.offers.length===1 && document.getElementById('live-location').textContent.includes('ونک'))");
+            assertTrue(eval(scenario,"!CartwiseLive.checkBeforeOptimize(state)").equals("true"));
+            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به آزادی',shipment_type:'scheduled',page_url:'https://www.digikala.com/supermarket/',location_only:true,products:[]}}));true");
+            assertTrue(eval(scenario,"state.offers[0].confirmed===false").equals("true"));
+        }
+    }
+
 }
