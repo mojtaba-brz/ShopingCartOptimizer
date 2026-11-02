@@ -37,9 +37,11 @@ public class DeliverySessionTest {
         fail("Timed out: "+script);
     }
     private void fixture(ActivityScenario<DigikalaActivity> scenario,String location) throws Exception {
-        scenario.onActivity(a->{WebView v=shop(a);v.stopLoading();v.getSettings().setBlockNetworkLoads(true);v.loadDataWithBaseURL("https://www.digikala.com/supermarket/search/shop?q=fixture",
-            "<div id='root'><div><p>ارسال به</p><p>"+location+"</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>","text/html","UTF-8","https://www.digikala.com/supermarket/search/shop?q=fixture");});
-        waitFor(scenario,"Boolean(document.querySelector('[data-cro-id]'))");
+        AtomicReference<String> token=new AtomicReference<>();
+        scenario.onActivity(a->token.set(RetailerFixtures.load(shop(a),"https://www.digikala.com/supermarket/search/shop?q=fixture",
+            "<div id='root'><div><p>ارسال به</p><p>"+location+"</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>")));
+        waitFor(scenario,"document.querySelector('meta[name=cartwise-fixture]')?.content==="+JSONObject.quote(token.get()));
+
     }
     @Before public void clean() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);

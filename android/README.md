@@ -117,3 +117,7 @@ confirm a delivery area, search on a page with no address header or delivery-mod
 controls, tap Read products, accept a product in the planner, review its delivery
 rules and calculate the cart. A separate negative test rejects a headerless page
 when only an old saved choice exists and the retailer session is unconfirmed.
+
+Retailer regression pages are served as intercepted HTTPS responses inside the
+test APK. They have unique document markers and retain the native URL and page
+lifecycle, so tests cannot accidentally read the previous page or a data URL.

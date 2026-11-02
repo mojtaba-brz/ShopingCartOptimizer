@@ -24,7 +24,7 @@ final class RetailerSession {
 
     static void confirmDelivery(String location,String mode) {
         if(!DeliveryChoice.label(location).isEmpty() && mode(mode)) {
-            confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;
+            confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;observedMode=mode;
         }
     }
     static String deliveryLocation() {return confirmedLocation;}

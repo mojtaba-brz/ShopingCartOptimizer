@@ -50,11 +50,10 @@ public class HeaderlessFlowTest {
         }throw new AssertionError("Digikala browser did not open");
     }
     private void page(DigikalaActivity a,String body) throws Exception {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
-            WebView v=browser(a);v.stopLoading();v.getSettings().setBlockNetworkLoads(true);
-            v.loadDataWithBaseURL("https://www.digikala.com/supermarket/search/shop?q=fixture",body,"text/html","UTF-8","https://www.digikala.com/supermarket/search/shop?q=fixture");
-        });
-        waitFor(browser(a),"!!document.getElementById('fixture-ready')");
+        AtomicReference<String> token=new AtomicReference<>();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(()->token.set(RetailerFixtures.load(browser(a),"https://www.digikala.com/supermarket/search/shop?q=fixture",body)));
+        waitFor(browser(a),"document.querySelector('meta[name=cartwise-fixture]')?.content==="+org.json.JSONObject.quote(token.get()));
+
     }
     private void read(DigikalaActivity a) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
@@ -79,6 +78,7 @@ public class HeaderlessFlowTest {
             read(first);continueChoice();
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             assertEquals("ارسال به تهران، انقلاب",RetailerSession.deliveryLocation());
+            assertEquals("scheduled",RetailerSession.deliveryMode());
             eval(main,"document.querySelector('[data-live-search]').click();true");
             DigikalaActivity second=child();
             page(second,"<div id='root'><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div><span id='fixture-ready'></span></div>");
@@ -91,7 +91,7 @@ public class HeaderlessFlowTest {
             waitFor(main,"!dirty.size && !CartwiseLive.checkBeforeOptimize(state)");
             eval(main,"document.getElementById('optimize').click();true");
             waitFor(main,"document.getElementById('results').textContent.includes('145,300')");
-            assertEquals("true",eval(main,"state.context.includes('انقلاب') && state.offers[0].promo_price===1353000"));
+            assertEquals("true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
         }
     }
 }
