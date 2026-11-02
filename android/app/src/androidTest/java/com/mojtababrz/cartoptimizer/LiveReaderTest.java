@@ -10,11 +10,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class LiveReaderTest {
+    @Before public void clean() {androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);}
+    @After public void release() {androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);}
     @Test public void officialOriginOnlyAndReadOnlyDomReaderHasNoBridge() throws Exception {
         assertTrue(DigikalaActivity.retailer(Uri.parse("https://www.digikala.com/supermarket/")));
         assertFalse(DigikalaActivity.retailer(Uri.parse("https://www.digikala.com.evil.invalid/")));

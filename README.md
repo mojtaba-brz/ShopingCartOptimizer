@@ -1,4 +1,8 @@
-> **Android 0.2.0:** The Android app now opens Digikala’s current supermarket
+> **Location fix in 0.2.1:** Digikala now reuses one browser tab between searches,
+> and imports reuse a previously confirmed location/mode when they still match
+> the retailer. You can change them using Change location / map.
+
+> **Android 0.2.1:** The Android app now opens Digikala’s current supermarket
 > inside a separate browser screen, including its delivery address/map picker,
 > and imports displayed product prices without typing offers. See
 > [Android instructions](android/README.md) for usage and current limits.

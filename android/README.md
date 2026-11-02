@@ -1,4 +1,4 @@
-# Cartwise for Android 0.2.0
+# Cartwise for Android 0.2.1
 
 Android 8.0+ (API 26) and an updated Android System WebView. The planner and
 optimizer run on the phone; live product lookup needs an internet connection.
@@ -14,6 +14,12 @@ optimizer run on the phone; live product lookup needs an internet connection.
 3. Tap **Search Digikala** beside the item. Check the site's address and delivery
    mode, search if needed, and wait for the product prices to load. Tap **Read
    products**, then confirm the delivery mode currently shown on the site.
+   Your browser tab is now reused between searches, keeping Digikala's live
+   address/session state. The app remembers your confirmed location and mode;
+   later imports reuse them when the retailer still shows the same values.
+   Use **Change location / map** when you actually want a different area. An
+   unknown or changed delivery mode still needs confirmation. GPS permission is
+   reused after approval, subject to the phone's Android permission settings.
 4. Back in the planner, select acceptable brands and package sizes with **Add
    option**. Displayed normal/discounted prices fill automatically in rials and
    are shown in toman. Read-only imports never add to a retailer cart.
@@ -57,7 +63,12 @@ substituted. The bundled demo remains explicitly invented and works offline.
 The packaged planner uses `WebViewAssetLoader` at the appassets origin. Only it
 has the narrow native bridge for document import/export and opening Digikala.
 The separate, non-exported retailer activity has **no JavaScript interfaces**.
-Its native Read button evaluates the bundled DOM reader; the retailer cannot
+The retailer tab is retained for the current app process using a mutable
+context; activity callbacks are detached when returning to the planner. Only a
+short confirmed address label, delivery mode and explicit GPS approval are
+stored by the native app. Read-only catalog request observation checks the
+delivery-mode header; it does not read authorization headers. Its native Read
+button evaluates the bundled DOM reader; the retailer cannot
 call native methods. Imports are bounded and revalidated, and rendered as text.
 Top-level navigation is restricted to HTTPS Digikala origins, TLS errors are not
 bypassed, file/content access is off, and mixed content is blocked. Location is
@@ -68,7 +79,7 @@ the retailer's session, or sign out on Digikala.
 
 ## Install / update
 
-Download `Cartwise-Android-0.2.0-debug.apk` and open it. Allow installation from
+Download `Cartwise-Android-0.2.1-debug.apk` and open it. Allow installation from
 that browser/file manager when Android asks. This is a signed development build,
 not a Play Store release. The package ID is `com.mojtababrz.cartoptimizer`.
 
@@ -90,7 +101,9 @@ gradle assembleDebug assembleDebugAndroidTest
 
 The Android APK workflow builds and verifies the signed APK and runs emulator
 tests covering the offline demo, live import/fee checks/location invalidation,
-workspace restoration, origin restrictions and the bridge-free DOM reader.
+workspace restoration, origin restrictions and the bridge-free DOM reader, plus consecutive searches
+and activity recreation preserving the retailer tab and skipping repeated
+location confirmations.
 Fixtures exercise the import flow without depending on external availability.
 Real search and price-card markup have also been inspected on the public site;
 GPS permission, the retailer's full map and delivery coverage still depend on

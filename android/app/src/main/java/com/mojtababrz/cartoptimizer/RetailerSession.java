@@ -1,0 +1,90 @@
+package com.mojtababrz.cartoptimizer;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.MutableContextWrapper;
+import android.net.Uri;
+import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.view.ViewGroup;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+
+/** One retailer tab per application process. Never contains the planner bridge. */
+final class RetailerSession {
+    private static WebView tab;
+    private static MutableContextWrapper context;
+    private static WeakReference<Activity> owner=new WeakReference<>(null);
+    private static volatile String observedMode="";
+    private static int navigationId;
+
+    static WebView acquire(Activity activity) {
+        if(tab==null) {
+            context=new MutableContextWrapper(activity.getApplicationContext());
+            tab=new WebView(context);
+        }
+        if(tab.getParent() instanceof ViewGroup) ((ViewGroup)tab.getParent()).removeView(tab);
+        context.setBaseContext(activity);
+        owner=new WeakReference<>(activity);
+        tab.onResume();
+        return tab;
+    }
+    static void observe(WebResourceRequest request) {
+        Uri uri=request.getUrl();String path=uri.getPath();
+        if(!"GET".equals(request.getMethod()) || !"https".equals(uri.getScheme())
+            || !"api.digikalajet.ir".equals(uri.getHost()) || path==null
+            || !(path.startsWith("/fresh/") || path.startsWith("/search/")
+                || path.startsWith("/v2/search/") || path.equals("/first-load/"))) return;
+        // Read only the public delivery-mode header, never auth or account headers.
+        for(Map.Entry<String,String> entry:request.getRequestHeaders().entrySet())
+            if("shipment-type".equalsIgnoreCase(entry.getKey()) && mode(entry.getValue())) observedMode=entry.getValue();
+    }
+    static boolean mode(String value) { return "scheduled".equals(value)||"on_demand".equals(value); }
+    static String observedMode() { return observedMode; }
+    static void navigate(WebView view,String url) {
+        final int requestId=++navigationId;
+        String current=view.getUrl();
+        if(url.equals(current)) return;
+        // Retain Redux and tab storage while changing the site's own router route.
+        // A cold/unfinished document falls back to normal HTTPS navigation.
+        if(current!=null && DigikalaActivity.retailer(Uri.parse(current))
+            && Uri.parse(current).getPath()!=null && Uri.parse(current).getPath().startsWith("/supermarket")) {
+            view.evaluateJavascript("Boolean(document.getElementById('root'))",ready->{
+                if(requestId!=navigationId) return;
+                if("true".equals(ready)) {
+                    Uri uri=Uri.parse(url);String route=uri.getEncodedPath();
+                    if(uri.getEncodedQuery()!=null) route+="?"+uri.getEncodedQuery();
+                    view.evaluateJavascript("history.pushState(null,'',"+org.json.JSONObject.quote(route)+");window.dispatchEvent(new PopStateEvent('popstate',{state:history.state}));true",null);
+                } else view.loadUrl(url);
+            });
+        } else view.loadUrl(url);
+    }
+    static void release(Activity activity,WebView view) {
+        if(tab!=view || owner.get()!=activity) return;
+        CookieManager.getInstance().flush();
+        if(view.getParent() instanceof ViewGroup) ((ViewGroup)view.getParent()).removeView(view);
+        view.onPause();
+        // Drop all callbacks that capture the old Activity; keep the tab and its state.
+        view.setWebViewClient(new WebViewClient(){
+            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r) {
+                return r.isForMainFrame()&&!DigikalaActivity.retailer(r.getUrl());
+            }
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r) {
+                observe(r);return null;
+            }
+        });
+        view.setWebChromeClient(new WebChromeClient());
+        context.setBaseContext(activity.getApplicationContext());owner.clear();
+    }
+    static void discard() {
+        navigationId++;
+        if(tab!=null) {
+            if(tab.getParent() instanceof ViewGroup) ((ViewGroup)tab.getParent()).removeView(tab);
+            tab.destroy();
+        }
+        tab=null;context=null;owner.clear();observedMode="";
+    }
+}

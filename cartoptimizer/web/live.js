@@ -29,6 +29,7 @@
         b.onclick=()=>open(item);row.insertBefore(b,row.lastElementChild);
       }
     }
+    $('live-location-button').textContent=meta.location?'Change location / map':'Choose location / map';
     $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'Scheduled delivery':'Instant delivery'}` : 'Choose an address using Digikala’s map or address search.';
     for(const node of $('offers').querySelectorAll('.offer-card')) {
       const offerId=node.querySelector('[data-edit-offer]')?.dataset.editOffer;

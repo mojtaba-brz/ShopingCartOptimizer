@@ -1,7 +1,7 @@
 // DOM contract tests for the read-only retailer adapter, no browser dependency.
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const script=fs.readFileSync(path.join(__dirname,'../../cartoptimizer/web/digikala-capture.js'),'utf8');
-function capture(rows,{host='www.digikala.com',pathname='/supermarket/search/shop',address='ارسال بهمیدان تجریش'}={}) {
+function capture(rows,{host='www.digikala.com',pathname='/supermarket/search/shop',address='ارسال بهمیدان تجریش',buttons=[]}={}) {
   const node=(text='')=>({innerText:text,children:[{}],getClientRects:()=>[{}]});
   const images=rows.map(({title='شیر کم چرب',current='135,300',regular='165,000',enabled=true,hidden=false})=>{
     const image={...node(),alt:title};
@@ -10,7 +10,7 @@ function capture(rows,{host='www.digikala.com',pathname='/supermarket/search/sho
     const card={querySelectorAll:()=>[image],querySelector:q=>q.includes('toman')?toman:q.includes('line-through')?node(regular):q.includes('add-one-more')&&enabled?{}:null};
     image.parentElement=card;return image;
   });
-  const document={querySelectorAll:s=>s==='img[alt]'?images:s==='button'?[]:[node(address)]};
+  const document={querySelectorAll:s=>s==='img[alt]'?images:s==='button'?buttons:[node(address)]};
   return vm.runInNewContext(script,{document,location:{hostname:host,protocol:'https:',pathname,origin:'https://'+host},getComputedStyle:()=>({visibility:'visible'}),Date});
 }
 let r=capture([{}, {title:'شیر ساده',current:'130,000',regular:''}]);
@@ -24,4 +24,9 @@ for(const row of [{current:'not a price'},{regular:'broken'},{regular:'100,000'}
 assert.ok(capture([]).error);assert.ok(capture([{}],{host:'digikala.com.evil.invalid'}).error);
 assert.ok(capture([{}],{pathname:'/profile/'}).error);
 assert.equal(capture(Array.from({length:70},(_,i)=>({title:'شیر شماره '+i}))).products.length,60);
-console.log('Live reader: 16 contract checks passed');
+const button=(label,active)=>({innerText:label,className:active?'bg-v3-primary-fresh-600 text-v3-achromatic-white':'bg-v2-object-transparent',getClientRects:()=>[{}],getAttribute:()=>null});
+assert.equal(capture([{}],{buttons:[button('ارسال فوری',true),button('ارسال زمان‌دار',false)]}).shipment_type,'on_demand');
+assert.equal(capture([{}],{buttons:[button('ارسال فوری',false),button('ارسال زمان‌دار',true)]}).shipment_type,'scheduled');
+assert.equal(capture([{}],{buttons:[button('ارسال فوری',true),button('ارسال زمان‌دار',true)]}).shipment_type,null);
+assert.equal(capture([{}]).shipment_type,null);
+console.log('Live reader: 20 contract checks passed');
