@@ -57,12 +57,14 @@ public class DeliverySessionTest {
         AtomicReference<WebView> original=new AtomicReference<>();
         try(ActivityScenario<DigikalaActivity> first=ActivityScenario.launch(intent("شیر"))) {
             fixture(first,"ونک");first.onActivity(a->original.set(shop(a)));
+            System.out.println("BEFORE_MARKER "+eval(first,"JSON.stringify({url:location.href,root:!!document.getElementById(\"root\"),origin:location.origin})"));
             eval(first,"window.deliveryMarker='selected';sessionStorage.setItem('delivery-test','vanak');true");
+            System.out.println("AFTER_MARKER "+eval(first,"JSON.stringify({marker:window.deliveryMarker,saved:sessionStorage.getItem(\"delivery-test\")})"));
         }
         try(ActivityScenario<DigikalaActivity> next=ActivityScenario.launch(intent("پنیر"))) {
             next.onActivity(a->assertSame(original.get(),shop(a)));
             waitFor(next,"location.search.includes(encodeURIComponent('پنیر'))");
-            assertEquals("true",eval(next,"window.deliveryMarker==='selected' && sessionStorage.getItem('delivery-test')==='vanak' && typeof CartwiseAndroid==='undefined'"));
+            assertEquals("Retained state: "+eval(next,"JSON.stringify({marker:window.deliveryMarker,saved:sessionStorage.getItem(\"delivery-test\"),bridge:typeof CartwiseAndroid,url:location.href,root:!!document.getElementById(\"root\")})"),"true",eval(next,"window.deliveryMarker==='selected' && sessionStorage.getItem('delivery-test')==='vanak' && typeof CartwiseAndroid==='undefined'"));
             next.recreate();
             next.onActivity(a->assertSame(original.get(),shop(a)));
             assertEquals("true",eval(next,"window.deliveryMarker==='selected'"));
@@ -72,10 +74,15 @@ public class DeliverySessionTest {
         new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
         try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launchActivityForResult(intent("شیر"))) {
             fixture(scenario,"ونک");
+            AtomicReference<String> reader=new AtomicReference<>();
+            scenario.onActivity(a->{try(java.io.InputStream in=a.getAssets().open("digikala-capture.js")){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);reader.set(out.toString("UTF-8"));}catch(Exception e){throw new RuntimeException(e);}});
+            System.out.println("CAPTURE_BEFORE "+eval(scenario,reader.get()));
             scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);((Button)((ViewGroup)root.getChildAt(0)).getChildAt(1)).performClick();});
             long until=System.currentTimeMillis()+10000;
             while(scenario.getState()!=Lifecycle.State.DESTROYED && System.currentTimeMillis()<until)Thread.sleep(100);
-            assertEquals("Repeated import should return without a location dialog",Lifecycle.State.DESTROYED,scenario.getState());
+            AtomicReference<String> nativeStatus=new AtomicReference<>("");
+            if(scenario.getState()!=Lifecycle.State.DESTROYED) scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);nativeStatus.set(((android.widget.TextView)root.getChildAt(1)).getText().toString());});
+            assertEquals("Repeated import status: "+nativeStatus.get(),Lifecycle.State.DESTROYED,scenario.getState());
             assertEquals(Activity.RESULT_OK,scenario.getResult().getResultCode());
             JSONObject data=new JSONObject(scenario.getResult().getResultData().getStringExtra("live_data"));
             assertEquals("scheduled",data.getString("shipment_type"));assertEquals("ارسال به ونک",data.getString("location"));
