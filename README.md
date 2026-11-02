@@ -1,3 +1,7 @@
+> **Import fix in 0.2.2:** Product search pages do not need an address header.
+> The Android reader uses the delivery area confirmed in the current Digikala
+> session and displays it in the app's own banner.
+
 > **Location fix in 0.2.1:** Digikala now reuses one browser tab between searches,
 > and imports reuse a previously confirmed location/mode when they still match
 > the retailer. You can change them using Change location / map.

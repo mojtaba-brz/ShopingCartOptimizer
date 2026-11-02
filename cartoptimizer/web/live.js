@@ -14,7 +14,7 @@
     window.CartwiseAndroid.openDigikala(item?.id || '',item?.name || '',locationOnly);
   }
   const card=document.createElement('section'); card.className='card live-card'; card.id='live-card';
-  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">LIVE DIGIKALA</p><h3>Choose your delivery location.</h3><p id="live-location">Choose an address using Digikala’s map or address search.</p></div><button class="secondary" id="live-location-button">Choose location / map</button></div><p class="hint">Then tap Search Digikala beside a list item. On Digikala, check the address and delivery mode, wait for prices, and tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
+  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">LIVE DIGIKALA</p><h3>Choose your delivery location.</h3><p id="live-location">Choose an address using Digikala’s map or address search.</p></div><button class="secondary" id="live-location-button">Choose location / map</button></div><p class="hint">Then tap Search Digikala beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
   $('tab-list').insertBefore(card,$('tab-list').querySelector('.workspace-grid'));
   $('live-location-button').onclick=()=>open(null,true);
   $('tab-list').querySelector('.guide').innerHTML='<div class="icon-disc">↗</div><h3>Search real products.</h3><p>Add your shopping-list item, then tap Search Digikala beside it. Select your delivery area on Digikala and read the prices into this planner.</p><hr><p>You choose acceptable brands and package sizes from the imported results. The app fills their prices automatically.</p>';
@@ -46,7 +46,7 @@
   function validatePayload(raw) {
     const x=typeof raw==='string'?JSON.parse(raw):raw;
     if(!x || x.source!=='digikala-live-page' || !Array.isArray(x.products) || x.products.length>60) throw Error('Invalid Digikala reader result.');
-    if(typeof x.location!=='string' || !/^ارسال به\s/.test(x.location) || x.location.length>300) throw Error('Select a delivery address on Digikala first.');
+    if(typeof x.location!=='string' || !x.location.trim() || x.location.length>300) throw Error('Select a delivery address on Digikala first.');
     if(!['on_demand','scheduled'].includes(x.shipment_type)) throw Error('Choose your delivery mode on Digikala.');
     const date=Date.parse(x.captured_at);if(!Number.isFinite(date) || Math.abs(Date.now()-date)>300000) throw Error('This page result has expired. Read current prices again.');
     return x;

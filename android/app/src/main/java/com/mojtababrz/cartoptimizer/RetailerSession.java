@@ -20,6 +20,21 @@ final class RetailerSession {
     private static WeakReference<Activity> owner=new WeakReference<>(null);
     private static volatile String observedMode="";
     private static int navigationId;
+    private static volatile String confirmedLocation="", confirmedMode="", catalogLocation="";
+
+    static void confirmDelivery(String location,String mode) {
+        if(!DeliveryChoice.label(location).isEmpty() && mode(mode)) {
+            confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;
+        }
+    }
+    static String deliveryLocation() {return confirmedLocation;}
+    static String deliveryMode() {return mode(observedMode)?observedMode:confirmedMode;}
+    static void changingLocation() {confirmedLocation="";confirmedMode="";catalogLocation="";observedMode="";}
+    static void noticeNavigation(Uri uri) {
+        String path=uri.getPath(), modal=uri.getQueryParameter("MID");
+        if((path!=null && path.contains("/user/add-address")) || (modal!=null && (modal.contains("address")||modal.contains("location")))) changingLocation();
+    }
+
 
     static WebView acquire(Activity activity) {
         if(tab==null) {
@@ -38,6 +53,14 @@ final class RetailerSession {
             || !"api.digikalajet.ir".equals(uri.getHost()) || path==null
             || !(path.startsWith("/fresh/") || path.startsWith("/search/")
                 || path.startsWith("/v2/search/") || path.equals("/first-load/"))) return;
+        // Location query values stay only inside this phone's current session.
+        // Changed catalog coordinates invalidate the prior label; no guessing a new area.
+        String lat=uri.getQueryParameter("latitude"), lon=uri.getQueryParameter("longitude");
+        if(lat!=null && lon!=null) {
+            String next=lat+"|"+lon;
+            if(!catalogLocation.isEmpty() && !catalogLocation.equals(next)) {confirmedLocation="";confirmedMode="";}
+            catalogLocation=next;
+        }
         // Read only the public delivery-mode header, never auth or account headers.
         for(Map.Entry<String,String> entry:request.getRequestHeaders().entrySet())
             if("shipment-type".equalsIgnoreCase(entry.getKey()) && mode(entry.getValue())) observedMode=entry.getValue();
@@ -70,6 +93,7 @@ final class RetailerSession {
         // Drop all callbacks that capture the old Activity; keep the tab and its state.
         view.setWebViewClient(new WebViewClient(){
             @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r) {
+                if(r.isForMainFrame() && DigikalaActivity.retailer(r.getUrl())) noticeNavigation(r.getUrl());
                 return r.isForMainFrame()&&!DigikalaActivity.retailer(r.getUrl());
             }
             @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r) {
@@ -85,6 +109,6 @@ final class RetailerSession {
             if(tab.getParent() instanceof ViewGroup) ((ViewGroup)tab.getParent()).removeView(tab);
             tab.destroy();
         }
-        tab=null;context=null;owner.clear();observedMode="";
+        tab=null;context=null;owner.clear();changingLocation();
     }
 }

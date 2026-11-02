@@ -60,11 +60,13 @@ public final class DigikalaActivity extends Activity {
         read = new Button(this); read.setText(locationOnly ? "Use this location" : "Read products");
         read.setOnClickListener(v -> capture()); toolbar.addView(read);
         Button home = new Button(this); home.setText("Location");
-        home.setOnClickListener(v -> RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/")); toolbar.addView(home);
+        home.setOnClickListener(v -> {if(shop!=null) {RetailerSession.changingLocation();RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/");updateStatus();}}); toolbar.addView(home);
         root.addView(toolbar);
         status = new TextView(this); status.setPadding(16,8,16,8);
         status.setText(RetailerSession.mode(deliveryChoice.mode()) ? "Digikala live · Reusing your browsing session. Use Location only to change the delivery area." : "Digikala live · Select delivery address and instant/scheduled delivery on the site. You can search an address or use its map."); root.addView(status);
+        if(locationOnly) RetailerSession.changingLocation();
         shop = RetailerSession.acquire(this);
+        updateStatus();
         root.addView(shop, new LinearLayout.LayoutParams(-1,0,1));
         WebSettings s = shop.getSettings();
         s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setGeolocationEnabled(true);
@@ -84,14 +86,14 @@ public final class DigikalaActivity extends Activity {
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (!request.isForMainFrame()) return false;
-                if (retailer(request.getUrl())) return false;
+                if (retailer(request.getUrl())) {RetailerSession.noticeNavigation(request.getUrl());return false;}
                 status.setText("This link leaves Digikala. Return to the supermarket to read prices.");
                 return true;
             }
             @Override public void onPageFinished(WebView view, String url) {
                 CookieManager.getInstance().flush();
                 if (!retailer(Uri.parse(url))) return;
-                status.setText(locationOnly ? "Choose your address/map and delivery mode, then tap Use this location." : "Check the delivery address at the top. Search for your item, wait for prices, then tap Read products. No retailer cart is changed by reading.");
+                updateStatus();
             }
             @Override public void onReceivedError(WebView view, android.webkit.WebResourceRequest req, android.webkit.WebResourceError error) {
                 if (req.isForMainFrame()) status.setText("Could not reach Digikala. Check your connection and try Location again.");
@@ -136,15 +138,25 @@ public final class DigikalaActivity extends Activity {
                 if (!(parsed instanceof JSONObject)) throw new IllegalArgumentException();
                 JSONObject data=(JSONObject)parsed;
                 if (data.toString().getBytes(StandardCharsets.UTF_8).length>500_000) throw new IllegalArgumentException();
-                String location=data.optString("location","");
-                if (location.trim().isEmpty()) { status.setText("Select a delivery address on Digikala first. Its header must show ارسال به … before importing."); return; }
+                if(data.optBoolean("location_editing",false)) {
+                    RetailerSession.changingLocation();status.setText("Finish choosing the delivery area, then return to the products and read them.");return;
+                }
                 if (!locationOnly && !data.isNull("error")) { status.setText(data.optString("error")); return; }
+                String location=DeliveryChoice.label(data.optString("location",""));
                 String observed=data.optString("shipment_type","");
-                if(!RetailerSession.mode(observed)) observed=RetailerSession.observedMode();
-                // Reuse the choice only when the actual retailer location and mode match.
-                if(!locationOnly && deliveryChoice.matches(location,observed)) {
+                if(!RetailerSession.mode(observed)) observed=RetailerSession.deliveryMode();
+                boolean fromSession=location.isEmpty() && !RetailerSession.deliveryLocation().isEmpty();
+                if(fromSession) {
+                    location=RetailerSession.deliveryLocation();
+                    data.put("location",location);data.put("location_source","retained-session");
+                } else data.put("location_source","page");
+                if(location.isEmpty()) {status.setText("Choose your delivery area once using Location. It will then be reused on product pages, even when Digikala hides its address header.");return;}
+                // A missing header does not erase a delivery choice confirmed in this same tab.
+                boolean sameSession=location.equals(RetailerSession.deliveryLocation()) && RetailerSession.mode(observed);
+                if(!locationOnly && (sameSession || deliveryChoice.matches(location,observed))) {
                     completeCapture(data,observed);return;
                 }
+                final String selectedLocation=location;
                 final String currentMode=observed;
                 LinearLayout form=new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(32,8,32,8);
                 TextView label=new TextView(this); label.setText("Delivery location shown by Digikala:\n"+location+"\n\nWhich delivery mode is selected on the site?"); form.addView(label);
@@ -156,20 +168,27 @@ public final class DigikalaActivity extends Activity {
                 AlertDialog dialog=new AlertDialog.Builder(this).setTitle(locationOnly ? "Use delivery location" : "Read live products")
                     .setView(form).setPositiveButton("Continue",null).setNegativeButton("Cancel",null).create();
                 dialog.setOnShowListener(v -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(b -> {
-                    if (modes.getCheckedRadioButtonId()==-1) { label.setText("Choose the delivery mode currently selected on Digikala before continuing.\n"+location); return; }
+                    if (modes.getCheckedRadioButtonId()==-1) { label.setText("Choose the delivery mode currently selected on Digikala before continuing.\n"+selectedLocation); return; }
                     try {
                         String selectedMode=modes.getCheckedRadioButtonId()==101?"on_demand":"scheduled";
                         if(RetailerSession.mode(currentMode) && !currentMode.equals(selectedMode)) {
                             label.setText("The retailer is currently showing "+("scheduled".equals(currentMode)?"scheduled":"instant")+" delivery. Select that mode here, or change it on Digikala first.");return;
                         }
-                        deliveryChoice.remember(location,selectedMode);
+                        deliveryChoice.remember(selectedLocation,selectedMode);
                         completeCapture(data,selectedMode);dialog.dismiss();
                     } catch(Exception error) { status.setText("Could not read product data. Try another search.");dialog.dismiss(); }
                 }));dialog.show();
             } catch(Exception error) { status.setText("Could not read this page. Open a product search and try again."); }
         });
     }
+    private void updateStatus() {
+        String location=RetailerSession.deliveryLocation();
+        if(!location.isEmpty()) status.setText("Delivery: "+location+" · "+("scheduled".equals(RetailerSession.deliveryMode())?"Scheduled":"Instant")+". Search for a product and tap Read products.");
+        else status.setText(locationOnly?"Choose your delivery area and mode on Digikala, then tap Use this location.":"Search for a product and tap Read products. Your delivery area is kept in this Digikala session; use Location to change it.");
+    }
     private void completeCapture(JSONObject data,String mode) throws org.json.JSONException {
+        RetailerSession.confirmDelivery(data.optString("location",""),mode);
+        deliveryChoice.remember(data.optString("location",""),mode);
         data.put("shipment_type",mode);data.remove("delivery_modes");
         data.put("item_id",itemId==null?"":itemId);data.put("location_only",locationOnly);
         if(locationOnly) data.put("products",new org.json.JSONArray());

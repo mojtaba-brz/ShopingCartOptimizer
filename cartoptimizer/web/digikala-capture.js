@@ -51,7 +51,8 @@
   const selectedModes=modes.filter(m=>m.selected==='true'||m.pressed==='true'||
     (String(m.classes).split(/\s+/).includes('bg-v3-primary-fresh-600') && String(m.classes).split(/\s+/).includes('text-v3-achromatic-white')));
   const selectedMode=selectedModes.length===1?(/زمان.?دار/.test(selectedModes[0].label)?'scheduled':/فوری/.test(selectedModes[0].label)?'on_demand':null):null;
-  return {shipment_type:selectedMode, source:'digikala-live-page', captured_at:new Date().toISOString(), location:locationLabel,
+  const locationEditing=location.pathname.includes('/user/add-address') || /[?&]MID=[^&]*(?:address|location)/i.test(location.search||'');
+  return {location_editing:locationEditing, shipment_type:selectedMode, source:'digikala-live-page', captured_at:new Date().toISOString(), location:locationLabel,
     delivery_modes:modes, page_url:location.origin + location.pathname, products,
     error:products.length ? null : 'No readable in-stock products on this page. Search for an item, wait for prices, then tap Read products again.'};
 })()

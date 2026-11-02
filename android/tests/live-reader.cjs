@@ -29,4 +29,7 @@ assert.equal(capture([{}],{buttons:[button('ارسال فوری',true),button('�
 assert.equal(capture([{}],{buttons:[button('ارسال فوری',false),button('ارسال زمان‌دار',true)]}).shipment_type,'scheduled');
 assert.equal(capture([{}],{buttons:[button('ارسال فوری',true),button('ارسال زمان‌دار',true)]}).shipment_type,null);
 assert.equal(capture([{}]).shipment_type,null);
-console.log('Live reader: 20 contract checks passed');
+const missingHeader=capture([{}],{address:''});
+assert.equal(missingHeader.products.length,1);assert.equal(missingHeader.location,'');assert.equal(missingHeader.error,null);
+assert.equal(capture([{}],{pathname:'/supermarket/user/add-address'}).location_editing,true);
+console.log('Live reader contract checks passed, including products without an address header');

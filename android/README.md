@@ -1,4 +1,4 @@
-# Cartwise for Android 0.2.1
+# Cartwise for Android 0.2.2
 
 Android 8.0+ (API 26) and an updated Android System WebView. The planner and
 optimizer run on the phone; live product lookup needs an internet connection.
@@ -11,9 +11,10 @@ optimizer run on the phone; live product lookup needs an internet connection.
    scheduled delivery on the site. Tap **Use this location** and confirm the mode
    currently selected on the site. GPS is optional; its permission is requested
    only after you choose to use your device's location.
-3. Tap **Search Digikala** beside the item. Check the site's address and delivery
-   mode, search if needed, and wait for the product prices to load. Tap **Read
-   products**, then confirm the delivery mode currently shown on the site.
+3. Tap **Search Digikala** beside the item. Search if needed and wait for the product prices to load. The search page
+   does not need to display an address header. Tap **Read
+   products**. The area confirmed in your current session is reused; the app
+   shows it above the browser even when the search page hides its address.
    Your browser tab is now reused between searches, keeping Digikala's live
    address/session state. The app remembers your confirmed location and mode;
    later imports reuse them when the retailer still shows the same values.
@@ -32,8 +33,11 @@ optimizer run on the phone; live product lookup needs an internet connection.
 ## What the live reader knows
 
 It reads **rendered product cards** on Digikala's current `/supermarket/` site:
-product name, current price and crossed-out normal price. It uses the exact
-location displayed in the site's header and asks you to confirm the active mode.
+product name, current price and crossed-out normal price. The selected delivery area is bound to the current retailer tab. Product pages
+can omit the address header: the reader reuses the area previously confirmed
+in that same session and shows it in Cartwise's own delivery banner. It never
+treats an old saved label alone as proof of the current retailer area. Explicit
+address changes and changed catalog coordinates invalidate that session binding.
 Digikala stores the selected address/session in its own WebView cookies/storage.
 The planner does not read its login tokens, cookies, account, or checkout data.
 
@@ -79,13 +83,12 @@ the retailer's session, or sign out on Digikala.
 
 ## Install / update
 
-Download `Cartwise-Android-0.2.1-debug.apk` and open it. Allow installation from
+Download `Cartwise-Android-0.2.2-debug.apk` and open it. Allow installation from
 that browser/file manager when Android asks. This is a signed development build,
 not a Play Store release. The package ID is `com.mojtababrz.cartoptimizer`.
 
-**Export your existing workspace before installing.** GitHub runners use fresh
-debug keys, so Android may require uninstalling version 0.1.0 before this APK can
-be installed. Uninstalling removes local data. Reimport your exported snapshot.
+**Export your existing workspace before installing.** Earlier builds used fresh debug keys, so Android may require uninstalling the
+previous version before this APK can be installed. Development builds currently use a fresh signing key on each runner. Uninstalling removes local data. Reimport your exported snapshot.
 A stable private release-signing key is needed for regular in-place updates.
 
 ## Build and validate
@@ -108,3 +111,9 @@ Fixtures exercise the import flow without depending on external availability.
 Real search and price-card markup have also been inspected on the public site;
 GPS permission, the retailer's full map and delivery coverage still depend on
 your phone, connection and Digikala's current service area.
+
+The Android regression suite includes the complete native handoff: select and
+confirm a delivery area, search on a page with no address header or delivery-mode
+controls, tap Read products, accept a product in the planner, review its delivery
+rules and calculate the cart. A separate negative test rejects a headerless page
+when only an old saved choice exists and the retailer session is unconfirmed.

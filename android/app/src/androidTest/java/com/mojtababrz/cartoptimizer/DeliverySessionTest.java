@@ -90,4 +90,24 @@ public class DeliverySessionTest {
             assertEquals("scheduled",data.getString("shipment_type"));assertEquals("ارسال به ونک",data.getString("location"));
         }
     }
+    @Test public void headerlessPageDoesNotTrustAnOldChoiceAfterSessionDiscard() throws Exception {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
+        try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launch(intent("شیر"))) {
+            fixture(scenario,"ونک");
+            eval(scenario,"document.querySelector('#root > div').remove();true");
+            scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);((Button)((ViewGroup)root.getChildAt(0)).getChildAt(1)).performClick();});
+            long until=System.currentTimeMillis()+5000;AtomicReference<String> text=new AtomicReference<>("");
+            while(System.currentTimeMillis()<until){scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);text.set(((android.widget.TextView)root.getChildAt(1)).getText().toString());});if(text.get().contains("Choose your delivery area once"))break;Thread.sleep(100);}
+            assertTrue(text.get(),text.get().contains("Choose your delivery area once"));
+            assertEquals(Lifecycle.State.RESUMED,scenario.getState());
+        }
+    }
+    @Test public void explicitAddressChangeInvalidatesTheRetainedLocation() {
+        RetailerSession.confirmDelivery("ارسال به ونک","scheduled");assertEquals("ارسال به ونک",RetailerSession.deliveryLocation());
+        RetailerSession.noticeNavigation(android.net.Uri.parse("https://www.digikala.com/supermarket?MID=main-change-address"));
+        assertEquals("",RetailerSession.deliveryLocation());
+        RetailerSession.confirmDelivery("ارسال به آزادی","scheduled");InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
+        assertEquals("",RetailerSession.deliveryLocation());
+    }
+
 }
