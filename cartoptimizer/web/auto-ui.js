@@ -5,6 +5,8 @@
   document.body.classList.add('automatic');
   document.querySelector('#tab-list .section-heading h2').textContent='لیست خرید شما';
   document.querySelector('#tab-list .section-heading p:last-child').textContent='نام و تعداد کالاها را وارد کنید؛ برای نتیجه دقیق‌تر، وزن، حجم یا برند دلخواه را هم بنویسید.';
+  document.querySelector('#tab-results .section-heading h2').textContent='بررسی سبد پیشنهادی';
+  document.querySelector('#tab-results .section-heading p:last-child').textContent='کالاها و محدودیت‌های برآورد را بررسی کنید.';
   const itemForm=$('item-form');itemForm.elements.name.placeholder='مثلاً شیر کم چرب ۱ لیتر';
   itemForm.querySelector('label.grow').firstChild.textContent='نام کالا';
   itemForm.querySelector('.qty-field').firstChild.textContent='تعداد';
