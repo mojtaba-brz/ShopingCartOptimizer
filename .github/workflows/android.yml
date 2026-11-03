@@ -39,6 +39,7 @@ jobs:
           node --check cartoptimizer/web/live.js
           node --check cartoptimizer/web/digikala-capture.js
           node android/tests/live-reader.cjs
+          node android/tests/auto-planner.cjs
       - name: Install Android platform
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build installable APK and test APK
@@ -48,7 +49,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.2.2-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.3.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:

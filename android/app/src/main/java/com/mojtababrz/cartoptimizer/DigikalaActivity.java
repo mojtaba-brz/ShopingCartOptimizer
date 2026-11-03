@@ -19,6 +19,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.json.JSONObject;
+import org.json.JSONArray;
+import android.os.Handler;
+import android.os.Looper;
 import org.json.JSONTokener;
 import java.nio.charset.StandardCharsets;
 
@@ -33,6 +36,12 @@ public final class DigikalaActivity extends Activity {
     private GeolocationPermissions.Callback locationCallback;
     private String locationOrigin;
     private DeliveryChoice deliveryChoice;
+    private JSONArray autoItems, autoResults;
+    private int autoIndex, stableCount;
+    private String lastFingerprint="", priorFingerprint="", autoQuery="", scanLocation="", scanMode="";
+    private long scanStarted;
+    private boolean scanning, sameQuery;
+    private final Handler scanHandler=new Handler(Looper.getMainLooper());
     private static final int LOCATION_REQUEST = 31;
 
     static boolean retailer(Uri uri) {
@@ -44,7 +53,20 @@ public final class DigikalaActivity extends Activity {
         super.onCreate(savedInstanceState);
         deliveryChoice=new DeliveryChoice(this);
         itemId = getIntent().getStringExtra("item_id");
-        locationOnly = getIntent().getBooleanExtra("location_only", false);
+        String automatic=getIntent().getStringExtra("automatic_items");
+        if(automatic!=null) {
+            try {
+                autoItems=new JSONArray(automatic);
+                if(autoItems.length()<1 || autoItems.length()>15) throw new IllegalArgumentException();
+                for(int i=0;i<autoItems.length();i++) {
+                    JSONObject item=autoItems.getJSONObject(i);String name=item.getString("name"), id=item.getString("id");
+                    int qty=item.getInt("quantity");
+                    if(name.trim().isEmpty()||name.length()>300||id.trim().isEmpty()||id.length()>100||qty<1||qty>50) throw new IllegalArgumentException();
+                }
+                autoResults=new JSONArray();
+            } catch(Exception error) {setResult(RESULT_CANCELED);finish();return;}
+        }
+        locationOnly = autoItems!=null ? RetailerSession.deliveryLocation().isEmpty() : getIntent().getBooleanExtra("location_only", false);
         LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.rgb(245,246,241));
         root.setPadding(0, 0, 0, 0);
@@ -57,7 +79,7 @@ public final class DigikalaActivity extends Activity {
         LinearLayout toolbar = new LinearLayout(this);
         Button back = new Button(this); back.setText("← Planner"); back.setOnClickListener(v -> finish());
         toolbar.addView(back);
-        read = new Button(this); read.setText(locationOnly ? "Use this location" : "Read products");
+        read = new Button(this); read.setText(autoItems!=null && locationOnly ? "ثبت موقعیت و شروع" : locationOnly ? "Use this location" : "Read products");
         read.setOnClickListener(v -> capture()); toolbar.addView(read);
         Button home = new Button(this); home.setText("Location");
         home.setOnClickListener(v -> {if(shop!=null) {RetailerSession.changingLocation();RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/");updateStatus();}}); toolbar.addView(home);
@@ -82,6 +104,7 @@ public final class DigikalaActivity extends Activity {
             }
             @Override public boolean onRenderProcessGone(WebView view,android.webkit.RenderProcessGoneDetail detail) {
                 RetailerSession.discard();shop=null;read.setEnabled(false);
+                if(scanning) {setResult(RESULT_CANCELED);finish();return true;}
                 status.setText("Digikala's browser stopped. Return to the planner and open it again. Your saved planner remains available.");return true;
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -119,7 +142,11 @@ public final class DigikalaActivity extends Activity {
         String query=getIntent().getStringExtra("query");
         String url="https://www.digikala.com/supermarket/";
         if (!locationOnly && query != null && !query.trim().isEmpty()) url += "search/shop?q="+Uri.encode(query);
-        RetailerSession.navigate(shop,url);
+        if(autoItems!=null && !locationOnly) {
+            read.setVisibility(android.view.View.GONE);home.setVisibility(android.view.View.GONE);
+            scanLocation=RetailerSession.deliveryLocation();scanMode=RetailerSession.deliveryMode();
+            scanning=true;scanHandler.postDelayed(this::nextSearch,500);
+        } else RetailerSession.navigate(shop,url);
     }
     private byte[] readScript(java.io.InputStream input) throws java.io.IOException {
         java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();
@@ -156,6 +183,9 @@ public final class DigikalaActivity extends Activity {
                 if(!locationOnly && (sameSession || deliveryChoice.matches(location,observed))) {
                     completeCapture(data,observed);return;
                 }
+                if(autoItems!=null && locationOnly && RetailerSession.mode(observed)) {
+                    completeCapture(data,observed);return;
+                }
                 final String selectedLocation=location;
                 final String currentMode=observed;
                 LinearLayout form=new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(32,8,32,8);
@@ -182,6 +212,7 @@ public final class DigikalaActivity extends Activity {
         });
     }
     private void updateStatus() {
+        if(scanning) return;
         String location=RetailerSession.deliveryLocation();
         if(!location.isEmpty()) status.setText("Delivery: "+location+" · "+("scheduled".equals(RetailerSession.deliveryMode())?"Scheduled":"Instant")+". Search for a product and tap Read products.");
         else status.setText(locationOnly?"Choose your delivery area and mode on Digikala, then tap Use this location.":"Search for a product and tap Read products. Your delivery area is kept in this Digikala session; use Location to change it.");
@@ -189,11 +220,80 @@ public final class DigikalaActivity extends Activity {
     private void completeCapture(JSONObject data,String mode) throws org.json.JSONException {
         RetailerSession.confirmDelivery(data.optString("location",""),mode);
         deliveryChoice.remember(data.optString("location",""),mode);
+        if(autoItems!=null && locationOnly) {
+            scanLocation=RetailerSession.deliveryLocation();scanMode=mode;locationOnly=false;scanning=true;
+            read.setVisibility(android.view.View.GONE);
+            scanHandler.postDelayed(this::nextSearch,500);return;
+        }
         data.put("shipment_type",mode);data.remove("delivery_modes");
         data.put("item_id",itemId==null?"":itemId);data.put("location_only",locationOnly);
         if(locationOnly) data.put("products",new org.json.JSONArray());
         CookieManager.getInstance().flush();
         setResult(RESULT_OK,new Intent().putExtra("live_data",data.toString()));finish();
+    }
+    private String fingerprint(JSONObject data) {
+        JSONArray products=data.optJSONArray("products");if(products==null||products.length()==0)return "";
+        StringBuilder value=new StringBuilder();
+        for(int i=0;i<Math.min(8,products.length());i++) {JSONObject p=products.optJSONObject(i);if(p!=null)value.append(p.optString("title")).append(':').append(p.optLong("regular_price")).append('|');}
+        return value.toString();
+    }
+    private void nextSearch() {
+        if(!scanning || isFinishing() || shop==null)return;
+        if(!scanLocation.equals(RetailerSession.deliveryLocation()) || !scanMode.equals(RetailerSession.deliveryMode())) {finishAutoError("موقعیت یا روش ارسال تغییر کرد؛ دوباره تلاش کنید.");return;}
+        if(autoIndex>=autoItems.length()) {finishAuto();return;}
+        JSONObject item=autoItems.optJSONObject(autoIndex);autoQuery=item.optString("name");
+        status.setText("در حال جست‌وجوی «"+autoQuery+"» ("+(autoIndex+1)+" از "+autoItems.length()+")…");
+        String url=shop.getUrl();String q=url==null?null:Uri.parse(url).getQueryParameter("q");sameQuery=autoQuery.equals(q);
+        scanStarted=System.currentTimeMillis();lastFingerprint="";stableCount=0;
+        shop.evaluateJavascript(captureScript,raw->{
+            if(!scanning || shop==null)return;
+            try {Object d=new JSONTokener(raw).nextValue();priorFingerprint=d instanceof JSONObject?fingerprint((JSONObject)d):"";}catch(Exception e){priorFingerprint="";}
+            RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/search/shop?q="+Uri.encode(autoQuery));
+            scanHandler.postDelayed(this::pollSearch,700);
+        });
+    }
+    private void pollSearch() {
+        if(!scanning || isFinishing() || shop==null)return;
+        if(!scanLocation.equals(RetailerSession.deliveryLocation()) || !scanMode.equals(RetailerSession.deliveryMode())) {finishAutoError("موقعیت یا روش ارسال تغییر کرد؛ دوباره تلاش کنید.");return;}
+        if(System.currentTimeMillis()-scanStarted>20000) {recordSearch(new JSONArray(),"نتیجه قابل خواندن پیدا نشد یا جست‌وجو تمام نشد.");return;}
+        String url=shop.getUrl();String query=url==null?null:Uri.parse(url).getQueryParameter("q");
+        if(!autoQuery.equals(query)) {scanHandler.postDelayed(this::pollSearch,400);return;}
+        shop.evaluateJavascript(captureScript,raw->{
+            if(!scanning || shop==null)return;
+            try {
+                Object obj=new JSONTokener(raw).nextValue();JSONObject data=obj instanceof JSONObject?(JSONObject)obj:null;
+                if(data!=null && !data.optBoolean("location_editing",false)) {
+                    String location=DeliveryChoice.label(data.optString("location",""));
+                    if(!location.isEmpty() && !location.equals(scanLocation)) {finishAutoError("موقعیت نمایش‌داده‌شده تغییر کرد؛ دوباره تلاش کنید.");return;}
+                    String fp=fingerprint(data);
+                    if(!fp.isEmpty() && fp.equals(lastFingerprint))stableCount++;else {lastFingerprint=fp;stableCount=0;}
+                    if(!fp.isEmpty() && stableCount>=2 && System.currentTimeMillis()-scanStarted>=1600 && (sameQuery || priorFingerprint.isEmpty() || !fp.equals(priorFingerprint))) {
+                        recordSearch(data.optJSONArray("products"),"");return;
+                    }
+                }
+            } catch(Exception ignored) {}
+            scanHandler.postDelayed(this::pollSearch,400);
+        });
+    }
+    private void recordSearch(JSONArray products,String error) {
+        try {
+            JSONObject item=autoItems.getJSONObject(autoIndex),entry=new JSONObject();
+            entry.put("id",item.getString("id"));entry.put("products",products==null?new JSONArray():products);entry.put("error",error);
+            autoResults.put(entry);autoIndex++;nextSearch();
+        } catch(Exception e) {finishAutoError("خواندن نتایج ناموفق بود.");}
+    }
+    private void finishAutoError(String error) {
+        try {JSONObject result=new JSONObject();result.put("error",error);returnAuto(result);}catch(Exception ignored){setResult(RESULT_CANCELED);finish();}
+    }
+    private void finishAuto() {
+        try {JSONObject result=new JSONObject();result.put("source","digikala-automatic");result.put("location",scanLocation);result.put("shipment_type",scanMode);result.put("captured_at",new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX",java.util.Locale.US).format(new java.util.Date()));result.put("items",autoResults);returnAuto(result);}
+        catch(Exception e){finishAutoError("آماده‌سازی نتیجه ناموفق بود.");}
+    }
+    private void returnAuto(JSONObject result) {
+        scanning=false;scanHandler.removeCallbacksAndMessages(null);
+        String json=result.toString();
+        if(json.getBytes(StandardCharsets.UTF_8).length>500_000){setResult(RESULT_CANCELED);finish();return;}
+        setResult(RESULT_OK,new Intent().putExtra("auto_data",json));finish();
     }
     @Override protected void onPause() {super.onPause();CookieManager.getInstance().flush();}
     @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] grants) {
@@ -206,5 +306,5 @@ public final class DigikalaActivity extends Activity {
     }
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); }
     @Override public void onBackPressed() { if(shop!=null && shop.canGoBack()) shop.goBack();else finish(); }
-    @Override protected void onDestroy() { if(locationCallback!=null) locationCallback.invoke(locationOrigin,false,false); if(shop!=null) RetailerSession.release(this,shop);super.onDestroy(); }
+    @Override protected void onDestroy() { scanning=false;scanHandler.removeCallbacksAndMessages(null);if(locationCallback!=null) locationCallback.invoke(locationOrigin,false,false); if(shop!=null) RetailerSession.release(this,shop);super.onDestroy(); }
 }

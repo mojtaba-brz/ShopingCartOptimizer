@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict');
+const a=require('../../cartoptimizer/web/auto-planner.js');
+assert.equal(a.matches('شیر کم چرب ۱ لیتری','شیر کم‌چرب کاله 1 لیتر'),true);
+assert.equal(a.matches('شیر','شیرینی شکلاتی'),false);
+assert.equal(a.matches('شیر 1 لیتر','شیر 200 میلی لیتر'),false);
+assert.equal(a.matches('پنیر کاله','پنیر هراز'),false);
+const item={id:'milk',name:'شیر کم چرب',quantity:3};
+const rows=[{title:'شیر کم چرب الف 1 لیتر',regular_price:1000,promo_price:500,url:''},{title:'شیر کم چرب ب 1 لیتر',regular_price:900,promo_price:null,url:''},{title:'پنیر ب',regular_price:100,promo_price:null,url:''}];
+const ranked=a.rank(item,rows);assert.equal(ranked.length,2);assert.equal(a.estimated(ranked[0],3),2500);
+const built=a.build([item],[{id:'milk',products:rows}],'تهران','scheduled');
+assert.deepEqual(built.missing,[]);assert.equal(built.snapshot.offers[0].stock,3);assert.equal(built.snapshot.offers[0].promo_limit,1);
+assert.deepEqual(a.build([item],[{id:'milk',products:[]}],'تهران','scheduled').missing,['شیر کم چرب']);
+console.log('Automatic matching and estimated pricing tests passed');

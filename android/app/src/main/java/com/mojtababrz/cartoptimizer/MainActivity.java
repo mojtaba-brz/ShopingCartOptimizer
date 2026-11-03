@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
-    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12;
+    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12, AUTO_DIGIKALA = 13;
     private static final int MAX_BYTES = 1_000_000;
     private static final String HOST = "appassets.androidplatform.net";
     private WebView webView;
@@ -109,6 +109,11 @@ public final class MainActivity extends Activity {
                 .putExtra("item_id",itemId).putExtra("query",query).putExtra("location_only",locationOnly), LIVE_DIGIKALA));
         }
 
+        @JavascriptInterface public void findAutomatically(String items) {
+            if(items==null || items.getBytes(StandardCharsets.UTF_8).length>20000) return;
+            runOnUiThread(() -> startActivityForResult(new Intent(MainActivity.this, DigikalaActivity.class)
+                .putExtra("automatic_items",items), AUTO_DIGIKALA));
+        }
         @JavascriptInterface public void pickSnapshot() {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json")
@@ -132,6 +137,14 @@ public final class MainActivity extends Activity {
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AUTO_DIGIKALA) {
+            if(resultCode==RESULT_OK && data!=null) {
+                String json=data.getStringExtra("auto_data");
+                if(json!=null && json.getBytes(StandardCharsets.UTF_8).length<=500_000)
+                    webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:"+JSONObject.quote(json)+"}));",null);
+            } else webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);
+            return;
+        }
         if (requestCode == LIVE_DIGIKALA) {
             if (resultCode == RESULT_OK && data != null) {
                 String json = data.getStringExtra("live_data");
