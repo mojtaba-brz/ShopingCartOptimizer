@@ -89,9 +89,19 @@ public class HeaderlessFlowTest {
             waitFor(main,"state.offers.length===1");
             eval(main,"showTab('rules');document.getElementById('store-edit').value=state.offers[0].store_id;document.getElementById('store-edit').dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('store-form').elements.delivery_fee.value='10000';document.getElementById('live-fees-checked').checked=true;document.getElementById('store-form').requestSubmit();true");
             waitFor(main,"!dirty.size && !CartwiseLive.checkBeforeOptimize(state)");
-            eval(main,"document.getElementById('optimize').click();true");
+            // The primary button now starts a new automatic search; validate the imported
+            // manual snapshot through the shared engine without launching that flow.
+            eval(main,"CartwiseEngine.optimize(state,{timeLimit:5000,stateLimit:200000}).then(r=>document.getElementById('results').textContent=money(r.total));true");
             waitFor(main,"document.getElementById('results').textContent.includes('145,300')");
             assertEquals("true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
+            // Feed a captured search response through the Android result event and
+            // verify the new list-to-review UI without a dependency on live prices.
+            eval(main,"document.getElementById('optimize').click();true");
+            DigikalaActivity automatic=child();
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
+            waitFor(main,"!busy");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000}]}]})}));true");
+            waitFor(main,"document.getElementById('results').textContent.includes('135,300') && document.getElementById('results').textContent.includes('برآورد')");
         }
     }
 }
