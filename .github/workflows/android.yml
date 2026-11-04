@@ -26,12 +26,12 @@ jobs:
       - name: Run a Persian product-matching smoke check
         run: |
           prefix='فقط یک کلمه بله یا خیر بنویس. مثال: خرید برنج، محصول صابون: خیر. خرید برنج، محصول برنج یک کیلو: بله. '
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking false --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول شیر کم چرب یک لیتر:" > /tmp/model-positive.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking false --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول مایع ظرفشویی:" > /tmp/model-negative.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking false --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول شیر کاکائو:" > /tmp/model-ambiguous.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking true --thinking-budget 192 --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول شیر کم چرب یک لیتر:" > /tmp/model-positive.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking true --thinking-budget 192 --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول مایع ظرفشویی:" > /tmp/model-negative.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --thinking true --thinking-budget 192 --max-num-tokens 1024 --prompt "${prefix}خرید شیر کم چرب، محصول شیر کاکائو:" > /tmp/model-ambiguous.txt
           cat /tmp/model-positive.txt /tmp/model-negative.txt
           cat /tmp/model-ambiguous.txt
-          python -c 'import re,pathlib; clean=lambda p: re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S).strip().lower(); a=clean("/tmp/model-positive.txt");b=clean("/tmp/model-negative.txt"); assert re.fullmatch(r"(?:بله|آری)[.!؟]?",a) and re.fullmatch(r"(?:خیر|نه)[.!؟]?",b), "Model failed binary Persian matching test"; print("Model matching smoke test passed")'
+          python -c 'import re,pathlib; clean=lambda p: re.sub(r"\[thought\].*?\[/thought\]", "", re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S),flags=re.S).strip().lower(); a=clean("/tmp/model-positive.txt");b=clean("/tmp/model-negative.txt"); assert re.fullmatch(r"(?:بله|آری)[.!؟]?",a) and re.fullmatch(r"(?:خیر|نه)[.!؟]?",b), "Model failed binary Persian matching test"; print("Model matching smoke test passed")'
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
