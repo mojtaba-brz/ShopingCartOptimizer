@@ -22,7 +22,8 @@
     if(!Number.isFinite(n)||n<=0)return null;
     const mass=['کیلوگرم','کیلو','گرم','kg','g'].includes(unit);
     const scale=['کیلوگرم','کیلو','kg','لیتر','l'].includes(unit)?1000:1;
-    const pack=s.match(/(?:بسته|پک)\s*(\d+)\s*(?:عددی|عدد)/);
+    const pack=s.match(/(?:بسته|پک)?\s*(\d+)\s*(?:عددی|عدد)/);
+    if(/\d+\s*[x×*]\s*\d+/i.test(s))return null;
     // Multi-packs often state the total package weight; do not guess whether
     // an unqualified amount applies to one unit or the entire pack.
     if(pack&&!/(?:هر\s*عدد|هر\s*بسته|each)/.test(s))return null;

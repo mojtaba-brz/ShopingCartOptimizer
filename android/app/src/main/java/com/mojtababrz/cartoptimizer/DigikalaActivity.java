@@ -300,7 +300,7 @@ public final class DigikalaActivity extends Activity {
                 if(!scanning || shop==null)return;
                 shop.evaluateJavascript("(()=>{const els=[document.scrollingElement,...document.querySelectorAll('*')].filter(e=>e&&e.scrollHeight>e.clientHeight+200&&e.clientHeight>200&&(['auto','scroll'].includes(getComputedStyle(e).overflowY)||e===document.scrollingElement));return els.some(e=>e.scrollTop+e.clientHeight<e.scrollHeight-20)})()", more -> {
                     if(!scanning || shop==null)return;
-                    if("false".equals(more) && quietScrolls>=3) {recordSearch(collectedProducts,"");return;}
+                    if("false".equals(more) && quietScrolls>=3) {recordSearch(collectedProducts,"کامل بودن نتایج فروشگاه قابل تأیید نیست.");return;}
                     shop.evaluateJavascript(captureScript,raw -> {
                         if(!scanning || shop==null)return;
                         try {Object obj=new JSONTokener(raw).nextValue();if(obj instanceof JSONObject) {collectPage((JSONObject)obj);return;}}catch(Exception ignored2) {}

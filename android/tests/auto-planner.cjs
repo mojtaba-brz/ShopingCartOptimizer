@@ -9,6 +9,8 @@ assert.deepEqual(a.amount('شیر یک و نیم لیتر'),{value:1500,unit:'ml
 assert.deepEqual(a.amount('برنج ۲ کیلوگرم'),{value:2000,unit:'g'});
 assert.deepEqual(a.amount('ماست بسته ۶ عددی هر عدد 200 گرم'),{value:1200,unit:'g'});
 assert.equal(a.amount('ماست بسته ۶ عددی 200 گرم'),null);
+assert.equal(a.amount('ماست 6 عددی 200 گرم'),null);
+assert.equal(a.amount('ماست 6×200 گرم'),null);
 assert.equal(a.amount('محصول 200 گرم و 300 گرم'),null);
 assert.equal(a.searchTerm('شیر کم چرب ۲ لیتر'),'شیر کم چرب');
 const sizePlans=a.amountPlans({id:'m',name:'شیر ۲ لیتر',quantity:1},[
