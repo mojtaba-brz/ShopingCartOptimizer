@@ -4,7 +4,7 @@
   if(!window.CartwiseAndroid?.findAutomatically || !window.CartwiseAuto)return;
   document.body.classList.add('automatic');
   document.querySelector('#tab-list .section-heading h2').textContent='لیست خرید شما';
-  document.querySelector('#tab-list .section-heading p:last-child').textContent='نام و تعداد کالاها را وارد کنید؛ برای نتیجه دقیق‌تر، وزن، حجم یا برند دلخواه را هم بنویسید.';
+  document.querySelector('#tab-list .section-heading p:last-child').textContent='نام و تعداد را وارد کنید. اگر وزن یا حجم بنویسید، تعداد در آن ضرب می‌شود؛ مثلاً ۲ × شیر ۱ لیتر یعنی ۲ لیتر.';
   document.querySelector('#tab-results .section-heading h2').textContent='بررسی سبد پیشنهادی';
   document.querySelector('#tab-results .section-heading p:last-child').textContent='کالاها و محدودیت‌های برآورد را بررسی کنید.';
   const itemForm=$('item-form');itemForm.elements.name.placeholder='مثلاً شیر کم چرب ۱ لیتر';
@@ -28,7 +28,7 @@
     for(const item of state.items){
       const key=CartwiseAuto.normalize(item.name);if(!key)throw Error('نام کالا را وارد کنید.');
       if(byName.has(key)){const row=byName.get(key);row.quantity+=item.quantity;if(row.quantity>50)throw Error('تعداد هر کالا حداکثر ۵۰ عدد است.');}
-      else {const row={id:item.id,name:item.name,quantity:item.quantity};rows.push(row);byName.set(key,row);}
+      else {const query=CartwiseAuto.amount(item.name)?CartwiseAuto.searchTerm(item.name):item.name;const row={id:item.id,name:item.name,quantity:item.quantity,query:query||item.name};rows.push(row);byName.set(key,row);}
     }
     return rows;
   }
@@ -55,24 +55,35 @@
   });
   async function calculate(){
     if(!lastResult)return;
-    const {missing,snapshot}=CartwiseAuto.build(requested,lastResult.items,lastResult.location,lastResult.shipment_type);
-    const allOffers=snapshot.offers.slice();
-    for(const item of requested){if(selected[item.id])snapshot.offers=snapshot.offers.filter(o=>o.item_id!==item.id||o.title===selected[item.id]);}
+    const amountItems=requested.filter(i=>CartwiseAuto.amount(i.name)), countItems=requested.filter(i=>!CartwiseAuto.amount(i.name));
+    const amountResults=new Map(amountItems.map(i=>[i.id,CartwiseAuto.amountPlans(i,lastResult.items.find(r=>r.id===i.id)?.products)]));
+    const {missing,snapshot}=CartwiseAuto.build(countItems,lastResult.items,lastResult.location,lastResult.shipment_type,selected);
+    for(const item of amountItems)if(!amountResults.get(item.id)?.plans.length)missing.push(item.name);
     const location=escapeHTML(lastResult.location),mode=lastResult.shipment_type==='scheduled'?'زمان‌دار':'فوری';
-    const warning='<div class="auto-notice">هزینه ارسال، کوپن‌های قابل استفاده، موجودی دقیق و سهمیه تخفیف در داده‌های خوانده‌شده مشخص نیستند؛ این جمع فقط برآورد قیمت کالاهاست. برای کالای تخفیف‌دار، یک عدد با قیمت تخفیف و بقیه با قیمت عادی فرض شده است.</div>';
+    const incomplete=lastResult.items.filter(i=>i.error).map(i=>requested.find(x=>x.id===i.id)?.name||i.id);
+    const warning='<div class="auto-notice">هزینه ارسال، کوپن‌های قابل استفاده، موجودی دقیق و سهمیه تخفیف در داده‌های خوانده‌شده مشخص نیستند؛ این جمع فقط برآورد قیمت کالاهاست. برای کالای تخفیف‌دار، یک عدد با قیمت تخفیف و بقیه با قیمت عادی فرض شده است. قیمت واحد فقط وقتی اندازه بسته قابل تشخیص باشد نشان داده می‌شود.</div>'+(countItems.length?'<div class="auto-notice">برای اقلام بدون وزن یا حجم، انتخاب خودکار حداکثر پنج گزینه را محاسبه می‌کند؛ گزینه‌های بیشتر در فهرست انتخاب هستند.</div>':'')+(incomplete.length?`<div class="auto-notice">جست‌وجوی این اقلام ممکن است کامل نباشد: ${incomplete.map(escapeHTML).join('، ')}</div>`:'');
     if(missing.length){$('results').innerHTML=`<section class="card" dir="rtl"><h3>برای بعضی اقلام نتیجه قابل اتکا پیدا نشد</h3><p>${missing.map(escapeHTML).join('، ')}</p><p>نام، وزن یا برند را دقیق‌تر بنویسید و دوباره جست‌وجو کنید.</p>${warning}</section>`;showTab('results');$('tab-label').textContent='نتیجه';message('جست‌وجو کامل نشد؛ اقلام بالا بررسی شوند.',true);return;}
-    const result=await CartwiseEngine.optimize(snapshot,{timeLimit:5000,stateLimit:200000});
-    if(!result.carts.length)throw Error(result.reason||'سبدی پیدا نشد.');
+    const result=countItems.length?await CartwiseEngine.optimize(snapshot,{timeLimit:5000,stateLimit:200000}):{total:0,carts:[],warnings:[]};
+    if(countItems.length&&!result.carts.length)throw Error(result.reason||'سبدی پیدا نشد.');
     result.optimal=false;result.status='estimate';result.warnings=[...(result.warnings||[]),'Shipping fees, coupon eligibility, stock and promotion limits were not verified.'];
     plan=result;
     const lines=result.carts.flatMap(c=>c.lines);
+    let total=result.total;
     const details=requested.map(item=>{
-      const options=allOffers.filter(o=>o.item_id===item.id), chosen=lines.filter(l=>l.item_id===item.id);
-      const choices=options.map(o=>`<option value="${escapeHTML(o.title)}" ${selected[item.id]===o.title?'selected':''}>${escapeHTML(o.title)} — ${money(CartwiseAuto.estimated(o,item.quantity))} تومان</option>`).join('');
+      const byAmount=amountResults.get(item.id);
+      if(byAmount){
+        const ix=Math.max(0,Math.min(byAmount.plans.length-1,Number(selected[item.id]||0)||0)), chosen=byAmount.plans[ix];total+=chosen.cost;
+        const unit=byAmount.unit==='g'?'گرم':'میلی‌لیتر';
+        const choices=byAmount.plans.map((p,n)=>`<option value="${n}" ${n===ix?'selected':''}>${n===0?'کمترین هزینه پیدا شده':'گزینه '+(n+1)} · ${p.total} ${unit} · ${p.quantity} بسته · ${money(p.cost)} تومان</option>`).join('');
+        const purchased=chosen.lines.map(l=>`<li>${escapeHTML(l.title)} × ${l.quantity} — ${money(l.subtotal)} تومان</li>`).join('');
+        return `<article class="auto-result-item"><h4>${escapeHTML(item.name)} · نیاز: ${byAmount.target} ${unit}</h4><ul>${purchased}</ul><p>مقدار پیشنهادی: ${chosen.total} ${unit} · میانگین هر ${byAmount.unit==='g'?'کیلوگرم':'لیتر'}: ${money(chosen.cost*1000/chosen.total)} تومان</p><label>گزینه‌های مقدار و قیمت<select data-auto-item="${escapeHTML(item.id)}">${choices}</select></label>${byAmount.complete?'':'<p>مقایسه به محدودیت محاسباتی رسید و ممکن است گزینه بهتری وجود داشته باشد.</p>'}</article>`;
+      }
+      const options=CartwiseAuto.rank(item,lastResult.items.find(r=>r.id===item.id)?.products,1000), chosen=lines.filter(l=>l.item_id===item.id);
+      const choices=options.map(o=>{const a=CartwiseAuto.amount(o.title), unit=a?` · هر ${a.unit==='g'?'کیلوگرم':'لیتر'}: ${money(CartwiseAuto.estimated(o,item.quantity)*1000/(a.value*item.quantity))} تومان`:'';return `<option value="${escapeHTML(o.title)}" ${selected[item.id]===o.title?'selected':''}>${escapeHTML(o.title)} — ${money(CartwiseAuto.estimated(o,item.quantity))} تومان${unit}</option>`;}).join('');
       const purchased=chosen.map(l=>`<li>${escapeHTML(l.title)} × ${l.quantity} — ${money(l.subtotal)} تومان</li>`).join('');
       return `<article class="auto-result-item"><h4>${escapeHTML(item.name)} · ${item.quantity} عدد</h4><ul>${purchased}</ul><label>تغییر انتخاب (در صورت نیاز)<select data-auto-item="${escapeHTML(item.id)}"><option value="">انتخاب خودکار</option>${choices}</select></label></article>`;
     }).join('');
-    $('results').innerHTML=`<section class="card" dir="rtl"><h3>سبد پیشنهادی</h3><p>${location} · ارسال ${mode}</p><p class="auto-total">${money(result.total)} <small>تومان، برآورد قیمت کالاها</small></p>${warning}${details}<p class="hint">فقط کالاهای قابل مشاهده در نتایج جست‌وجو بررسی شده‌اند. نام و اندازه کالاها را پیش از خرید مرور کنید.</p></section>`;
+    $('results').innerHTML=`<section class="card" dir="rtl"><h3>سبد پیشنهادی</h3><p>${location} · ارسال ${mode}</p><p class="auto-total">${money(total)} <small>تومان، برآورد قیمت کالاها</small></p>${warning}${details}<p class="hint">فقط کالاهای خوانده‌شده بررسی شده‌اند. نام و اندازه کالاها را پیش از خرید مرور کنید.</p></section>`;
     $('results').querySelectorAll('[data-auto-item]').forEach(el=>el.addEventListener('change',async()=>{selected[el.dataset.autoItem]=el.value;try{await calculate();}catch(e){message(e.message,true);}}));
     $('export-plan').hidden=true;showTab('results');$('tab-label').textContent='نتیجه';message('سبد پیشنهادی آماده است.');
   }

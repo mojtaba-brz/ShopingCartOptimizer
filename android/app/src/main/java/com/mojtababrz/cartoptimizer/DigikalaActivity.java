@@ -41,6 +41,9 @@ public final class DigikalaActivity extends Activity {
     private String lastFingerprint="", priorFingerprint="", autoQuery="", scanLocation="", scanMode="";
     private long scanStarted;
     private boolean scanning, sameQuery;
+    private JSONArray collectedProducts;
+    private java.util.HashSet<String> collectedKeys;
+    private int quietScrolls, scrollSteps;
     private final Handler scanHandler=new Handler(Looper.getMainLooper());
     private static final int LOCATION_REQUEST = 31;
 
@@ -241,7 +244,7 @@ public final class DigikalaActivity extends Activity {
         if(!scanning || isFinishing() || shop==null)return;
         if(!scanLocation.equals(RetailerSession.deliveryLocation()) || !scanMode.equals(RetailerSession.deliveryMode())) {finishAutoError("موقعیت یا روش ارسال تغییر کرد؛ دوباره تلاش کنید.");return;}
         if(autoIndex>=autoItems.length()) {finishAuto();return;}
-        JSONObject item=autoItems.optJSONObject(autoIndex);autoQuery=item.optString("name");
+        JSONObject item=autoItems.optJSONObject(autoIndex);autoQuery=item.optString("query",item.optString("name"));
         status.setText("در حال جست‌وجوی «"+autoQuery+"» ("+(autoIndex+1)+" از "+autoItems.length()+")…");
         String url=shop.getUrl();String q=url==null?null:Uri.parse(url).getQueryParameter("q");sameQuery=autoQuery.equals(q);
         scanStarted=System.currentTimeMillis();lastFingerprint="";stableCount=0;
@@ -268,12 +271,43 @@ public final class DigikalaActivity extends Activity {
                     String fp=fingerprint(data);
                     if(!fp.isEmpty() && fp.equals(lastFingerprint))stableCount++;else {lastFingerprint=fp;stableCount=0;}
                     if(!fp.isEmpty() && stableCount>=2 && System.currentTimeMillis()-scanStarted>=1600 && (sameQuery || priorFingerprint.isEmpty() || !fp.equals(priorFingerprint))) {
-                        recordSearch(data.optJSONArray("products"),"");return;
+                        collectedProducts=new JSONArray();collectedKeys=new java.util.HashSet<>();quietScrolls=0;scrollSteps=0;
+                        collectPage(data);return;
                     }
                 }
             } catch(Exception ignored) {}
             scanHandler.postDelayed(this::pollSearch,400);
         });
+    }
+    private void collectPage(JSONObject data) {
+        if(!scanning || shop==null)return;
+        if(!scanLocation.equals(RetailerSession.deliveryLocation()) || !scanMode.equals(RetailerSession.deliveryMode())) {finishAutoError("موقعیت یا روش ارسال تغییر کرد؛ دوباره تلاش کنید.");return;}
+        String observedLocation=DeliveryChoice.label(data.optString("location",""));
+        if(data.optBoolean("location_editing",false) || (!observedLocation.isEmpty() && !scanLocation.equals(observedLocation))) {finishAutoError("موقعیت نمایش‌داده‌شده تغییر کرد؛ دوباره تلاش کنید.");return;}
+        JSONArray products=data.optJSONArray("products");int before=collectedProducts.length();
+        if(products!=null) for(int i=0;i<products.length() && collectedProducts.length()<1000;i++) {
+            JSONObject p=products.optJSONObject(i);if(p==null)continue;
+            String key=p.optString("title")+"\u0000"+p.optLong("regular_price")+"\u0000"+p.optLong("promo_price");
+            if(collectedKeys.add(key)) collectedProducts.put(p);
+        }
+        quietScrolls=before==collectedProducts.length()?quietScrolls+1:0;
+        if(++scrollSteps>=120 || collectedProducts.length()>=1000 || System.currentTimeMillis()-scanStarted>120000) {
+            recordSearch(collectedProducts,"بررسی نتایج به سقف زمانی یا تعداد رسید؛ ممکن است کامل نباشد.");return;
+        }
+        // Scroll both the document and any independently scrollable result container.
+        shop.evaluateJavascript("(()=>{window.scrollBy(0,Math.max(400,innerHeight*.8));for(const e of document.querySelectorAll('*'))if(e.scrollHeight>e.clientHeight+200&&e.clientHeight>200&&['auto','scroll'].includes(getComputedStyle(e).overflowY))e.scrollTop+=Math.max(400,e.clientHeight*.8);return true})()", ignored ->
+            scanHandler.postDelayed(() -> {
+                if(!scanning || shop==null)return;
+                shop.evaluateJavascript("(()=>{const els=[document.scrollingElement,...document.querySelectorAll('*')].filter(e=>e&&e.scrollHeight>e.clientHeight+200&&e.clientHeight>200&&(['auto','scroll'].includes(getComputedStyle(e).overflowY)||e===document.scrollingElement));return els.some(e=>e.scrollTop+e.clientHeight<e.scrollHeight-20)})()", more -> {
+                    if(!scanning || shop==null)return;
+                    if("false".equals(more) && quietScrolls>=3) {recordSearch(collectedProducts,"");return;}
+                    shop.evaluateJavascript(captureScript,raw -> {
+                        if(!scanning || shop==null)return;
+                        try {Object obj=new JSONTokener(raw).nextValue();if(obj instanceof JSONObject) {collectPage((JSONObject)obj);return;}}catch(Exception ignored2) {}
+                        recordSearch(collectedProducts,"خواندن بخشی از نتایج ناموفق بود.");
+                    });
+                });
+            },900));
     }
     private void recordSearch(JSONArray products,String error) {
         try {

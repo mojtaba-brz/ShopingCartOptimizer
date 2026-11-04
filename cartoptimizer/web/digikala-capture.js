@@ -15,7 +15,7 @@
   if (!location.pathname.startsWith('/supermarket')) return {error:'Open the Digikala Supermarket catalog before reading products.'};
   const products = [], seen = new Set();
   for (const image of document.querySelectorAll('img[alt]')) {
-    if (products.length >= 60) break;
+    if (products.length >= 1000) break;
     const title = image.alt.trim();
     if (title.length < 4 || title.length > 300 || !visible(image)) continue;
     let card = image.parentElement, current = null;

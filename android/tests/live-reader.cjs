@@ -23,7 +23,7 @@ assert.equal(capture([{},{}]).products.length,1);
 for(const row of [{current:'not a price'},{regular:'broken'},{regular:'100,000'},{enabled:false},{hidden:true},{current:'99999999999999'}])assert.equal(capture([row]).products.length,0);
 assert.ok(capture([]).error);assert.ok(capture([{}],{host:'digikala.com.evil.invalid'}).error);
 assert.ok(capture([{}],{pathname:'/profile/'}).error);
-assert.equal(capture(Array.from({length:70},(_,i)=>({title:'شیر شماره '+i}))).products.length,60);
+assert.equal(capture(Array.from({length:70},(_,i)=>({title:'شیر شماره '+i}))).products.length,70);
 const button=(label,active)=>({innerText:label,className:active?'bg-v3-primary-fresh-600 text-v3-achromatic-white':'bg-v2-object-transparent',getClientRects:()=>[{}],getAttribute:()=>null});
 assert.equal(capture([{}],{buttons:[button('ارسال فوری',true),button('ارسال زمان‌دار',false)]}).shipment_type,'on_demand');
 assert.equal(capture([{}],{buttons:[button('ارسال فوری',false),button('ارسال زمان‌دار',true)]}).shipment_type,'scheduled');
