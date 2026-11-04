@@ -25,12 +25,12 @@ jobs:
           echo '2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8  /tmp/cartwise-model.litertlm' | sha256sum --check
       - name: Run a Persian product-matching smoke check
         run: |
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'Answer only YES or NO. Is the product "شیر کم چرب 1 لیتر" a suitable match for the shopping item "شیر کم چرب"? /no_think' > /tmp/model-positive.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'Answer only YES or NO. Is the product "مایع ظرفشویی" a suitable match for the shopping item "شیر کم چرب"? /no_think' > /tmp/model-negative.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'Answer only YES or NO. Is the product "شیر کاکائو" a suitable match for the shopping item "شیر کم چرب"? /no_think' > /tmp/model-ambiguous.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'آیا محصول «شیر کم چرب 1 لیتر» برای خرید «شیر کم چرب» مناسب است؟ فقط یک کلمه بله یا خیر بنویس. /no_think' > /tmp/model-positive.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'آیا محصول «مایع ظرفشویی» برای خرید «شیر کم چرب» مناسب است؟ فقط یک کلمه بله یا خیر بنویس. /no_think' > /tmp/model-negative.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --prompt 'آیا محصول «شیر کاکائو» برای خرید «شیر کم چرب» مناسب است؟ فقط یک کلمه بله یا خیر بنویس. /no_think' > /tmp/model-ambiguous.txt
           cat /tmp/model-positive.txt /tmp/model-negative.txt
           cat /tmp/model-ambiguous.txt
-          python -c 'import re,pathlib; clean=lambda p: re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S).strip().lower(); a=clean("/tmp/model-positive.txt");b=clean("/tmp/model-negative.txt"); assert re.fullmatch(r"yes[.!]?",a) and re.fullmatch(r"no[.!]?",b), "Model failed binary Persian matching test"; print("Model matching smoke test passed")'
+          python -c 'import re,pathlib; clean=lambda p: re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S).strip().lower(); a=clean("/tmp/model-positive.txt");b=clean("/tmp/model-negative.txt"); assert re.fullmatch(r"(?:بله|آری)[.!؟]?",a) and re.fullmatch(r"(?:خیر|نه)[.!؟]?",b), "Model failed binary Persian matching test"; print("Model matching smoke test passed")'
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
