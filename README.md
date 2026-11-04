@@ -1,3 +1,18 @@
+> **Import fix in 0.2.2:** Product search pages do not need an address header.
+> The Android reader uses the delivery area confirmed in the current Digikala
+> session and displays it in the app's own banner.
+
+> **Location fix in 0.2.1:** Digikala now reuses one browser tab between searches,
+> and imports reuse a previously confirmed location/mode when they still match
+> the retailer. You can change them using Change location / map.
+
+> **Android 0.2.1:** The Android app now opens Digikala’s current supermarket
+> inside a separate browser screen, including its delivery address/map picker,
+> and imports displayed product prices without typing offers. See
+> [Android instructions](android/README.md) for usage and current limits.
+> Imported products have a conservative one-unit planning cap because the page
+> does not publish stock/promotion counts. Delivery rules still require review.
+
 # Shopping Cart Optimizer
 
 A local **Digikala Supermarket** shopping planner with a browser GUI. Enter your shopping list, review product offers, set coupon and delivery terms, then compare complete checkout plans.

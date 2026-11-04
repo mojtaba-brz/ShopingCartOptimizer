@@ -45,6 +45,9 @@ class Handler(BaseHTTPRequestHandler):
                   '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                   '/engine.js': ('engine.js', 'text/javascript; charset=utf-8'),
                   '/mobile.js': ('mobile.js', 'text/javascript; charset=utf-8'),
+                  '/live.js': ('live.js', 'text/javascript; charset=utf-8'),
+                  '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
+                  '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8')}
         if path not in assets:
             return self.respond(404, {'error': 'Not found'})
