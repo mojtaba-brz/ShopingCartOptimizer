@@ -45,7 +45,7 @@
   new MutationObserver(()=>{paint();}).observe($('offers'),{childList:true});
   function validatePayload(raw) {
     const x=typeof raw==='string'?JSON.parse(raw):raw;
-    if(!x || x.source!=='digikala-live-page' || !Array.isArray(x.products) || x.products.length>60) throw Error('Invalid Digikala reader result.');
+    if(!x || x.source!=='digikala-live-page' || !Array.isArray(x.products) || x.products.length>1000) throw Error('Invalid Digikala reader result.');
     if(typeof x.location!=='string' || !x.location.trim() || x.location.length>300) throw Error('Select a delivery address on Digikala first.');
     if(!['on_demand','scheduled'].includes(x.shipment_type)) throw Error('Choose your delivery mode on Digikala.');
     const date=Date.parse(x.captured_at);if(!Number.isFinite(date) || Math.abs(Date.now()-date)>300000) throw Error('This page result has expired. Read current prices again.');
