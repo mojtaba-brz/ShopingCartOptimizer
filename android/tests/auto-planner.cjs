@@ -22,6 +22,7 @@ const sizePlans=a.amountPlans({id:'m',name:'شیر ۲ لیتر',quantity:1},[
 assert.equal(sizePlans.target,2000);assert.equal(sizePlans.plans[0].cost,800);
 assert.equal(sizePlans.plans[0].total,2000);assert.equal(sizePlans.complete,true);
 assert.ok(sizePlans.plans.some(p=>p.quantity===2&&p.cost===800));
+assert.ok(sizePlans.plans.some(p=>p.total===1500));
 const item={id:'milk',name:'شیر کم چرب',quantity:3};
 const rows=[{title:'شیر کم چرب الف 1 لیتر',regular_price:1000,promo_price:500,url:''},{title:'شیر کم چرب ب 1 لیتر',regular_price:900,promo_price:null,url:''},{title:'پنیر ب',regular_price:100,promo_price:null,url:''}];
 const ranked=a.rank(item,rows);assert.equal(ranked.length,2);assert.equal(a.estimated(ranked[0],3),2500);

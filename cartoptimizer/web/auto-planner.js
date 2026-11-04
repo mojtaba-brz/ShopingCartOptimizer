@@ -83,6 +83,9 @@
     const valid=[...states.values()].filter(s=>s.total>=target);
     const order=[(a,b)=>a.cost-b.cost||a.total-b.total,(a,b)=>a.total-b.total||a.cost-b.cost,(a,b)=>a.quantity-b.quantity||a.cost-b.cost];
     const plans=[];for(const cmp of order){const p=[...valid].sort(cmp)[0];if(p&&!plans.some(x=>JSON.stringify(x.lines)===JSON.stringify(p.lines)))plans.push(p);}
+    // Offer the nearest smaller amount explicitly as an optional shortfall.
+    const smaller=[...states.values()].filter(s=>s.total>0&&s.total<target).sort((a,b)=>b.total-a.total||a.cost-b.cost)[0];
+    if(smaller)plans.push(smaller);
     return {target,unit:targetUnit.unit,plans,complete,candidates:candidates.length};
   }
   function build(items,results,location,mode,selection={}){
