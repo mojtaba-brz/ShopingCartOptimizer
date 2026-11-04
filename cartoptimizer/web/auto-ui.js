@@ -42,7 +42,7 @@
   function done(){busy=false;button.disabled=false;button.textContent='جست‌وجو و محاسبه دوباره';}
   function requestAI(payload,items){
     if(lastResult!==payload || JSON.stringify(requested)!==items)return;
-    aiStatus='آماده‌سازی هوش مصنوعی آفلاین؛ دریافت اولیه مدل حدود ۵۰۰ مگابایت است.';
+    aiStatus='آماده‌سازی هوش مصنوعی آفلاین؛ دریافت اولیه مدل حدود ۱ گیگابایت است.';
     if(!window.CartwiseAndroid.suggestOffline(JSON.stringify(payload),items)) {
       aiStatus='هوش مصنوعی در حال تکمیل درخواست قبلی است.';
       aiRetry=setTimeout(()=>requestAI(payload,items),3000);

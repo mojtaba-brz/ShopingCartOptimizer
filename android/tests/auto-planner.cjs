@@ -28,6 +28,8 @@ const rows=[{title:'شیر کم چرب الف 1 لیتر',regular_price:1000,pro
 const suggested=a.suggestions(item,rows,['پنیر ب','ساختگی']);assert.equal(suggested.length,1);assert.equal(suggested[0].title,'پنیر ب');
 assert.equal(a.build([item],[{id:'milk',products:rows}],'تهران','scheduled',{'milk':'ai:پنیر ب'},{}).missing.length,1);
 assert.equal(a.build([item],[{id:'milk',products:rows}],'تهران','scheduled',{'milk':'ai:پنیر ب'},{milk:['پنیر ب']}).snapshot.offers[0].title,'پنیر ب');
+assert.equal(a.suggestions(item,[{title:'شیر کاکائو',regular_price:100,promo_price:null}],['شیر کاکائو']).length,0);
+assert.equal(a.rank(item,[{title:'شیر کم چرب کاکائو',regular_price:100,promo_price:null}]).length,0);
 const ranked=a.rank(item,rows);assert.equal(ranked.length,2);assert.equal(a.estimated(ranked[0],3),2500);
 const built=a.build([item],[{id:'milk',products:rows}],'تهران','scheduled');
 assert.deepEqual(built.missing,[]);assert.equal(built.snapshot.offers[0].stock,3);assert.equal(built.snapshot.offers[0].promo_limit,1);

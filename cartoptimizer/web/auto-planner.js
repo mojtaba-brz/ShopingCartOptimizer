@@ -43,15 +43,22 @@
   function rank(item,rows,limit=5){
     const best=new Map();
     for(const p of (Array.isArray(rows)?rows:[]).map(product)){
-      if(!p||!matches(item.name,p.title))continue;
+      if(!p||!matches(item.name,p.title)||conflicting(item.name,p.title))continue;
       const key=normalize(p.title), old=best.get(key);
       if(!old||estimated(p,item.quantity)<estimated(old,item.quantity))best.set(key,p);
     }
     return [...best.values()].sort((a,b)=>estimated(a,item.quantity)-estimated(b,item.quantity)).slice(0,limit);
   }
+  function conflicting(query,title){
+    const q=normalize(query),t=normalize(title),flavours=['کاکائو','شکلات','شکلاتی','موزی','وانیلی','توت فرنگی'];
+    if(tokens(query).includes('شیر'))for(const f of flavours)if(t.includes(f)&&!q.includes(f))return true;
+    if(q.includes('کم چرب') && t.includes('پرچرب'))return true;
+    if(q.includes('پرچرب') && t.includes('کم چرب'))return true;
+    return false;
+  }
   function suggestions(item,rows,titles){
     const allowed=new Set(Array.isArray(titles)?titles:[]),seen=new Set();
-    return (Array.isArray(rows)?rows:[]).map(product).filter(p=>p&&allowed.has(p.title)&&!matches(item.name,p.title)&&!seen.has(p.title)&&!!seen.add(p.title));
+    return (Array.isArray(rows)?rows:[]).map(product).filter(p=>p&&allowed.has(p.title)&&!matches(item.name,p.title)&&!conflicting(item.name,p.title)&&!seen.has(p.title)&&!!seen.add(p.title));
   }
   // Unknown stock and quota are assumptions: one discounted unit, remaining at the displayed regular price.
   function estimated(p,quantity){return p.regular_price*quantity-(p.promo_price===null?0:p.regular_price-p.promo_price);}

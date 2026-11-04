@@ -121,7 +121,14 @@ public final class MainActivity extends Activity {
             aiWorker.execute(() -> {
                 String result;
                 try {result=new OfflineMatcher(getApplicationContext()).suggest(payload,items);}
-                catch(Throwable e) {result="{\"error\":\"هوش مصنوعی آفلاین آماده نشد؛ اتصال برای دریافت اولیه مدل، فضای خالی و حافظه گوشی را بررسی کنید.\"}";}
+                catch(Throwable e) {
+                    String reason=e.getMessage()==null?"":e.getMessage();
+                    String message=reason.contains("self-check")?"مدل آفلاین آزمون اولیه تطبیق را رد کرد؛ پیشنهادهای هوش مصنوعی غیرفعال است.":
+                        reason.contains("memory")?"حافظه آزاد گوشی برای مدل آفلاین کافی نیست؛ تطبیق معمولی همچنان فعال است.":
+                        reason.contains("space")?"فضای خالی کافی برای مدل آفلاین وجود ندارد.":
+                        "هوش مصنوعی آفلاین آماده نشد؛ اتصال دریافت مدل یا فضای خالی را بررسی کنید.";
+                    result="{\"error\":"+JSONObject.quote(message)+"}";
+                }
                 final String json=result;
                 runOnUiThread(() -> {if(!isFinishing() && webView!=null) webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:"+JSONObject.quote(items)+",result:"+JSONObject.quote(json)+"}}));",null);});
                 aiBusy.set(false);
