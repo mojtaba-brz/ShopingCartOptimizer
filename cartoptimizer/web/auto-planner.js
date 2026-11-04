@@ -49,16 +49,21 @@
     }
     return [...best.values()].sort((a,b)=>estimated(a,item.quantity)-estimated(b,item.quantity)).slice(0,limit);
   }
+  function suggestions(item,rows,titles){
+    const allowed=new Set(Array.isArray(titles)?titles:[]),seen=new Set();
+    return (Array.isArray(rows)?rows:[]).map(product).filter(p=>p&&allowed.has(p.title)&&!matches(item.name,p.title)&&!seen.has(p.title)&&!!seen.add(p.title));
+  }
   // Unknown stock and quota are assumptions: one discounted unit, remaining at the displayed regular price.
   function estimated(p,quantity){return p.regular_price*quantity-(p.promo_price===null?0:p.regular_price-p.promo_price);}
   // Minimise estimated merchandise cost for a target amount, with bounded search.
   // Each distinct product may have one discounted package; inventory is unknown.
-  function amountPlans(item,rows){
+  function amountPlans(item,rows,approvedTitle=''){
     const targetUnit=amount(item.name);if(!targetUnit)return null;
     const target=targetUnit.value*item.quantity;
     if(!Number.isSafeInteger(target)||target<=0||target>10000000)return {plans:[],complete:false};
     const query=searchTerm(item.name);if(!query)return {plans:[],complete:false};
-    const candidates=rank({...item,name:query},rows,1000).map(p=>({...p,size:amount(p.title)}))
+    const found=approvedTitle?(Array.isArray(rows)?rows:[]).map(product).filter(p=>p&&p.title===approvedTitle):rank({...item,name:query},rows,1000);
+    const candidates=found.map(p=>({...p,size:amount(p.title)}))
       .filter(p=>p.size&&p.size.unit===targetUnit.unit&&Number.isSafeInteger(p.size.value)&&p.size.value>0&&p.size.value<=10000000);
     if(!candidates.length)return {plans:[],complete:true};
     let states=new Map([['0:0',{total:0,quantity:0,cost:0,lines:[]}]]), complete=true, iterations=0;
@@ -88,11 +93,12 @@
     if(smaller)plans.push(smaller);
     return {target,unit:targetUnit.unit,plans,complete,candidates:candidates.length};
   }
-  function build(items,results,location,mode,selection={}){
+  function build(items,results,location,mode,selection={},ai={}){
     const offers=[],missing=[];let counter=0;
     for(const item of items){
       const entry=results.find(r=>r.id===item.id), all=rank(item,entry?.products,1000);
-      const choices=selection[item.id]?all.filter(p=>p.title===selection[item.id]):all.slice(0,5);
+      const chosen=selection[item.id]||'',aiTitle=chosen.startsWith('ai:')?chosen.slice(3):'';
+      const choices=aiTitle?suggestions(item,entry?.products,ai[item.id]).filter(p=>p.title===aiTitle):chosen?all.filter(p=>p.title===chosen):all.slice(0,5);
       if(!choices.length){missing.push(item.name);continue;}
       for(const p of choices)offers.push({id:'auto-'+(++counter),item_id:item.id,store_id:'digikala-auto',title:p.title,
         regular_price:p.regular_price,promo_price:p.promo_price,promo_limit:p.promo_price===null?0:1,
@@ -102,6 +108,6 @@
       context:location+' · '+mode,max_carts:1,items:items.map(({id,name,quantity})=>({id,name,quantity})),offers,coupons:[],
       stores:[{id:'digikala-auto',name:'Digikala Supermarket',delivery_fee:0,service_fee:0,minimum_order:0,free_delivery_over:null,threshold_basis:'before_coupon'}]}};
   }
-  const api={normalize,matches,rank,build,estimated,amount,searchTerm,amountPlans};root.CartwiseAuto=api;
+  const api={normalize,matches,rank,suggestions,build,estimated,amount,searchTerm,amountPlans};root.CartwiseAuto=api;
   if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

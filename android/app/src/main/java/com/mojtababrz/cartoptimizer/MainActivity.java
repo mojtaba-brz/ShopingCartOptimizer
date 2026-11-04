@@ -35,6 +35,8 @@ public final class MainActivity extends Activity {
     private WebView webView;
     private String pendingExport;
     private final ExecutorService files = Executors.newSingleThreadExecutor();
+    private final ExecutorService aiWorker = Executors.newSingleThreadExecutor();
+    private final java.util.concurrent.atomic.AtomicBoolean aiBusy = new java.util.concurrent.atomic.AtomicBoolean(false);
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +116,18 @@ public final class MainActivity extends Activity {
             runOnUiThread(() -> startActivityForResult(new Intent(MainActivity.this, DigikalaActivity.class)
                 .putExtra("automatic_items",items), AUTO_DIGIKALA));
         }
+        @JavascriptInterface public boolean suggestOffline(String payload, String items) {
+            if(payload==null||items==null||payload.getBytes(StandardCharsets.UTF_8).length>500000||items.getBytes(StandardCharsets.UTF_8).length>20000||!aiBusy.compareAndSet(false,true))return false;
+            aiWorker.execute(() -> {
+                String result;
+                try {result=new OfflineMatcher(getApplicationContext()).suggest(payload,items);}
+                catch(Throwable e) {result="{\"error\":\"هوش مصنوعی آفلاین آماده نشد؛ اتصال برای دریافت اولیه مدل، فضای خالی و حافظه گوشی را بررسی کنید.\"}";}
+                final String json=result;
+                runOnUiThread(() -> {if(!isFinishing() && webView!=null) webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:"+JSONObject.quote(items)+",result:"+JSONObject.quote(json)+"}}));",null);});
+                aiBusy.set(false);
+            });
+            return true;
+        }
         @JavascriptInterface public void pickSnapshot() {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json")
@@ -189,6 +203,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy() {
         files.shutdown();
+        aiWorker.shutdownNow();
         if (webView != null) { webView.removeJavascriptInterface("CartwiseAndroid"); webView.destroy(); }
         super.onDestroy();
     }
