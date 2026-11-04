@@ -93,7 +93,8 @@ public class HeaderlessFlowTest {
             // manual snapshot through the shared engine without launching that flow.
             eval(main,"CartwiseEngine.optimize(state,{timeLimit:5000,stateLimit:200000}).then(r=>document.getElementById('results').textContent=money(r.total));true");
             waitFor(main,"document.getElementById('results').textContent.includes('145,300')");
-            assertEquals("true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
+            String deliveryState=eval(main,"JSON.stringify({context:state.context,price:state.offers[0].promo_price})");
+            assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
             // Feed a captured search response through the Android result event and
             // verify the new list-to-review UI without a dependency on live prices.
             eval(main,"document.getElementById('optimize').click();true");
