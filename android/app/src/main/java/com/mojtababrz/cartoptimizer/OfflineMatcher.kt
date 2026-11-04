@@ -46,7 +46,7 @@ class OfflineMatcher(private val context: Context) {
         val results=JSONObject(payload).getJSONArray("items")
         val requested=JSONArray(items)
         val memory=ActivityManager.MemoryInfo();(context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).getMemoryInfo(memory)
-        if(memory.availMem<2500000000L) throw IllegalStateException("Not enough free memory for offline AI")
+        if(memory.availMem<3100000000L) throw IllegalStateException("Not enough free memory for offline AI")
         prepare()
         val output=JSONArray()
         val engine=Engine(EngineConfig(modelPath=file.absolutePath,backend=Backend.CPU(),maxNumTokens=1024))
