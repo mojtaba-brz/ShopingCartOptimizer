@@ -120,6 +120,7 @@ public final class DigikalaActivity extends Activity {
                 CookieManager.getInstance().flush();
                 if (!retailer(Uri.parse(url))) return;
                 updateStatus();
+                if(autoItems!=null && locationOnly && !scanning) scanHandler.postDelayed(()->restoreDelivery(0),700);
             }
             @Override public void onReceivedError(WebView view, android.webkit.WebResourceRequest req, android.webkit.WebResourceError error) {
                 if (req.isForMainFrame()) status.setText("Could not reach Digikala. Check your connection and try Location again.");
@@ -219,6 +220,24 @@ public final class DigikalaActivity extends Activity {
         String location=RetailerSession.deliveryLocation();
         if(!location.isEmpty()) status.setText("Delivery: "+location+" · "+("scheduled".equals(RetailerSession.deliveryMode())?"Scheduled":"Instant")+". Search for a product and tap Read products.");
         else status.setText(locationOnly?"Choose your delivery area and mode on Digikala, then tap Use this location.":"Search for a product and tap Read products. Your delivery area is kept in this Digikala session; use Location to change it.");
+    }
+    private void restoreDelivery(int attempt) {
+        if(isFinishing()||isDestroyed()||shop==null||!locationOnly||scanning||autoItems==null||captureScript==null)return;
+        shop.evaluateJavascript(captureScript,raw->{
+            if(isFinishing()||isDestroyed()||shop==null||!locationOnly||scanning)return;
+            try {
+                Object value=new JSONTokener(raw).nextValue();
+                if(value instanceof JSONObject) {
+                    JSONObject data=(JSONObject)value;
+                    if(data.optBoolean("location_editing",false))return;
+                    String location=DeliveryChoice.label(data.optString("location",""));
+                    String mode=data.optString("shipment_type","");
+                    if(!RetailerSession.mode(mode))mode=RetailerSession.observedMode();
+                    if(deliveryChoice.matches(location,mode)) {completeCapture(data,mode);return;}
+                }
+            } catch(Exception ignored) {}
+            if(attempt<12)scanHandler.postDelayed(()->restoreDelivery(attempt+1),700);
+        });
     }
     private void completeCapture(JSONObject data,String mode) throws org.json.JSONException {
         RetailerSession.confirmDelivery(data.optString("location",""),mode);

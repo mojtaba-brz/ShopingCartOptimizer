@@ -5,6 +5,9 @@ delivery area are supplied. When an item includes a weight or volume, it compare
 package combinations and shows price per kilogram or litre, including clearly
 labelled smaller-quantity alternatives. Search coverage, unknown stock, fees,
 coupon eligibility and discount limits remain uncertain; totals are estimates.
+After an app restart, the saved delivery choice is reused automatically when
+Digikala still displays the same area and delivery mode; otherwise it asks for
+the area so it does not silently use prices for an unverified location.
 
 The app includes an on-device Qwen2.5-1.5B matching assistant. After a
 search it attempts a one-time download of a roughly 1.6 GB model from Hugging Face over

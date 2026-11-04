@@ -124,4 +124,15 @@ public class HeaderlessFlowTest {
             waitFor(main,"document.getElementById('results').textContent.includes('شیر 500 میلی لیتر') && document.getElementById('results').textContent.includes('120')");
         }
     }
+    @Test public void automaticSearchRestoresRetailerConfirmedAreaAfterSessionRestart() throws Exception {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به تهران، انقلاب","scheduled");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
+            waitFor(main,"Boolean(window.CartwiseAuto && document.getElementById('optimize'))");
+            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
+            DigikalaActivity browser=child();
+            page(browser,"<div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML='<div><img alt=\"نان تست\" style=\"width:60px;height:60px\"><div><p>100</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'})</script>");
+            waitFor(main,"document.getElementById('results').textContent.includes('نان تست') && document.getElementById('results').textContent.includes('100')");
+        }
+    }
 }
