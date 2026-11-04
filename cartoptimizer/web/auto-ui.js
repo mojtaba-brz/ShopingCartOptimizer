@@ -22,7 +22,7 @@
   const originalMessage=message;
   message=function(text,error){originalMessage(text==='Saved. Your cart plan will use these inputs.'?'ذخیره شد.':text,error);};
   const oldButton=$('optimize'),button=oldButton.cloneNode(false);button.id='optimize';button.textContent='پیدا کردن سبد خرید';oldButton.replaceWith(button);
-  let requested=[], lastResult=null, selected={}, aiSuggestions={}, aiStatus='';
+  let requested=[], lastResult=null, selected={}, aiSuggestions={}, aiStatus='', aiRetry=null;
   function currentItems(){
     const rows=[],byName=new Map();
     for(const item of state.items){
@@ -35,11 +35,19 @@
   button.addEventListener('click',()=>{
     if(busy)return;if(dirty.size)return message('ابتدا تغییرات فرم را ذخیره کنید.',true);
     try{requested=currentItems();if(!requested.length)throw Error('ابتدا کالاهای مورد نیاز را به لیست اضافه کنید.');
-      selected={};aiSuggestions={};aiStatus='';lastResult=null;busy=true;button.disabled=true;button.textContent='در حال جست‌وجو…';
+      clearTimeout(aiRetry);selected={};aiSuggestions={};aiStatus='';lastResult=null;busy=true;button.disabled=true;button.textContent='در حال جست‌وجو…';
       message('در حال آماده‌سازی جست‌وجوی خودکار…');window.CartwiseAndroid.findAutomatically(JSON.stringify(requested));
     }catch(e){busy=false;button.disabled=false;button.textContent='پیدا کردن سبد خرید';message(e.message,true);}
   });
   function done(){busy=false;button.disabled=false;button.textContent='جست‌وجو و محاسبه دوباره';}
+  function requestAI(payload,items){
+    if(lastResult!==payload || JSON.stringify(requested)!==items)return;
+    aiStatus='آماده‌سازی هوش مصنوعی آفلاین؛ دریافت اولیه مدل حدود ۵۰۰ مگابایت است.';
+    if(!window.CartwiseAndroid.suggestOffline(JSON.stringify(payload),items)) {
+      aiStatus='هوش مصنوعی در حال تکمیل درخواست قبلی است.';
+      aiRetry=setTimeout(()=>requestAI(payload,items),3000);
+    }
+  }
   window.addEventListener('cartwise:auto-cancelled',()=>{done();message('جست‌وجو متوقف شد.');});
   window.addEventListener('cartwise:auto-results',async e=>{
     try{
@@ -50,7 +58,7 @@
         throw Error('نتایج فروشگاه ناقص است. دوباره تلاش کنید.');
       if(JSON.stringify(currentItems())!==JSON.stringify(requested))throw Error('لیست تغییر کرده است؛ جست‌وجو را دوباره اجرا کنید.');
       lastResult=payload;
-      if(window.CartwiseAndroid.suggestOffline){aiStatus='آماده‌سازی هوش مصنوعی آفلاین؛ دریافت اولیه مدل حدود ۵۰۰ مگابایت است.';if(!window.CartwiseAndroid.suggestOffline(JSON.stringify(payload),JSON.stringify(requested)))aiStatus='هوش مصنوعی مشغول پردازش درخواست قبلی است.';}
+      if(window.CartwiseAndroid.suggestOffline)requestAI(payload,JSON.stringify(requested));
       await calculate();
     }catch(error){message(error.message||'جست‌وجو ناموفق بود.',true);}
     finally{done();}

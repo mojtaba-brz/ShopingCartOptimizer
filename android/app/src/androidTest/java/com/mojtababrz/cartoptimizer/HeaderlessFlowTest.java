@@ -101,8 +101,14 @@ public class HeaderlessFlowTest {
             DigikalaActivity automatic=child();
             InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
             waitFor(main,"!busy");
-            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000}]}]})}));true");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000},{title:'پنیر آزمون',regular_price:1000000,promo_price:null}]}]})}));true");
             waitFor(main,"document.getElementById('results').textContent.includes('135,300') && document.getElementById('results').textContent.includes('برآورد')");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:JSON.stringify([{id:'milk',name:'شیر',quantity:1,query:'شیر'}]),result:JSON.stringify({items:[{id:'milk',titles:['پنیر آزمون','کالای ساختگی'],examined:2,available:2}]})}}));true");
+            waitFor(main,"document.querySelector('[data-auto-item]')?.textContent.includes('پنیر آزمون')");
+            assertEquals("false",eval(main,"document.querySelector('.auto-result-item li').textContent.includes('پنیر آزمون')"));
+            assertEquals("false",eval(main,"document.querySelector('[data-auto-item]').textContent.includes('کالای ساختگی')"));
+            eval(main,"let s=document.querySelector('[data-auto-item]');s.value='ai:پنیر آزمون';s.dispatchEvent(new Event('change'));true");
+            waitFor(main,"document.querySelector('.auto-result-item li')?.textContent.includes('پنیر آزمون')");
         }
     }
     @Test public void automaticSearchLoadsFurtherResultsAndComparesAmounts() throws Exception {
