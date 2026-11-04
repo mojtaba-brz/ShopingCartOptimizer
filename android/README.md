@@ -1,9 +1,31 @@
-# Cartwise for Android 0.2.2
+# Cartwise for Android 0.5.0
+
+The Android planner searches Digikala automatically after the shopping list and
+delivery area are supplied. When an item includes a weight or volume, it compares
+package combinations and shows price per kilogram or litre, including clearly
+labelled smaller-quantity alternatives. Search coverage, unknown stock, fees,
+coupon eligibility and discount limits remain uncertain; totals are estimates.
+
+The app includes an on-device Qwen3-0.6B matching assistant. After a
+search it attempts a one-time download of a 498 MB model from Hugging Face over
+HTTPS, verifies its pinned SHA-256 checksum and keeps it in private app storage.
+Thereafter inference is offline. The phone needs at least 3.1 GB of currently
+available memory to run it; otherwise the app reports that AI is unavailable and
+the ordinary matcher continues. The app may analyse only some results within its
+time budget. AI suggestions are marked for review and never added automatically.
+Model: `litert-community/Qwen3-0.6B`, mixed INT4, Apache-2.0. Runtime:
+Google LiteRT-LM 0.13.1. No shopping-list text is sent to the model host.
+
+Search results and model accuracy have not been validated on every phone or
+delivery area. The retailer can change its site or prevent complete retrieval.
 
 Android 8.0+ (API 26) and an updated Android System WebView. The planner and
 optimizer run on the phone; live product lookup needs an internet connection.
 
-## Use live Digikala prices
+## Legacy manual workflow
+
+The following describes the older manual interface retained in the codebase.
+The Android app's default interface uses the automatic flow described above.
 
 1. Add an item to your shopping list.
 2. Tap **Choose location / map**. Digikala's own supermarket opens inside the app.

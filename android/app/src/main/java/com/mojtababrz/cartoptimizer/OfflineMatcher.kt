@@ -53,21 +53,28 @@ class OfflineMatcher(private val context: Context) {
         engine.initialize()
         val deadline=System.nanoTime()+90000000000L
         try {
+            data class Job(val wanted: JSONObject,val products: JSONArray,val matched: JSONArray=JSONArray(),val seen: HashSet<String> = HashSet(),var examined: Int=0)
+            val jobs=ArrayList<Job>()
             for(i in 0 until requested.length()) {
-                val wanted=requested.getJSONObject(i);val id=wanted.getString("id")
-                val result=(0 until results.length()).map { results.getJSONObject(it) }.firstOrNull { it.optString("id")==id } ?: continue
-                val products=result.optJSONArray("products")?:continue
-                val matched=JSONArray();val seen=HashSet<String>();var examined=0
-                while(examined<minOf(products.length(),120) && System.nanoTime()<deadline) {
+                val wanted=requested.getJSONObject(i)
+                val result=(0 until results.length()).map { results.getJSONObject(it) }.firstOrNull { it.optString("id")==wanted.getString("id") } ?: continue
+                jobs.add(Job(wanted,result.optJSONArray("products")?:JSONArray()))
+            }
+            // Share the time budget between shopping-list items rather than
+            // spending it all on the first item.
+            while(System.nanoTime()<deadline && jobs.any { it.examined<minOf(it.products.length(),120) }) {
+                for(job in jobs) {
+                    if(System.nanoTime()>=deadline)break
+                    if(job.examined>=minOf(job.products.length(),120))continue
                     if(Thread.currentThread().isInterrupted)throw InterruptedException()
-                    val title=products.getJSONObject(examined).optString("title");examined++
-                    val prompt="Answer only YES or NO. Is the product ${JSONObject.quote(title.take(160))} a suitable match for the shopping item ${JSONObject.quote(wanted.getString("name"))}? /no_think"
+                    val title=job.products.getJSONObject(job.examined).optString("title");job.examined++
+                    val prompt="Answer only YES or NO. Is the product ${JSONObject.quote(title.take(160))} a suitable match for the shopping item ${JSONObject.quote(job.wanted.getString("name"))}? /no_think"
                     val answer=engine.createConversation().use { it.sendMessage(prompt).toString() }
                     val clean=answer.replace(Regex("<think>.*?</think>",RegexOption.DOT_MATCHES_ALL),"").trim()
-                    if(clean.matches(Regex("(?i)yes[.!]?")) && seen.add(title))matched.put(title)
+                    if(clean.matches(Regex("(?i)yes[.!]?")) && job.seen.add(title))job.matched.put(title)
                 }
-                output.put(JSONObject().put("id",id).put("titles",matched).put("examined",examined).put("available",products.length()))
             }
+            for(job in jobs)output.put(JSONObject().put("id",job.wanted.getString("id")).put("titles",job.matched).put("examined",job.examined).put("available",job.products.length()))
         } finally { engine.close() }
         return JSONObject().put("items",output).toString()
     }
