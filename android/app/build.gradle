@@ -1,4 +1,4 @@
-plugins { id 'com.android.application' }
+plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
 
 android {
     namespace 'com.mojtababrz.cartoptimizer'
@@ -8,14 +8,15 @@ android {
         applicationId 'com.mojtababrz.cartoptimizer'
         minSdk 26
         targetSdk 35
-        versionCode 6
-        versionName '0.4.0'
+        versionCode 7
+        versionName '0.5.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions { jvmTarget = '17' }
     sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('generated/webAssets')]
 }
 
@@ -36,6 +37,7 @@ tasks.register('syncWebAssets', Copy) {
 tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }
 
 dependencies {
+    implementation 'com.google.ai.edge.litertlm:litertlm-android:0.13.1'
     implementation 'androidx.webkit:webkit:1.12.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:core:1.6.1'
