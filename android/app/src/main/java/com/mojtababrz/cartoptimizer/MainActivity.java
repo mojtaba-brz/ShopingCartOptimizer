@@ -130,7 +130,7 @@ public final class MainActivity extends Activity {
                     result="{\"error\":"+JSONObject.quote(message)+"}";
                 }
                 final String json=result;
-                runOnUiThread(() -> {if(!isFinishing() && webView!=null) webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:"+JSONObject.quote(items)+",result:"+JSONObject.quote(json)+"}}));",null);});
+                runOnUiThread(() -> {if(!isFinishing() && !isDestroyed() && webView!=null) webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:"+JSONObject.quote(items)+",result:"+JSONObject.quote(json)+"}}));",null);});
                 aiBusy.set(false);
             });
             return true;
