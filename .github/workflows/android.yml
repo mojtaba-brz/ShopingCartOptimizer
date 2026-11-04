@@ -28,9 +28,12 @@ jobs:
           timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر کم چرب یک لیتر. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-positive.txt
           timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: مایع ظرفشویی. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-negative.txt
           timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر کاکائو. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-ambiguous.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: ماست کم چرب. گزینه: ماست کم چرب کاله ۵۰۰ گرم. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-positive2.txt
+          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر پرچرب. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-negative2.txt
           cat /tmp/model-positive.txt /tmp/model-negative.txt
           cat /tmp/model-ambiguous.txt
-          python -c 'import re,pathlib; clean=lambda p: re.sub(r"\[thought\].*?\[/thought\]", "", re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S),flags=re.S).strip().lower(); a=clean("/tmp/model-positive.txt");b=clean("/tmp/model-negative.txt");c=clean("/tmp/model-ambiguous.txt"); assert re.fullmatch(r"(?:بله|آری)[.!؟]?",a) and re.fullmatch(r"(?:خیر|نه)[.!؟]?",b) and re.fullmatch(r"(?:خیر|نه)[.!؟]?",c), "Model failed Persian matching test"; print("Model matching smoke test passed")'
+          cat /tmp/model-positive2.txt /tmp/model-negative2.txt
+          python -c 'import re,pathlib; clean=lambda p: re.sub(r"\[thought\].*?\[/thought\]", "", re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S),flags=re.S).strip().lower(); yes=lambda p: re.fullmatch(r"(?:بله|آری)[.!؟]?",clean(p)); no=lambda p: re.fullmatch(r"(?:خیر|نه)[.!؟]?",clean(p)); assert yes("/tmp/model-positive.txt") and no("/tmp/model-negative.txt") and no("/tmp/model-ambiguous.txt") and yes("/tmp/model-positive2.txt") and no("/tmp/model-negative2.txt"), "Model failed Persian matching test"; print("Model matching smoke test passed")'
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -97,8 +100,8 @@ jobs:
           path: apks
       - name: Download and verify model
         run: |
-          curl --fail --location --retry 2 --output /tmp/cartwise-model.litertlm 'https://huggingface.co/litert-community/Qwen3-1.7B/resolve/87603f0ff3fe74b9b77ed0477edb773b4b596f32/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm'
-          echo '2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8  /tmp/cartwise-model.litertlm' | sha256sum --check
+          curl --fail --location --retry 2 --output /tmp/cartwise-model.litertlm 'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/5e6e7a58d03777898b31330a15d2e0a5a9107de3/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm'
+          echo 'c4a9b7289365ab80fe599b844b77ad253eb3c53fb0e5d963d699146a6f01255e  /tmp/cartwise-model.litertlm' | sha256sum --check
       - name: Enable emulator acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -116,9 +119,9 @@ jobs:
             adb install apks/debug/app-debug.apk
             adb install apks/androidTest/debug/app-debug-androidTest.apk
             adb shell run-as com.mojtababrz.cartoptimizer mkdir -p files
-            adb shell "run-as com.mojtababrz.cartoptimizer sh -c 'cat > files/qwen3-1.7b-int4.litertlm'" < /tmp/cartwise-model.litertlm
-            adb shell run-as com.mojtababrz.cartoptimizer test -s files/qwen3-1.7b-int4.litertlm
-            adb shell run-as com.mojtababrz.cartoptimizer sha256sum files/qwen3-1.7b-int4.litertlm | grep -F '2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8'
+            adb shell "run-as com.mojtababrz.cartoptimizer sh -c 'cat > files/qwen2.5-1.5b-int8.litertlm'" < /tmp/cartwise-model.litertlm
+            adb shell run-as com.mojtababrz.cartoptimizer test -s files/qwen2.5-1.5b-int8.litertlm
+            adb shell run-as com.mojtababrz.cartoptimizer sha256sum files/qwen2.5-1.5b-int8.litertlm | grep -F 'c4a9b7289365ab80fe599b844b77ad253eb3c53fb0e5d963d699146a6f01255e'
             adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.OfflineModelTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee model-instrumentation.txt
             grep -Eq 'OK \(1 test\)' model-instrumentation.txt
   emulator-smoke:

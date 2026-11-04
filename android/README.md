@@ -6,14 +6,14 @@ package combinations and shows price per kilogram or litre, including clearly
 labelled smaller-quantity alternatives. Search coverage, unknown stock, fees,
 coupon eligibility and discount limits remain uncertain; totals are estimates.
 
-The app includes an on-device Qwen3-1.7B matching assistant. After a
-search it attempts a one-time download of a roughly 1 GB model from Hugging Face over
+The app includes an on-device Qwen2.5-1.5B matching assistant. After a
+search it attempts a one-time download of a roughly 1.6 GB model from Hugging Face over
 HTTPS, verifies its pinned SHA-256 checksum and keeps it in private app storage.
-Thereafter inference is offline. The phone needs at least 3.1 GB of currently
+Thereafter inference is offline. The phone needs at least 2.8 GB of currently
 available memory to run it; otherwise the app reports that AI is unavailable and
 the ordinary matcher continues. The app may analyse only some results within its
 time budget. AI suggestions are marked for review and never added automatically.
-Model: `litert-community/Qwen3-1.7B`, dynamic INT4, Apache-2.0. Runtime:
+Model: `litert-community/Qwen2.5-1.5B-Instruct`, INT8, Apache-2.0. Runtime:
 Google LiteRT-LM 0.18.0. No shopping-list text is sent to the model host.
 
 Search results and model accuracy have not been validated on every phone or

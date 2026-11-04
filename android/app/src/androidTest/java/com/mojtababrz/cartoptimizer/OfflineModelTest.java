@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class OfflineModelTest {
     @Test public void classifiesPersianProductsOnDevice() throws Exception {
         Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();
-        Assume.assumeTrue(new File(app.getFilesDir(),"qwen3-1.7b-int4.litertlm").isFile());
+        Assume.assumeTrue(new File(app.getFilesDir(),"qwen2.5-1.5b-int8.litertlm").isFile());
         JSONArray products=new JSONArray().put(new JSONObject().put("title","شیر کم چرب یک لیتر"))
             .put(new JSONObject().put("title","مایع ظرفشویی"));
         JSONObject payload=new JSONObject().put("items",new JSONArray().put(new JSONObject().put("id","milk").put("products",products)));
