@@ -60,6 +60,9 @@
       meta.context=key;meta.location=x.location;meta.shipment_type=x.shipment_type;
       meta.fees={};state.context=key.slice(0,300);save();
     }
+    // The planner may have been reset while the retained delivery session is
+    // unchanged. Rebind the workspace even when the retailer context matches.
+    if(state.context!==key.slice(0,300)) {state.context=key.slice(0,300);save();}
     persist();paint();return key;
   }
   window.addEventListener('cartwise:live',e=>{
