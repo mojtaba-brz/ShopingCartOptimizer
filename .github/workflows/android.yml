@@ -134,10 +134,10 @@ jobs:
           script: |
             adb install apks/debug/app-debug.apk
             adb install apks/androidTest/debug/app-debug-androidTest.apk
-            adb shell am instrument -w -e notClass com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-core.txt
+            adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-appearance.txt
             adb shell am force-stop com.mojtababrz.cartoptimizer
             adb shell am force-stop com.mojtababrz.cartoptimizer.test
-            adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-appearance.txt
+            adb shell am instrument -w -e notClass com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-core.txt
             cat instrumentation-core.txt instrumentation-appearance.txt > instrumentation.txt
             mkdir -p screenshots
             if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/simple.png > screenshots/simple.png; fi
