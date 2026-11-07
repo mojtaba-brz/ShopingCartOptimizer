@@ -137,7 +137,12 @@ jobs:
             adb shell am instrument -w com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation.txt
             grep -Eq 'OK \([0-9]+ tests?\)' instrumentation.txt
             mkdir -p screenshots
-            adb pull /sdcard/Android/data/com.mojtababrz.cartoptimizer/files/store-screenshots/. screenshots/ || true
+            if [ "${{ matrix.api }}" = "30" ]; then
+              for theme in simple modern traditional; do
+                adb exec-out run-as com.mojtababrz.cartoptimizer cat "files/store-screenshots/$theme.png" > "screenshots/$theme.png"
+                test -s "screenshots/$theme.png"
+              done
+            fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

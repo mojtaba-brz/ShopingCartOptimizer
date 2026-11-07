@@ -29,9 +29,13 @@ public class PersianAppearanceTest {
             for(String theme:new String[]{"simple","modern","traditional"}){
                 assertEquals("true",eval(scenario,"CartwiseAppearance.setTheme('"+theme+"');document.documentElement.dataset.theme==='"+theme+"' && document.documentElement.scrollWidth<=innerWidth"));
                 Thread.sleep(200);
+                // Android 16 headless emulator image capture can terminate the emulator.
+                // Both API levels assert theme/layout/persistence; API 30 supplies store screenshots.
+                if(android.os.Build.VERSION.SDK_INT<36){
                 android.graphics.Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
-                assertNotNull(bitmap);AtomicReference<java.io.File> directory=new AtomicReference<>();scenario.onActivity(a->directory.set(new java.io.File(a.getExternalFilesDir(null),"store-screenshots")));
+                assertNotNull(bitmap);AtomicReference<java.io.File> directory=new AtomicReference<>();scenario.onActivity(a->directory.set(new java.io.File(a.getFilesDir(),"store-screenshots")));
                 directory.get().mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(directory.get(),theme+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
+                }
             }
             scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
             eval(scenario,"showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));
