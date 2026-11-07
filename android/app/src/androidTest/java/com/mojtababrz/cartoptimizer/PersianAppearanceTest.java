@@ -22,6 +22,13 @@ public class PersianAppearanceTest {
     private void ready(ActivityScenario<MainActivity> scenario)throws Exception{
         for(int i=0;i<100;i++){if("true".equals(eval(scenario,"Boolean(window.CartwiseAppearance && window.CartwiseCheckout)")))return;Thread.sleep(100);}fail("Persian UI unavailable");
     }
+    private void rendered(ActivityScenario<MainActivity> scenario)throws Exception{
+        CountDownLatch next=new CountDownLatch(1);
+        scenario.onActivity(a->{WebView w=(WebView)((ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0)).getChildAt(0);
+            w.postVisualStateCallback(1,new WebView.VisualStateCallback(){@Override public void onComplete(long request){w.invalidate();next.countDown();}});
+        });
+        assertTrue("Theme frame was not ready",next.await(20,TimeUnit.SECONDS));Thread.sleep(200);
+    }
     private void progress(String value){android.os.Bundle data=new android.os.Bundle();data.putString("stream","Appearance: "+value+"\n");InstrumentationRegistry.getInstrumentation().sendStatus(2,data);}
     @Test public void persianThemesPersistAndDoNotOverflowOnPhone()throws Exception{
         progress("launching");try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
@@ -30,7 +37,9 @@ public class PersianAppearanceTest {
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم‌چرب ۱ لیتر',quantity:2},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];dirty.clear();save();showTab('list');true");
             for(String theme:new String[]{"simple","modern","traditional"}){
                 assertEquals("true",eval(scenario,"CartwiseAppearance.setTheme('"+theme+"');document.documentElement.dataset.theme==='"+theme+"' && document.documentElement.scrollWidth<=innerWidth"));
-                progress(theme+" checked");Thread.sleep(200);
+                String green=theme.equals("simple")?"#286349":theme.equals("modern")?"#086c78":"#164c78";
+                assertEquals("true",eval(scenario,"getComputedStyle(document.documentElement).getPropertyValue('--green').trim()==='"+green+"'"));
+                rendered(scenario);progress(theme+" checked");
                 // Android 16 headless emulator image capture can terminate the emulator.
                 // Both API levels assert theme/layout/persistence; API 30 supplies store screenshots.
                 if(android.os.Build.VERSION.SDK_INT<36){

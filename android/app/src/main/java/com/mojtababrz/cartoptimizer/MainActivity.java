@@ -201,7 +201,7 @@ public final class MainActivity extends Activity {
                     }
                     String json = out.toString(StandardCharsets.UTF_8.name());
                     String script = "window.dispatchEvent(new CustomEvent('cartwise:import',{detail:" + JSONObject.quote(json) + "}));";
-                    runOnUiThread(() -> { if (!isFinishing()) webView.evaluateJavascript(script, null); });
+                    runOnUiThread(() -> { if (!isFinishing() && !isDestroyed() && webView!=null) webView.evaluateJavascript(script, null); });
                 } catch (Exception error) { toast("فایل خوانده نشد؛ یک فایل پشتیبان کوچک‌تر از یک مگابایت انتخاب کنید."); }
             });
         }
@@ -216,7 +216,12 @@ public final class MainActivity extends Activity {
     @Override public void onBackPressed() {handleBack();}
     @Override protected void onDestroy() {
         files.shutdown();
-        if (webView != null) { webView.removeJavascriptInterface("CartwiseAndroid"); webView.destroy(); }
+        if (webView != null) {
+            // WebView.destroy requires removal from the view system first.
+            if(webView.getParent() instanceof android.view.ViewGroup)
+                ((android.view.ViewGroup)webView.getParent()).removeView(webView);
+            webView.stopLoading();webView.removeJavascriptInterface("CartwiseAndroid");webView.destroy();webView=null;
+        }
         super.onDestroy();
     }
 }

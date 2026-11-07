@@ -152,3 +152,39 @@ jobs:
           path: |
             instrumentation.txt
             screenshots/*.png
+
+  publication-kit:
+    needs: [build, browser-ui, emulator-smoke]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Cartwise-Store-Candidates-UNSIGNED
+          path: candidates
+      - uses: actions/download-artifact@v4
+        with:
+          name: Cartwise-Android-APK
+          path: test-apk
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: android-smoke-log-30
+          path: qa/30
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: android-smoke-log-36
+          path: qa/36
+      - name: Assemble publication preparation kit
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: python3 release/prepare-publication-kit.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sabadchin-0.7.0-Publication-Kit
+          path: publication-kit/**
+          retention-days: 90

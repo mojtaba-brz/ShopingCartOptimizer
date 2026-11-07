@@ -33,3 +33,5 @@ html[data-theme=traditional] body{background-image:url("data:image/svg+xml,%3Csv
 @media(max-width:760px){.automatic .topbar>span{display:none}.automatic .sidebar{padding:12px 18px 8px!important}.automatic .topbar{padding:0 0 10px!important}.automatic .section-heading h2{font-size:21px}.automatic .section-heading p:last-child{font-size:12px;line-height:1.8}.automatic .section-heading .eyebrow{display:none}.automatic .live-card{padding:12px 14px}.automatic #live-location-button{max-width:102px;font-size:11px}.automatic .live-card .section-heading{gap:8px}.automatic .message{padding:8px 12px;margin:10px 0;font-size:12px}.automatic .section-heading{margin-top:12px}}
 
 .observed-breakdown{display:block;font-size:13px;font-weight:normal}
+
+@media(max-width:760px){.automatic nav{left:0;right:0}}
