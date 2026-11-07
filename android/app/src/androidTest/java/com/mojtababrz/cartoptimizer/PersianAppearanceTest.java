@@ -24,11 +24,11 @@ public class PersianAppearanceTest {
     }
     @Test public void persianThemesPersistAndDoNotOverflowOnPhone()throws Exception{
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
-            ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.lang==='fa' && document.documentElement.dir==='rtl' && money(123450)==='۱۲٬۳۴۵'"));
+            ready(scenario);System.out.println("Appearance: ready");assertEquals("true",eval(scenario,"document.documentElement.lang==='fa' && document.documentElement.dir==='rtl' && money(123450)==='۱۲٬۳۴۵'"));
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم‌چرب ۱ لیتر',quantity:2},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];dirty.clear();save();showTab('list');true");
             for(String theme:new String[]{"simple","modern","traditional"}){
                 assertEquals("true",eval(scenario,"CartwiseAppearance.setTheme('"+theme+"');document.documentElement.dataset.theme==='"+theme+"' && document.documentElement.scrollWidth<=innerWidth"));
-                Thread.sleep(200);
+                System.out.println("Appearance: "+theme+" checked");Thread.sleep(200);
                 // Android 16 headless emulator image capture can terminate the emulator.
                 // Both API levels assert theme/layout/persistence; API 30 supplies store screenshots.
                 if(android.os.Build.VERSION.SDK_INT<36){
@@ -37,7 +37,7 @@ public class PersianAppearanceTest {
                 directory.get().mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(directory.get(),theme+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
                 }
             }
-            scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
+            System.out.println("Appearance: recreating");scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
             eval(scenario,"showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));
         }
     }

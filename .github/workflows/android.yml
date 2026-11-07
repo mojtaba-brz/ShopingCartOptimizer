@@ -134,8 +134,11 @@ jobs:
           script: |
             adb install apks/debug/app-debug.apk
             adb install apks/androidTest/debug/app-debug-androidTest.apk
-            adb shell am instrument -w com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation.txt
-            grep -Eq 'OK \([0-9]+ tests?\)' instrumentation.txt
+            adb shell am instrument -w -e notClass com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-core.txt
+            adb shell am force-stop com.mojtababrz.cartoptimizer
+            adb shell am force-stop com.mojtababrz.cartoptimizer.test
+            adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-appearance.txt
+            cat instrumentation-core.txt instrumentation-appearance.txt > instrumentation.txt
             mkdir -p screenshots
             if [ "${{ matrix.api }}" = "30" ]; then
               for theme in simple modern traditional; do
@@ -143,6 +146,8 @@ jobs:
                 test -s "screenshots/$theme.png"
               done
             fi
+            grep -Eq 'OK \([0-9]+ tests?\)' instrumentation-core.txt
+            grep -Eq 'OK \(1 test\)' instrumentation-appearance.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

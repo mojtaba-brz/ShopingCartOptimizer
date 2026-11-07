@@ -35,7 +35,7 @@ public final class DigikalaActivity extends Activity {
     private String checkoutUrl="";
     private final JSONArray checkoutQuotes=new JSONArray();
     private String itemId;
-    private boolean locationOnly;
+    private boolean locationOnly, captureNotice;
     private GeolocationPermissions.Callback locationCallback;
     private String locationOrigin;
     private DeliveryChoice deliveryChoice;
@@ -91,7 +91,7 @@ public final class DigikalaActivity extends Activity {
         if(cartOnly)read.setText("خواندن سبد");
         read.setOnClickListener(v -> capture()); toolbar.addView(read);
         Button home = new Button(this); home.setText("تغییر موقعیت");
-        home.setOnClickListener(v -> {if(shop!=null) {RetailerSession.changingLocation();RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/");updateStatus();}}); toolbar.addView(home);
+        home.setOnClickListener(v -> {if(shop!=null) {captureNotice=false;RetailerSession.changingLocation();RetailerSession.navigate(shop,"https://www.digikala.com/supermarket/");updateStatus();}}); toolbar.addView(home);
         root.addView(toolbar);
         status = new TextView(this); status.setPadding(16,8,16,8);
         status.setText(RetailerSession.mode(deliveryChoice.mode()) ? "نشست دیجی‌کالا حفظ شده است؛ فقط برای تغییر آدرس، «تغییر موقعیت» را بزنید." : "آدرس و روش ارسال را در دیجی‌کالا انتخاب کنید. جست‌وجوی آدرس و نقشه در دسترس است."); root.addView(status);
@@ -175,7 +175,7 @@ public final class DigikalaActivity extends Activity {
     }
     private void capture() {
         if (captureScript==null || !retailer(Uri.parse(shop.getUrl()==null?"":shop.getUrl()))) return;
-        read.setEnabled(false);
+        captureNotice=false;read.setEnabled(false);
         shop.evaluateJavascript(captureScript, raw -> {
             if(isFinishing() || isDestroyed() || shop==null) return;
             read.setEnabled(true);
@@ -197,7 +197,7 @@ public final class DigikalaActivity extends Activity {
                     location=RetailerSession.deliveryLocation();
                     data.put("location",location);data.put("location_source","retained-session");
                 } else data.put("location_source","page");
-                if(location.isEmpty()) {status.setText("یک‌بار آدرس را از «تغییر موقعیت» انتخاب کنید؛ در جست‌وجوهای بعدی حفظ می‌شود.");return;}
+                if(location.isEmpty()) {captureNotice=true;status.setText("یک‌بار آدرس را از «تغییر موقعیت» انتخاب کنید؛ در جست‌وجوهای بعدی حفظ می‌شود.");return;}
                 // A missing header does not erase a delivery choice confirmed in this same tab.
                 boolean sameSession=location.equals(RetailerSession.deliveryLocation()) && RetailerSession.mode(observed);
                 if(!locationOnly && (sameSession || deliveryChoice.matches(location,observed))) {
@@ -232,7 +232,7 @@ public final class DigikalaActivity extends Activity {
         });
     }
     private void updateStatus() {
-        if(scanning) return;
+        if(scanning || captureNotice) return;
         String location=RetailerSession.deliveryLocation();
         if(!location.isEmpty()) status.setText("آدرس تحویل: "+location+" · "+("scheduled".equals(RetailerSession.deliveryMode())?"زمان‌دار":"فوری")+"؛ جست‌وجوی کالا آماده است.");
         else status.setText(locationOnly?"آدرس و روش ارسال را در دیجی‌کالا انتخاب کنید و «ثبت موقعیت» را بزنید.":"آدرس در دیجی‌کالا حفظ می‌شود؛ برای عوض کردن آن «تغییر موقعیت» را بزنید.");
