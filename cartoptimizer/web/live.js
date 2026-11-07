@@ -52,6 +52,7 @@
     return x;
   }
   function adoptContext(x) {
+    meta.updated_at=Date.parse(x.captured_at)||Date.now();
     const key=x.location+' | '+x.shipment_type;
     if(meta.context!==key) {
       // Site address is the authority. Never combine offers from different areas/modes.
@@ -123,7 +124,7 @@
   const originalRender=render;
   render=function(){originalRender();paint();};
   window.CartwiseLive={
-    rememberAutomatic(x) {meta.location=x.location;meta.shipment_type=x.shipment_type;meta.context=x.location+' | '+x.shipment_type;persist();paint();},
+    rememberAutomatic(x) {meta.updated_at=Date.parse(x.captured_at)||Date.now();meta.location=x.location;meta.shipment_type=x.shipment_type;meta.context=x.location+' | '+x.shipment_type;persist();paint();},
     checkBeforeOptimize(snapshot) {
       const live=snapshot.offers.filter(o=>o.confirmed&&o.id.startsWith('live-'));
       for(const o of live) {
@@ -136,6 +137,7 @@
       return '';
     }
   };
-  try {const x=JSON.parse(window.CartwiseAndroid.savedDelivery?.()||'{}');if(x.location){meta.location=x.location;meta.shipment_type=x.shipment_type;}}catch{}
+  try {const x=JSON.parse(window.CartwiseAndroid.savedDelivery?.()||'{}');if(x.location&&(!meta.location||Number(x.updated_at||0)>Number(meta.updated_at||0))){meta.location=x.location;meta.shipment_type=x.shipment_type;meta.updated_at=Number(x.updated_at)||0;
+    const context=x.location+' | '+x.shipment_type;if(meta.context!==context){meta.context=context;meta.fees={};}persist();}}catch{}
   paint();
 })();

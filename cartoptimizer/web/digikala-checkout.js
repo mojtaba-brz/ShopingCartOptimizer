@@ -51,7 +51,7 @@
     for(let depth=0;row&&depth<7;depth++,row=row.parentElement){
       if(row.querySelectorAll('img[alt]').length!==1)break;
       const q=row.querySelector('[data-testid="cart-item-quantity"], [aria-label="تعداد"], input[type="number"]');
-      const raw=q?digits(q.value||text(q)):'';
+      const raw=q&&visible(q)?digits(q.value||text(q)):'';
       if(/^\d+$/.test(raw)&&Number(raw)>0&&Number(raw)<=50){quantity=Number(raw);break;}
     }
     if(quantity===null){unreadable++;continue;}

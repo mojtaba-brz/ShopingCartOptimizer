@@ -110,7 +110,7 @@ public final class MainActivity extends Activity {
 
     private final class Bridge {
         @JavascriptInterface public String savedDelivery() {
-            try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("shipment_type",c.mode()).toString();}catch(Exception e){return "{}";}
+            try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}
         }
         @JavascriptInterface public void readCheckout() {
             runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("checkout_only",true),CHECKOUT_DIGIKALA));
@@ -119,6 +119,7 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle("پاک‌کردن اطلاعات این گوشی")
                 .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالا از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
                 .setPositiveButton("پاک شود",(dialog,which)->{
+                    android.webkit.GeolocationPermissions.getInstance().clearAll();
                     RetailerSession.discard();new DeliveryChoice(MainActivity.this).clear();
                     android.webkit.CookieManager.getInstance().removeAllCookies(ok->{android.webkit.WebStorage.getInstance().deleteAllData();webView.evaluateJavascript("localStorage.clear();location.reload()",null);});
                 }).setNegativeButton("انصراف",null).show());

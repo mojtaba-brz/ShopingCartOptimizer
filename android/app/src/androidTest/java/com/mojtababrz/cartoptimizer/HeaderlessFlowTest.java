@@ -64,7 +64,7 @@ public class HeaderlessFlowTest {
     private void continueChoice() throws Exception {
         long until=System.currentTimeMillis()+10000;
         while(System.currentTimeMillis()<until){AccessibilityNodeInfo root=InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow();
-            if(root!=null) for(AccessibilityNodeInfo n:root.findAccessibilityNodeInfosByText("Continue"))if(n.isClickable()&&n.performAction(AccessibilityNodeInfo.ACTION_CLICK))return;
+            if(root!=null) for(AccessibilityNodeInfo n:root.findAccessibilityNodeInfosByText("ادامه"))if(n.isClickable()&&n.performAction(AccessibilityNodeInfo.ACTION_CLICK))return;
             Thread.sleep(100);
         }throw new AssertionError("Delivery confirmation did not appear");
     }

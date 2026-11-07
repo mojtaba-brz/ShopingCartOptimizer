@@ -16,8 +16,10 @@ final class DeliveryChoice {
         if(!RetailerSession.mode(mode) || label(location).isEmpty()) return;
         SharedPreferences.Editor edit=prefs.edit();
         if(!matches(location,mode))edit.remove("coordinates");
+        if(!matches(location,mode)||prefs.getLong("updated-at",0)==0)edit.putLong("updated-at",System.currentTimeMillis());
         edit.putString("label",label(location)).putString("mode",mode).apply();
     }
+    long updatedAt() {return prefs.getLong("updated-at",0);}
     String location() {return prefs.getString("label","");}
     void rememberCoordinates(String coordinates) {
         if(!location().isEmpty() && validCoordinates(coordinates)) prefs.edit().putString("coordinates",coordinates).apply();
