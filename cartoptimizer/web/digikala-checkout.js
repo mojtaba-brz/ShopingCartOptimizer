@@ -6,9 +6,9 @@
   const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
   const text=e=>(e?.innerText||'').trim().replace(/[\u200c\s]+/g,' ');
   const digits=s=>String(s).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));
-  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\()/,service_fee:/^(?:هزینه\s*(?:خدمات|بسته بندی)|کارمزد)(?:\s|:|\()/,
-    minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/,
-    subtotal:/^(?:قیمت کالاها|جمع کالاها|مبلغ کالاها)(?:\s|:|\()/,total:/^(?:مبلغ قابل پرداخت|جمع کل|جمع سبد خرید)(?:\s|:|\()/};
+  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,service_fee:/^(?:هزینه\s*(?:خدمات|بسته بندی)|کارمزد)(?:\s|:|\(|$)/,
+    minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/,
+    subtotal:/^(?:قیمت کالاها|جمع کالاها|مبلغ کالاها)(?:\s|:|\(|$)/,total:/^(?:مبلغ قابل پرداخت|جمع کل|جمع سبد خرید)(?:\s|:|\(|$)/};
   function monetary(s){
     if(/(?:رایگان|بدون هزینه)/.test(s)&&!/[۰-۹٠-٩0-9]/.test(s))return 0;
     if(/(?:از|حدود)\s*[0-9]|[0-9]\s*تا\s*[0-9]/.test(digits(s)))return null;
@@ -38,6 +38,12 @@
   }catch{}
   const pageKind=/(?:^|\/)(?:cart|checkout)(?:\/|$)/.test(location.pathname)?'cart':/^\/supermarket\/(?:store|shop|seller)\//.test(location.pathname)?'store':'catalog';
   const merchant=location.pathname.match(/\/(?:store|seller)\/([a-zA-Z0-9_-]+)/);
+  let reportedUnits=null;
+  const counts=new Set();for(const e of document.querySelectorAll('p,span,div'))if(visible(e)){
+    const count=digits(text(e)).match(/^(?:تعداد کل کالاها|تعداد کالاها|تعداد کالا)\s*[:：]?\s*([0-9]+)(?:\s*عدد)?$/);
+    if(count)counts.add(Number(count[1]));
+  }
+  if(counts.size===1)reportedUnits=[...counts][0];
   const cartItems=[];let unreadable=0;
   if(pageKind==='cart')for(const image of document.querySelectorAll('img[alt]')){
     if(!visible(image)||image.alt.trim().length<4)continue;
@@ -54,5 +60,5 @@
   return {source:'digikala-visible-checkout',page_url:location.origin+location.pathname,page_kind:pageKind,
     merchant_key:merchant?merchant[1]:'',captured_at:new Date().toISOString(),fields,notices:notices.slice(0,20),cart_url:cartUrl,
     // Basket-specific amounts must never be assumed to describe the proposed basket.
-    basket_verified:false,cart_items:cartItems,items_complete:pageKind==='cart'&&cartItems.length>0&&unreadable===0};
+    basket_verified:false,cart_items:cartItems,reported_units:reportedUnits,items_complete:pageKind==='cart'&&cartItems.length>0&&unreadable===0&&reportedUnits===cartItems.reduce((n,i)=>n+i.quantity,0)};
 })()

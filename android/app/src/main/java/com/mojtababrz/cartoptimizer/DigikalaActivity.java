@@ -211,16 +211,16 @@ public final class DigikalaActivity extends Activity {
                 LinearLayout form=new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(32,8,32,8);
                 TextView label=new TextView(this); label.setText("آدرس نمایش‌داده‌شده در دیجی‌کالا:\n"+location+"\n\nکدام روش ارسال در فروشگاه انتخاب شده است؟"); form.addView(label);
                 android.widget.RadioGroup modes=new android.widget.RadioGroup(this);
-                android.widget.RadioButton instant=new android.widget.RadioButton(this); instant.setText("ارسال فوری"); instant.setId(101); modes.addView(instant);
-                android.widget.RadioButton scheduled=new android.widget.RadioButton(this); scheduled.setText("ارسال زمان‌دار"); scheduled.setId(102); modes.addView(scheduled); form.addView(modes);
-                if(RetailerSession.mode(currentMode)) modes.check("on_demand".equals(currentMode)?101:102);
+                android.widget.RadioButton instant=new android.widget.RadioButton(this); instant.setText("ارسال فوری"); instant.setId(R.id.delivery_instant); modes.addView(instant);
+                android.widget.RadioButton scheduled=new android.widget.RadioButton(this); scheduled.setText("ارسال زمان‌دار"); scheduled.setId(R.id.delivery_scheduled); modes.addView(scheduled); form.addView(modes);
+                if(RetailerSession.mode(currentMode)) modes.check("on_demand".equals(currentMode)?R.id.delivery_instant:R.id.delivery_scheduled);
                 // First selection, explicit change, or a different retailer context needs confirmation.
                 AlertDialog dialog=new AlertDialog.Builder(this).setTitle(locationOnly ? "ثبت آدرس تحویل" : "خواندن قیمت‌های روز")
                     .setView(form).setPositiveButton("ادامه",null).setNegativeButton("انصراف",null).create();
                 dialog.setOnShowListener(v -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(b -> {
                     if (modes.getCheckedRadioButtonId()==-1) { label.setText("روش ارسال فعلی دیجی‌کالا را انتخاب کنید.\n"+selectedLocation); return; }
                     try {
-                        String selectedMode=modes.getCheckedRadioButtonId()==101?"on_demand":"scheduled";
+                        String selectedMode=modes.getCheckedRadioButtonId()==R.id.delivery_instant?"on_demand":"scheduled";
                         if(RetailerSession.mode(currentMode) && !currentMode.equals(selectedMode)) {
                             label.setText("روش ارسال فعلی فروشگاه "+("scheduled".equals(currentMode)?"زمان‌دار":"فوری")+" است؛ همان گزینه را انتخاب کنید یا ابتدا آن را در دیجی‌کالا تغییر دهید.");return;
                         }

@@ -13,7 +13,7 @@
       if(!Object.keys(fields).length&&!notices.length)continue;
       const cartItems=(Array.isArray(q.cart_items)?q.cart_items:[]).filter(i=>i&&typeof i.title==='string'&&i.title.length<=300&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=50).slice(0,1000);
       const signature=JSON.stringify([q.page_kind,url.pathname,fields,notices,cartItems]);if(seen.has(signature))continue;seen.add(signature);
-      quotes.push({page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,notices,cart_items:cartItems,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length});
+      quotes.push({page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,notices,cart_items:cartItems,reported_units:q.reported_units,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length&&Number.isInteger(q.reported_units)&&q.reported_units===cartItems.reduce((n,i)=>n+i.quantity,0)});
     }
     return quotes.slice(-8);
   }

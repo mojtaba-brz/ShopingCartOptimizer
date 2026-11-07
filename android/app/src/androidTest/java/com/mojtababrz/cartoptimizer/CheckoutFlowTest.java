@@ -28,7 +28,7 @@ public class CheckoutFlowTest {
         try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launchActivityForResult(intent)) {
             AtomicReference<String> token=new AtomicReference<>();
             scenario.onActivity(a->token.set(RetailerFixtures.load(browser(a),"https://www.digikala.com/supermarket/cart/",
-                "<div id='root'><p>ارسال به تهران، انقلاب</p><button aria-selected='true'>ارسال زمان‌دار</button><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰ تومان</span></div><p>هزینه خدمات ۱٬۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt='شیر کم چرب'><span data-testid='cart-item-quantity'>2</span></div></div>")));
+                "<p>تعداد کالاها ۲</p><div id='root'><p>ارسال به تهران، انقلاب</p><button aria-selected='true'>ارسال زمان‌دار</button><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰ تومان</span></div><p>هزینه خدمات ۱٬۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt='شیر کم چرب'><span data-testid='cart-item-quantity'>2</span></div></div>")));
             boolean ready=false;
             for(int n=0;n<80&&!ready;n++){
                 CountDownLatch done=new CountDownLatch(1);AtomicReference<String> value=new AtomicReference<>();
