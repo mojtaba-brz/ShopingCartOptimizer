@@ -9,31 +9,6 @@ concurrency:
   group: android-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  offline-model-smoke:
-    if: github.ref == 'refs/heads/codex/offline-model'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install offline inference runtime
-        run: python -m pip install 'litert-lm==0.18.0'
-      - name: Download and verify the exact model
-        run: |
-          curl --fail --location --retry 2 --output /tmp/cartwise-model.litertlm 'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/5e6e7a58d03777898b31330a15d2e0a5a9107de3/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm'
-          echo 'c4a9b7289365ab80fe599b844b77ad253eb3c53fb0e5d963d699146a6f01255e  /tmp/cartwise-model.litertlm' | sha256sum --check
-      - name: Run a Persian product-matching smoke check
-        run: |
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر کم چرب یک لیتر. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-positive.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: مایع ظرفشویی. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-negative.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر کاکائو. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-ambiguous.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: ماست کم چرب. گزینه: ماست کم چرب کاله ۵۰۰ گرم. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-positive2.txt
-          timeout 240 litert-lm run /tmp/cartwise-model.litertlm --backend=cpu --top-k 1 --max-num-tokens 1024 --prompt 'محصول مورد نیاز: شیر کم چرب. گزینه: شیر پرچرب. آیا گزینه همان محصول مورد نیاز است؟ فقط بله یا خیر.' > /tmp/model-negative2.txt
-          cat /tmp/model-positive.txt /tmp/model-negative.txt
-          cat /tmp/model-ambiguous.txt
-          cat /tmp/model-positive2.txt /tmp/model-negative2.txt
-          python -c 'import re,pathlib; clean=lambda p: re.sub(r"\[thought\].*?\[/thought\]", "", re.sub(r"<think>.*?</think>","",pathlib.Path(p).read_text(),flags=re.S),flags=re.S).strip().lower(); yes=lambda p: re.fullmatch(r"(?:بله|آری)[.!؟]?",clean(p)); no=lambda p: re.fullmatch(r"(?:خیر|نه)[.!؟]?",clean(p)); assert yes("/tmp/model-positive.txt") and no("/tmp/model-negative.txt") and no("/tmp/model-ambiguous.txt") and yes("/tmp/model-positive2.txt") and no("/tmp/model-negative2.txt"), "Model failed Persian matching test"; print("Model matching smoke test passed")'
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -61,6 +36,7 @@ jobs:
         run: python -m unittest discover -v
       - name: Check browser scripts
         run: |
+          node --check cartoptimizer/web/auto-ui.js
           node --check cartoptimizer/web/live.js
           node --check cartoptimizer/web/digikala-capture.js
           node android/tests/live-reader.cjs
@@ -74,7 +50,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.5.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.6.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -88,42 +64,6 @@ jobs:
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           retention-days: 7
-  android-model-smoke:
-    if: github.ref == 'refs/heads/codex/offline-model'
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: android-smoke-inputs
-          path: apks
-      - name: Download and verify model
-        run: |
-          curl --fail --location --retry 2 --output /tmp/cartwise-model.litertlm 'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/5e6e7a58d03777898b31330a15d2e0a5a9107de3/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm'
-          echo 'c4a9b7289365ab80fe599b844b77ad253eb3c53fb0e5d963d699146a6f01255e  /tmp/cartwise-model.litertlm' | sha256sum --check
-      - name: Enable emulator acceleration
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-      - uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -memory 6144
-          script: |
-            adb install apks/debug/app-debug.apk
-            adb install apks/androidTest/debug/app-debug-androidTest.apk
-            adb shell run-as com.mojtababrz.cartoptimizer mkdir -p files
-            adb shell "run-as com.mojtababrz.cartoptimizer sh -c 'cat > files/qwen2.5-1.5b-int8.litertlm'" < /tmp/cartwise-model.litertlm
-            adb shell run-as com.mojtababrz.cartoptimizer test -s files/qwen2.5-1.5b-int8.litertlm
-            adb shell run-as com.mojtababrz.cartoptimizer sha256sum files/qwen2.5-1.5b-int8.litertlm | grep -F 'c4a9b7289365ab80fe599b844b77ad253eb3c53fb0e5d963d699146a6f01255e'
-            adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.OfflineModelTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee model-instrumentation.txt
-            grep -Eq 'OK \(1 test\)' model-instrumentation.txt
   emulator-smoke:
     needs: build
     runs-on: ubuntu-latest

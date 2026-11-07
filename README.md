@@ -1,8 +1,9 @@
-> **Android 0.5.0:** The current experimental app searches loaded Digikala
-> results automatically, compares package quantities, and offers on-device AI
-> match suggestions for review. The model needs a one-time download and enough
-> free RAM. Shipping, coupons, stock and complete search coverage remain
-> unverified; results are estimates. See [Android instructions](android/README.md).
+> **Android 0.6.0:** Automatic Digikala search and package-quantity comparison
+> now use lightweight Persian matching. No LLM, model download or API key is
+> required. Known spelling variants match automatically; synonyms and small
+> typos appear as review-only alternatives. Shipping, coupons, stock and complete
+> search coverage remain unverified; results are estimates.
+> See [Android instructions](android/README.md).
 
 > **Import fix in 0.2.2:** Product search pages do not need an address header.
 > The Android reader uses the delivery area confirmed in the current Digikala

@@ -97,18 +97,18 @@ public class HeaderlessFlowTest {
             assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
             // Feed a captured search response through the Android result event and
             // verify the new list-to-review UI without a dependency on live prices.
-            eval(main,"document.getElementById('optimize').click();true");
+            eval(main,"state.items=[{id:'pasta',name:'ماکارونی',quantity:1}];save();document.getElementById('optimize').click();true");
             DigikalaActivity automatic=child();
             InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
             waitFor(main,"!busy");
-            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000},{title:'پنیر آزمون',regular_price:1000000,promo_price:null}]}]})}));true");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
             waitFor(main,"document.getElementById('results').textContent.includes('135,300') && document.getElementById('results').textContent.includes('برآورد')");
-            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:ai-results',{detail:{items:JSON.stringify([{id:'milk',name:'شیر',quantity:1,query:'شیر'}]),result:JSON.stringify({items:[{id:'milk',titles:['پنیر آزمون','کالای ساختگی'],examined:2,available:2}]})}}));true");
-            waitFor(main,"document.querySelector('[data-auto-item]')?.textContent.includes('پنیر آزمون')");
-            assertEquals("false",eval(main,"document.querySelector('.auto-result-item li').textContent.includes('پنیر آزمون')"));
-            assertEquals("false",eval(main,"document.querySelector('[data-auto-item]').textContent.includes('کالای ساختگی')"));
-            eval(main,"let s=document.querySelector('[data-auto-item]');s.value='ai:پنیر آزمون';s.dispatchEvent(new Event('change'));true");
-            waitFor(main,"document.querySelector('.auto-result-item li')?.textContent.includes('پنیر آزمون')");
+            waitFor(main,"document.querySelector('[data-auto-item]')?.textContent.includes('پاستا 500 گرم')");
+            assertEquals("false",eval(main,"document.querySelector('.auto-result-item li').textContent.includes('پاستا')"));
+            assertEquals("false",eval(main,"document.querySelector('[data-auto-item]').textContent.includes('پنیر آزمون')"));
+            assertEquals("true",eval(main,"typeof window.CartwiseAndroid.suggestOffline==='undefined'"));
+            eval(main,"let s=document.querySelector('[data-auto-item]');s.value='review:پاستا 500 گرم';s.dispatchEvent(new Event('change'));true");
+            waitFor(main,"document.querySelector('.auto-result-item li')?.textContent.includes('پاستا 500 گرم')");
         }
     }
     @Test public void automaticSearchLoadsFurtherResultsAndComparesAmounts() throws Exception {

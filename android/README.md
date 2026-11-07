@@ -1,4 +1,4 @@
-# Cartwise for Android 0.5.0
+# Cartwise for Android 0.6.0
 
 The Android planner searches Digikala automatically after the shopping list and
 delivery area are supplied. When an item includes a weight or volume, it compares
@@ -9,18 +9,17 @@ After an app restart, the saved delivery choice is reused automatically when
 Digikala still displays the same area and delivery mode; otherwise it asks for
 the area so it does not silently use prices for an unverified location.
 
-The app includes an on-device Qwen2.5-1.5B matching assistant. After a
-search it attempts a one-time download of a roughly 1.6 GB model from Hugging Face over
-HTTPS, verifies its pinned SHA-256 checksum and keeps it in private app storage.
-Thereafter inference is offline. The phone needs at least 2.8 GB of currently
-available memory to run it; otherwise the app reports that AI is unavailable and
-the ordinary matcher continues. The app may analyse only some results within its
-time budget. AI suggestions are marked for review and never added automatically.
-Model: `litert-community/Qwen2.5-1.5B-Instruct`, INT8, Apache-2.0. Runtime:
-Google LiteRT-LM 0.18.0. No shopping-list text is sent to the model host.
+Matching runs locally using Persian/Arabic character and digit normalization,
+known spelling variants, a small grocery category dictionary and conservative
+one-character typo checks. Exact matches are selected automatically; synonyms
+and typos are offered for review. Known brands and numeric constraints must
+match exactly; unrelated categories and conflicting milk flavours/fat levels
+are excluded. This is a limited dictionary, not general language understanding.
+There is no LLM runtime, model download, inference service or API key.
+Previously cached model weights are removed on app startup after an upgrade.
 
-Search results and model accuracy have not been validated on every phone or
-delivery area. The retailer can change its site or prevent complete retrieval.
+Search results have not been validated on every phone or delivery area. The
+retailer can change its site or prevent complete retrieval.
 
 Android 8.0+ (API 26) and an updated Android System WebView. The planner and
 optimizer run on the phone; live product lookup needs an internet connection.
