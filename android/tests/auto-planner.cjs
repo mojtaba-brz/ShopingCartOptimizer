@@ -53,3 +53,23 @@ const built=a.build([item],[{id:'milk',products:rows}],'تهران','scheduled')
 assert.deepEqual(built.missing,[]);assert.equal(built.snapshot.offers[0].stock,3);assert.equal(built.snapshot.offers[0].promo_limit,1);
 assert.deepEqual(a.build([item],[{id:'milk',products:[]}],'تهران','scheduled').missing,['شیر کم چرب']);
 console.log('Automatic matching and estimated pricing tests passed');
+
+// Later results and combinations must participate, rather than a five-offer shortlist.
+const seven=Array.from({length:7},(_,i)=>p('شیر '+i,1000));seven.forEach(x=>x.promo_price=0);
+assert.equal(a.countPlan({id:'m',name:'شیر',quantity:7},seven).cost,0);
+assert.equal(a.countPlan({id:'m',name:'شیر',quantity:7},seven).lines.length,7);
+assert.equal(a.countPlan({id:'m',name:'شیر',quantity:2},[{...p('شیر الف',100),promo_price:80},{...p('شیر ب',200),promo_price:0}]).cost,80);
+assert.equal(a.countPlan(pasta,aliases,'review:پنیر آزمون'),null);
+assert.equal(a.countPlan(pasta,aliases,'review:پاستا زر 500 گرم').lines[0].title,'پاستا زر 500 گرم');
+// Independent enumeration of purchase quantities for small price cases.
+for(let seed=1;seed<=20;seed++)for(let wanted=1;wanted<=4;wanted++){
+ const rows=Array.from({length:3},(_,i)=>{const regular=50+((seed*17+i*23)%80);return {...p('شیر '+i,regular),promo_price:(seed+i)%2?null:(seed*7+i*3)%50};});
+ let best=Infinity;
+ for(let x=0;x<=wanted;x++)for(let y=0;y<=wanted-x;y++){
+  const quantities=[x,y,wanted-x-y];let cost=0;
+  for(let i=0;i<3;i++)if(quantities[i])cost+=rows[i].regular_price*(quantities[i]-1)+(rows[i].promo_price??rows[i].regular_price);
+  best=Math.min(best,cost);
+ }
+ assert.equal(a.countPlan({id:'m',name:'شیر',quantity:wanted},rows).cost,best);
+}
+console.log('All-result quantity allocation agrees with exhaustive pricing oracle');

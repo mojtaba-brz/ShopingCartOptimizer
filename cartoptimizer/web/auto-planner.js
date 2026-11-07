@@ -138,6 +138,22 @@
     if(smaller)plans.push(smaller);
     return {target,unit:targetUnit.unit,plans,complete,candidates:candidates.length};
   }
+  // Exact unit-count optimum across all readable matching rows under the stated
+  // one-promotional-unit assumption. Marginal costs are nondecreasing per product.
+  function countPlan(item,rows,selection=''){
+    const all=rank(item,rows,1000),review=selection.startsWith('review:')?selection.slice(7):'';
+    const choices=review?suggestions(item,rows).filter(p=>p.title===review):selection?all.filter(p=>p.title===selection):all;
+    if(!choices.length||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>50)return null;
+    const units=[];let order=0;
+    for(const p of choices)for(let n=0;n<item.quantity;n++)units.push({p,cost:n===0?(p.promo_price??p.regular_price):p.regular_price,order:order++});
+    units.sort((a,b)=>a.cost-b.cost||a.order-b.order);
+    const lines=new Map();let cost=0;
+    for(const u of units.slice(0,item.quantity)){
+      let line=lines.get(u.p.title);if(!line){line={item_id:item.id,title:u.p.title,quantity:0,subtotal:0,url:u.p.url};lines.set(u.p.title,line);}
+      line.quantity++;line.subtotal+=u.cost;cost+=u.cost;
+    }
+    return {cost,lines:[...lines.values()],candidates:choices.length};
+  }
   function build(items,results,location,mode,selection={}){
     const offers=[],missing=[];let counter=0;
     for(const item of items){
@@ -153,6 +169,6 @@
       context:location+' · '+mode,max_carts:1,items:items.map(({id,name,quantity})=>({id,name,quantity})),offers,coupons:[],
       stores:[{id:'digikala-auto',name:'Digikala Supermarket',delivery_fee:0,service_fee:0,minimum_order:0,free_delivery_over:null,threshold_basis:'before_coupon'}]}};
   }
-  const api={normalize,matches,rank,suggestions,build,estimated,amount,searchTerm,amountPlans};root.CartwiseAuto=api;
+  const api={normalize,matches,rank,suggestions,build,estimated,amount,searchTerm,amountPlans,countPlan};root.CartwiseAuto=api;
   if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

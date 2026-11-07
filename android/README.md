@@ -3,6 +3,9 @@
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
 three locally saved themes, a privacy explanation and local-data deletion.
+Count-based automatic allocation now considers every readable matching result (up to
+the reader limit), including combinations that use different single-unit promotions.
+An independent exhaustive oracle checks small quantity cases.
 Visible monetary rows and correction notices can be read from the selected
 supermarket and retailer basket. Basket fees are observations, not universal
 rules: a retailer total is labelled matching only for an exact readable

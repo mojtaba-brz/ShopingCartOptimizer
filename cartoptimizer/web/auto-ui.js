@@ -73,17 +73,18 @@
     if(!lastResult)return;
     const amountItems=requested.filter(i=>CartwiseAuto.amount(i.name)), countItems=requested.filter(i=>!CartwiseAuto.amount(i.name));
     const amountResults=new Map(amountItems.map(i=>{const rows=lastResult.items.find(r=>r.id===i.id)?.products,title=(selected[i.id]||'').startsWith('review:')?selected[i.id].slice(7):'';return [i.id,CartwiseAuto.amountPlans(i,rows,CartwiseAuto.suggestions(i,rows).some(p=>p.title===title)?title:'')];}));
-    const {missing,snapshot}=CartwiseAuto.build(countItems,lastResult.items,lastResult.location,lastResult.shipment_type,selected);
+    const countResults=new Map(countItems.map(i=>[i.id,CartwiseAuto.countPlan(i,lastResult.items.find(r=>r.id===i.id)?.products,selected[i.id]||'')]));
+    const missing=countItems.filter(i=>!countResults.get(i.id)).map(i=>i.name);
     for(const item of amountItems)if(!amountResults.get(item.id)?.plans.length)missing.push(item.name);
     const location=escapeHTML(lastResult.location),mode=lastResult.shipment_type==='scheduled'?'زمان‌دار':'فوری';
     const incomplete=lastResult.items.filter(i=>i.error).map(i=>requested.find(x=>x.id===i.id)?.name||i.id);
-    const warning='<div class="auto-notice">این جمع برآورد قیمت کالاهاست. هزینه‌های خوانده‌شده و پیام‌های اصلاح سبد در بخش پایین دیده می‌شوند؛ کوپن قابل استفاده، موجودی دقیق و سهمیه تخفیف باید در فروشگاه تأیید شوند. برای کالای تخفیف‌دار، یک عدد با قیمت تخفیف و بقیه با قیمت عادی فرض شده است. قیمت واحد فقط وقتی اندازه بسته قابل تشخیص باشد نشان داده می‌شود.</div>'+(countItems.length?'<div class="auto-notice">برای اقلام بدون وزن یا حجم، انتخاب خودکار حداکثر پنج گزینه را محاسبه می‌کند؛ گزینه‌های بیشتر در فهرست انتخاب هستند.</div>':'')+(incomplete.length?`<div class="auto-notice">جست‌وجوی این اقلام ممکن است کامل نباشد: ${incomplete.map(escapeHTML).join('، ')}</div>`:'');
+    const warning='<div class="auto-notice">این جمع برآورد قیمت کالاهاست. هزینه‌های خوانده‌شده و پیام‌های اصلاح سبد در بخش پایین دیده می‌شوند؛ کوپن قابل استفاده، موجودی دقیق و سهمیه تخفیف باید در فروشگاه تأیید شوند. برای کالای تخفیف‌دار، یک عدد با قیمت تخفیف و بقیه با قیمت عادی فرض شده است. قیمت واحد فقط وقتی اندازه بسته قابل تشخیص باشد نشان داده می‌شود.</div>'+(incomplete.length?`<div class="auto-notice">جست‌وجوی این اقلام ممکن است کامل نباشد: ${incomplete.map(escapeHTML).join('، ')}</div>`:'');
     const assumptions=`<details class="auto-assumptions"><summary>شرایط برآورد و پوشش جست‌وجو</summary>${warning}</details>`;
     function reviewOptions(item){return CartwiseAuto.suggestions(item,lastResult.items.find(r=>r.id===item.id)?.products).map(p=>`<option value="${escapeHTML('review:'+p.title)}" ${selected[item.id]==='review:'+p.title?'selected':''}>احتمال تطابق؛ بررسی کنید: ${escapeHTML(p.title)}</option>`).join('');}
     function bind(){ $('results').querySelectorAll('[data-read-checkout]').forEach(el=>el.onclick=()=>window.CartwiseAndroid.readCheckout()); $('results').querySelectorAll('[data-auto-item]').forEach(el=>el.addEventListener('change',async()=>{selected[el.dataset.autoItem]=el.value;try{await calculate();}catch(e){message(e.message,true);}})); }
     if(missing.length){const choices=requested.filter(i=>missing.includes(i.name)).map(i=>{const options=reviewOptions(i);return options?`<label>${escapeHTML(i.name)}<select data-auto-item="${escapeHTML(i.id)}"><option value="">انتخاب کنید</option>${options}</select></label>`:'';}).join('');$('results').innerHTML=`<section class="card" dir="rtl"><h3>برای بعضی اقلام نتیجه قابل اتکا پیدا نشد</h3><p>${missing.map(escapeHTML).join('، ')}</p>${choices}<p>نام، وزن یا برند را دقیق‌تر بنویسید و دوباره جست‌وجو کنید.</p>${assumptions}</section>${checkoutSection()}`;bind();showTab('results');$('tab-label').textContent='نتیجه';message('جست‌وجو کامل نشد؛ اقلام بالا بررسی شوند.',true);return;}
-    const result=countItems.length?await CartwiseEngine.optimize(snapshot,{timeLimit:5000,stateLimit:200000}):{total:0,carts:[],warnings:[]};
-    if(countItems.length&&!result.carts.length)throw Error(result.reason||'سبدی پیدا نشد.');
+    const countLines=countItems.flatMap(i=>countResults.get(i.id).lines);
+    const result={total:countItems.reduce((n,i)=>n+countResults.get(i.id).cost,0),carts:countItems.length?[{lines:countLines}]:[],warnings:[]};
     result.optimal=false;result.status='estimate';result.warnings=[...(result.warnings||[]),'Shipping fees, coupon eligibility, stock and promotion limits were not verified.'];
     plan=result;
     const lines=result.carts.flatMap(c=>c.lines);
@@ -103,7 +104,10 @@
       const purchased=chosen.map(l=>`<li>${escapeHTML(l.title)} × ${l.quantity.toLocaleString('fa-IR')} — ${money(l.subtotal)} تومان</li>`).join('');
       return `<article class="auto-result-item"><h4>${escapeHTML(item.name)} · ${item.quantity.toLocaleString('fa-IR')} عدد</h4><ul>${purchased}</ul><label>تغییر انتخاب (در صورت نیاز)<select data-auto-item="${escapeHTML(item.id)}"><option value="">انتخاب خودکار</option>${choices}</select></label></article>`;
     }).join('');
-    $('results').innerHTML=`<section class="card" dir="rtl"><h3>سبد پیشنهادی</h3><p>${location} · ارسال ${mode}</p><p class="auto-total">${money(total)} <small>تومان، برآورد قیمت کالاها</small></p>${assumptions}${details}<p class="hint">فقط کالاهای خوانده‌شده بررسی شده‌اند. نام و اندازه کالاها را پیش از خرید مرور کنید.</p></section>${checkoutSection(proposed)}`;
+    const matches=CartwiseCheckout.clean(lastResult.checkout_quotes).map(q=>CartwiseCheckout.reconcile(q,proposed)).filter(q=>q.verified);
+    const observed=matches.length?matches[matches.length-1]:null;
+    const headline=observed?`${money(observed.total)} <small>تومان؛ مبلغ سبد مطابق در دیجی‌کالا</small><span class="hint observed-breakdown">برآورد قیمت کالاهای پیشنهادی: ${money(total)} تومان؛ هزینه و اصلاحات فروشگاه در مبلغ بالا لحاظ شده‌اند.</span>`:`${money(total)} <small>تومان، برآورد قیمت کالاها</small>`;
+    $('results').innerHTML=`<section class="card" dir="rtl"><h3>سبد پیشنهادی</h3><p>${location} · ارسال ${mode}</p><p class="auto-total">${headline}</p>${assumptions}${details}<p class="hint">فقط کالاهای خوانده‌شده بررسی شده‌اند. نام و اندازه کالاها را پیش از خرید مرور کنید.</p></section>${checkoutSection(proposed)}`;
     bind();
     $('export-plan').hidden=true;showTab('results');$('tab-label').textContent='نتیجه';message('سبد پیشنهادی آماده است.');
   }
