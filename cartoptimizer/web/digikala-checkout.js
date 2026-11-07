@@ -9,9 +9,15 @@
   const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,service_fee:/^(?:هزینه\s*(?:خدمات|بسته بندی)|کارمزد)(?:\s|:|\(|$)/,
     minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/,
     subtotal:/^(?:قیمت کالاها|جمع کالاها|مبلغ کالاها)(?:\s|:|\(|$)/,total:/^(?:مبلغ قابل پرداخت|جمع کل|جمع سبد خرید)(?:\s|:|\(|$)/};
+  function pricedText(node,s){
+    if(/تومان|ریال/.test(s))return s;
+    const icons=Array.from(node.querySelectorAll?.('img[src*="/toman."], svg[aria-label="تومان"], [data-testid="toman"]')||[]).filter(visible);
+    return icons.length===1?s+' تومان':s;
+  }
   function monetary(s){
     if(/(?:رایگان|بدون هزینه)/.test(s)&&!/[۰-۹٠-٩0-9]/.test(s))return 0;
     if(/(?:از|حدود)\s*[0-9]|[0-9]\s*تا\s*[0-9]/.test(digits(s)))return null;
+    if((digits(s).match(/[0-9][0-9,٬]*(?:\.[0-9])?/g)||[]).length!==1)return null;
     const xs=[...digits(s).matchAll(/([0-9][0-9,٬]*(?:\.[0-9])?)\s*(تومان|ریال)/g)];
     if(xs.length!==1)return null;
     const v=Number(xs[0][1].replace(/[,٬]/g,''))*(xs[0][2]==='تومان'?10:1);
@@ -22,10 +28,10 @@
   for(const node of document.querySelectorAll('p,span,div,li,section')){
     if(!visible(node))continue;let s=text(node);if(!s||s.length>180)continue;
     for(const [key,re] of Object.entries(rules))if(re.test(s)){
-      let evidence=s,value=monetary(s);
+      let evidence=pricedText(node,s),value=monetary(evidence);
       if(value===null&&node.parentElement&&visible(node.parentElement)){
         const parent=text(node.parentElement);
-        if(parent.length<=180&&!Object.entries(rules).some(([other,re])=>other!==key&&new RegExp(re.source.slice(1)).test(parent))){value=monetary(parent);evidence=parent;}
+        if(parent.length<=180&&!Object.entries(rules).some(([other,re])=>other!==key&&new RegExp(re.source.slice(1)).test(parent))){evidence=pricedText(node.parentElement,parent);value=monetary(evidence);}
       }
       if(value!==null)values[key].set(value,{value,evidence:evidence.slice(0,180)});
     }

@@ -24,7 +24,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await page.evaluate(()=>CartwiseLive.rememberAutomatic({location:'ارسال به ونک',shipment_type:'scheduled',captured_at:new Date().toISOString()}));
  await page.reload();await page.waitForFunction(()=>document.querySelector('#live-location')?.textContent.includes('ونک'));
  // Exercise the actual retailer reader against representative visible DOM.
- await context.route('https://www.digikala.com/**',route=>route.fulfill({contentType:'text/html; charset=utf-8',body:`<p>تعداد کالاها ۲</p><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰ تومان</span></div><p>هزینه خدمات ۱۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt="شیر کم چرب"><span data-testid="cart-item-quantity">2</span></div>`}));
+ await context.route('https://www.digikala.com/**',route=>route.fulfill({contentType:'text/html; charset=utf-8',body:`<p>تعداد کالاها ۲</p><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰</span><img src="/toman.svg" alt="" width="16" height="16"></div><p>هزینه خدمات ۱۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt="شیر کم چرب"><span data-testid="cart-item-quantity">2</span></div>`}));
  const retailer=await context.newPage();await retailer.goto('https://www.digikala.com/supermarket/cart/');
  const capture=await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-checkout.js','utf8'));
  assert.equal(capture.fields.delivery_fee?.value,250000,JSON.stringify(capture));assert.equal(capture.cart_items[0].quantity,2);assert.equal(capture.items_complete,true);
