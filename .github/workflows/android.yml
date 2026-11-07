@@ -97,6 +97,7 @@ jobs:
       - name: Check Persian interface and visible checkout reader
         run: |
           python -m cartoptimizer --port 8765 --no-browser &
+          curl --fail --silent --retry 20 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:8765/
           export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
           node android/tests/browser-ui.cjs
       - uses: actions/upload-artifact@v4
