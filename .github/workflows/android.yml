@@ -140,12 +140,9 @@ jobs:
             adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-appearance.txt
             cat instrumentation-core.txt instrumentation-appearance.txt > instrumentation.txt
             mkdir -p screenshots
-            if [ "${{ matrix.api }}" = "30" ]; then
-              for theme in simple modern traditional; do
-                adb exec-out run-as com.mojtababrz.cartoptimizer cat "files/store-screenshots/$theme.png" > "screenshots/$theme.png"
-                test -s "screenshots/$theme.png"
-              done
-            fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/simple.png > screenshots/simple.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/modern.png > screenshots/modern.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/traditional.png > screenshots/traditional.png; fi
             grep -Eq 'OK \([0-9]+ tests?\)' instrumentation-core.txt
             grep -Eq 'OK \(1 test\)' instrumentation-appearance.txt
       - uses: actions/upload-artifact@v4
