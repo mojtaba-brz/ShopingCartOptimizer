@@ -2,19 +2,37 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.mojtababrz.cartoptimizer'
-    compileSdk 35
+    compileSdk 36
     buildToolsVersion '35.0.0'
     defaultConfig {
         applicationId 'com.mojtababrz.cartoptimizer'
         minSdk 26
-        targetSdk 35
-        versionCode 8
-        versionName '0.6.0'
+        targetSdk 36
+        versionCode 9
+        versionName '0.7.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        if (System.getenv('CARTWISE_KEYSTORE_PATH')) {
+            ownerRelease {
+                storeFile file(System.getenv('CARTWISE_KEYSTORE_PATH'))
+                storePassword System.getenv('CARTWISE_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('CARTWISE_KEY_ALIAS')
+                keyPassword System.getenv('CARTWISE_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv('CARTWISE_KEYSTORE_PATH')) signingConfig signingConfigs.ownerRelease
+        }
     }
     sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('generated/webAssets')]
 }
@@ -28,7 +46,10 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/mobile.js"', 'src="/assets/mobile.js"')
             .replace('src="/live.js"', 'src="/assets/live.js"')
             .replace('src="/auto-planner.js"', 'src="/assets/auto-planner.js"')
-            .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"') }
+            .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
+            .replace('src="/fa-ui.js"', 'src="/assets/fa-ui.js"')
+            .replace('src="/checkout.js"', 'src="/assets/checkout.js"')
+            .replace('href="/fa.css"', 'href="/assets/fa.css"') }
     }
     from('../../cartoptimizer') { include 'demo.json' }
     into(layout.buildDirectory.dir('generated/webAssets'))

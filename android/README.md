@@ -1,4 +1,15 @@
-# Cartwise for Android 0.6.0
+# Cartwise for Android 0.7.0
+
+
+The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
+three locally saved themes, a privacy explanation and local-data deletion.
+Visible monetary rows and correction notices can be read from the selected
+supermarket and retailer basket. Basket fees are observations, not universal
+rules: a retailer total is labelled matching only for an exact readable
+product-title/quantity match; missing or ambiguous data remains unverified.
+Catalog coordinates and delivery mode can restore a saved address after process
+restart when fresh retailer requests match. Old labels alone are never proof.
+Android release preparation is documented in [release/README-fa.md](../release/README-fa.md).
 
 The Android planner searches Digikala automatically after the shopping list and
 delivery area are supplied. When an item includes a weight or volume, it compares

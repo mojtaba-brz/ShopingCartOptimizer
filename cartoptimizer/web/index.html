@@ -1,66 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'self'">
-  <meta name="description" content="Compare Digikala supermarket cart plans, promotions, coupons and delivery costs.">
-  <title>Cart Optimizer · Digikala Supermarket</title>
-  <link rel="stylesheet" href="/style.css"><script src="/engine.js" defer></script><script src="/mobile.js" defer></script><script src="/app.js" defer></script><script src="/live.js" defer></script><script src="/auto-planner.js" defer></script><script src="/auto-ui.js" defer></script>
+  <meta name="description" content="مقایسه قیمت و اندازه بسته‌ها و برنامه‌ریزی خرید سوپرمارکتی">
+  <title>سبدچین | خرید به‌صرفه</title>
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/fa.css"><script src="/engine.js" defer></script><script src="/mobile.js" defer></script><script src="/app.js" defer></script><script src="/live.js" defer></script><script src="/auto-planner.js" defer></script><script src="/checkout.js" defer></script><script src="/auto-ui.js" defer></script><script src="/fa-ui.js" defer></script>
 </head>
 <body>
 <aside class="sidebar">
-  <a href="#" class="brand"><span class="brand-icon">▣</span><span>cart<span class="brand-light">wise</span><small>SHOPPING CART OPTIMIZER</small></span></a>
-  <div class="market"><span class="market-dot"></span><div>Digikala Supermarket<small>Your local planning workspace</small></div></div>
-  <nav aria-label="Workspace">
-    <button class="nav active" data-tab="list"><span>01</span> Shopping list <b id="list-count">0</b></button>
-    <button class="nav" data-tab="offers"><span>02</span> Product offers <b id="offer-count">0</b></button>
-    <button class="nav" data-tab="rules"><span>03</span> Coupons & delivery</button>
-    <button class="nav" data-tab="results"><span>04</span> Your cart plan</button>
+  <a href="#" class="brand"><span class="brand-icon">▣</span><span>سبد<span class="brand-light">چین</span><small>خرید حساب‌شده، به سلیقه شما</small></span></a>
+  <div class="market"><span class="market-dot"></span><div>سوپرمارکت دیجی‌کالا<small>همراه خرید روزمره شما</small></div></div>
+  <nav aria-label="بخش‌های برنامه">
+    <button class="nav active" data-tab="list"><span>۰۱</span> لیست خرید <b id="list-count">0</b></button>
+    <button class="nav" data-tab="offers"><span>۰۲</span> گزینه‌های کالا <b id="offer-count">0</b></button>
+    <button class="nav" data-tab="rules"><span>۰۳</span> ارسال و تخفیف</button>
+    <button class="nav" data-tab="results"><span>۰۴</span> سبد پیشنهادی</button>
+    <button class="nav" data-tab="settings"><span>۰۳</span> تنظیمات و حریم خصوصی</button>
   </nav>
-  <div class="sidebar-foot"><span class="local-dot"></span> Stored on this browser<small>Export a snapshot to keep a backup.<br>Prices are supplied or imported by you.</small><a href="https://www.digikala.com/fresh/" target="_blank" rel="noopener noreferrer">Open Digikala ↗</a></div>
+  <div class="sidebar-foot"><span class="local-dot"></span> ذخیره روی این دستگاه<small>از لیست خود پشتیبان بگیرید.<br>قیمت‌ها از فروشگاه خوانده می‌شوند.</small><a href="https://www.digikala.com/fresh/" target="_blank" rel="noopener noreferrer">رفتن به دیجی‌کالا ↗</a></div>
 </aside>
 <main>
-  <header class="topbar"><span>YOUR WORKSPACE <span class="slash">/</span> <strong id="tab-label">Shopping list</strong></span><div class="toolbar"><button id="demo" class="quiet">Load demo</button><button id="import" class="quiet">Import JSON</button><button id="export" class="quiet">Export JSON ↗</button><button id="reset" class="quiet danger">Reset</button><input type="file" id="file" accept=".json,application/json" hidden></div></header>
-  <section class="hero"><div><p class="eyebrow">LESS GUESSWORK. BETTER CARTS.</p><h1>Make every toman count.</h1><p>Find a better mix of offers, coupons and delivery costs.<br>One shopping list. Every eligible cart combination.</p></div><div class="hero-art" aria-hidden="true"><div class="receipt"><span>YOUR NEXT SHOP</span><i></i><i></i><i></i><strong>smarter, together.</strong></div><div class="hero-stamp">✓<small>ADD IT ALL UP</small></div></div></section>
+  <header class="topbar"><span>سبدچین <span class="slash">/</span> <strong id="tab-label">لیست خرید</strong></span><div class="toolbar"><button id="demo" class="quiet">نمونه آزمایشی</button><button id="import" class="quiet">بازیابی لیست</button><button id="export" class="quiet">پشتیبان‌گیری</button><button id="reset" class="quiet danger">لیست جدید</button><input type="file" id="file" accept=".json,application/json" hidden></div></header>
+  <section class="hero"><div><p class="eyebrow">خرید روزمره، حساب‌شده‌تر</p><h1>هر تومان، به‌جا خرج شود.</h1><p>قیمت‌ها و اندازه بسته‌ها را مقایسه کنید.<br>لیست و موقعیت شما؛ ادامه با سبدچین.</p></div><div class="hero-art" aria-hidden="true"><div class="receipt"><span>خرید بعدی شما</span><i></i><i></i><i></i><strong>خرید به‌صرفه‌تر</strong></div><div class="hero-stamp">✓<small>با هم حساب کنیم</small></div></div></section>
   <div id="message" class="message" role="status" aria-live="polite" hidden></div>
-  <div class="snapshot-strip"><span id="source-badge" class="badge">Manual snapshot</span><span id="snapshot-time">No prices imported</span><span class="spacer"></span><span>Display: <strong>toman</strong> · JSON: rials</span></div>
+  <div class="snapshot-strip"><span id="source-badge" class="badge">اطلاعات دستی</span><span id="snapshot-time">هنوز قیمتی خوانده نشده</span><span class="spacer"></span><span>نمایش: <strong>تومان</strong> · فایل پشتیبان: ریال</span></div>
 
   <section id="tab-list" class="tab-panel">
-    <div class="section-heading"><div><p class="eyebrow">STEP 01</p><h2>What’s on your list?</h2><p>Add exact items, or group acceptable alternatives under one item.</p></div></div>
-    <div class="workspace-grid"><section class="card"><form id="item-form" class="inline-form"><label class="grow">Item name<input name="name" required maxlength="300" placeholder="e.g. شیر یک لیتری" dir="auto"></label><label class="qty-field">Quantity<input name="quantity" type="number" min="1" max="50" value="1" required></label><button class="primary" type="submit">+ Add item</button></form><div id="items"></div></section>
-    <aside class="card guide"><div class="icon-disc">↗</div><h3>Same need, more options.</h3><p>An item can have several acceptable brands or sellers. Add each as an offer in the next step.</p><hr><p>Match package size and quality yourself. The optimizer treats every offer linked to the same item as an acceptable substitute.</p><button class="text-button" data-tab="offers">Continue to product offers →</button></aside></div>
+    <div class="section-heading"><div><p class="eyebrow">گام اول</p><h2>چه چیزهایی نیاز دارید؟</h2><p>نام کالا، برند دلخواه و در صورت نیاز وزن یا حجم را بنویسید.</p></div></div>
+    <div class="workspace-grid"><section class="card"><form id="item-form" class="inline-form"><label class="grow">نام کالا<input name="name" required maxlength="300" placeholder="مثلاً شیر کم‌چرب یک لیتر" dir="auto"></label><label class="qty-field">تعداد<input name="quantity" type="number" min="1" max="50" value="1" required></label><button class="primary" type="submit">افزودن به لیست</button></form><div id="items"></div></section>
+    <aside class="card guide"><div class="icon-disc">↗</div><h3>یک نیاز، چند انتخاب</h3><p>برای هر کالا می‌توانید چند برند یا اندازه قابل قبول داشته باشید.</p><hr><p>گزینه‌های پیشنهادی را پیش از خرید مرور کنید.</p><button class="text-button" data-tab="offers">گزینه‌های کالا</button></aside></div>
   </section>
 
   <section id="tab-offers" class="tab-panel" hidden>
-    <div class="section-heading"><div><p class="eyebrow">STEP 02</p><h2>Give each item its options.</h2><p>Normal and promotional prices can differ by quantity. All prices below are in toman.</p></div></div>
-    <section class="card import-card"><form id="link-form" class="inline-form"><label class="grow">Import a public product link<input name="url" type="url" required placeholder="https://www.digikala.com/product/dkp-…/"></label><button class="secondary" type="submit" id="fetch-product">Read product page ↗</button></form><p class="hint">Imports supported public product metadata. Review the location, seller, price tiers and stock before confirming. A blocked page will show an error.</p></section>
-    <section class="card"><h3 id="offer-form-title">Add an offer</h3><form id="offer-form"><input name="id" type="hidden"><div class="form-grid">
-      <label>Shopping-list item<select name="item_id" id="offer-item" required></select></label><label>Store / fulfilment group<select name="store_id" id="offer-store" required></select></label>
-      <label class="span2">Product / brand / package<input name="title" required maxlength="300" placeholder="Exact product and size" dir="auto"></label>
-      <label>Normal unit price (toman)<input name="regular_price" type="number" min="0.1" step="0.1" required></label><label>Promotional unit price (optional)<input name="promo_price" type="number" min="0" step="0.1"></label>
-      <label>Units at promotional price<input name="promo_limit" type="number" min="0" max="50" value="0" required></label><label>Promotional limit applies<select name="promo_scope"><option value="account">Across all carts (account-wide)</option><option value="cart">Per cart (only if verified)</option></select></label>
-      <label>Available units (total stock)<input name="stock" type="number" min="0" max="500" value="1" required></label><label>Product URL (optional)<input name="url" type="url" placeholder="https://www.digikala.com/…"></label>
-    </div><label class="checkbox"><input name="confirmed" type="checkbox" required> I checked this seller, the normal price, promotional quota and stock.</label><div class="form-actions"><button class="primary" type="submit">Save offer</button><button class="quiet" type="button" id="cancel-offer">Clear form</button></div></form></section>
+    <div class="section-heading"><div><p class="eyebrow">گزینه‌های کالا</p><h2>گزینه‌های هر کالا</h2><p>قیمت عادی و تخفیف‌دار را جداگانه بررسی کنید. همه قیمت‌ها به تومان است.</p></div></div>
+    <section class="card import-card"><form id="link-form" class="inline-form"><label class="grow">پیوند صفحه کالا<input name="url" type="url" required placeholder="https://www.digikala.com/product/dkp-…/"></label><button class="secondary" type="submit" id="fetch-product">خواندن صفحه کالا</button></form><p class="hint">قیمت، اندازه و فروشنده را پیش از تأیید بررسی کنید.</p></section>
+    <section class="card"><h3 id="offer-form-title">افزودن گزینه</h3><form id="offer-form"><input name="id" type="hidden"><div class="form-grid">
+      <label>قلم لیست خرید<select name="item_id" id="offer-item" required></select></label><label>فروشگاه / گروه ارسال<select name="store_id" id="offer-store" required></select></label>
+      <label class="span2">کالا / برند / اندازه<input name="title" required maxlength="300" placeholder="نام دقیق و اندازه بسته" dir="auto"></label>
+      <label>قیمت عادی هر بسته (تومان)<input name="regular_price" type="number" min="0.1" step="0.1" required></label><label>قیمت تخفیف‌دار (اختیاری)<input name="promo_price" type="number" min="0" step="0.1"></label>
+      <label>تعداد با قیمت تخفیف<input name="promo_limit" type="number" min="0" max="50" value="0" required></label><label>محدوده سهمیه تخفیف<select name="promo_scope"><option value="account">کل حساب کاربری</option><option value="cart">هر سبد (در صورت تأیید)</option></select></label>
+      <label>تعداد موجود<input name="stock" type="number" min="0" max="500" value="1" required></label><label>پیوند کالا (اختیاری)<input name="url" type="url" placeholder="https://www.digikala.com/…"></label>
+    </div><label class="checkbox"><input name="confirmed" type="checkbox" required> فروشنده، قیمت، سهمیه تخفیف و موجودی را بررسی کرده‌ام.</label><div class="form-actions"><button class="primary" type="submit">ذخیره گزینه</button><button class="quiet" type="button" id="cancel-offer">پاک‌کردن فرم</button></div></form></section>
     <div id="offers" class="offer-grid"></div>
   </section>
 
   <section id="tab-rules" class="tab-panel" hidden>
-    <div class="section-heading"><div><p class="eyebrow">STEP 03</p><h2>The small print matters.</h2><p>Use the fees and coupon terms shown for your selected location and account.</p></div></div>
-    <div class="workspace-grid"><section class="card"><h3>Delivery & order rules</h3><form id="store-form"><label>Store / fulfilment group<select name="id" id="store-edit"></select></label><div class="form-grid">
-      <label class="span2">Store name<input name="name" required maxlength="300"></label><label>Delivery per cart (toman)<input name="delivery_fee" type="number" min="0" step="0.1" required></label><label>Service fee per cart (toman)<input name="service_fee" type="number" min="0" step="0.1" required></label>
-      <label>Minimum order (toman)<input name="minimum_order" type="number" min="0" step="0.1" required></label><label>Free delivery from (optional)<input name="free_delivery_over" type="number" min="0" step="0.1"></label>
-      <label class="span2">Minimum order & free delivery are measured<select name="threshold_basis"><option value="before_coupon">Before coupon, after item promotions</option><option value="after_coupon">After coupon and item promotions</option></select></label>
-    </div><div class="form-actions"><button class="primary" type="submit">Save delivery rules</button><button class="quiet" id="add-store" type="button">+ Add group</button><button class="quiet danger" id="delete-store" type="button">Remove group</button></div></form></section>
-    <aside class="card"><h3>Planning settings</h3><form id="settings-form"><label>Location / account context<input name="context" required maxlength="300" placeholder="e.g. Tehran · scheduled delivery"></label><label>Maximum total carts<select name="max_carts"><option value="1">1 — one checkout</option><option value="2">2 — allow splitting</option><option value="3">3 — allow more splitting</option></select></label><button class="secondary" type="submit">Save settings</button></form><hr><p class="hint">Every cart pays its own fees. Coupon use limits and account-wide promotional quotas are shared across carts. Cart 1 is purchased first.</p><p class="hint">Set a per-cart promotion limit only when the retailer explicitly allows it. Unknown restrictions should be checked before planning.</p></aside></div>
-    <section class="card"><h3 id="coupon-form-title">Add a coupon</h3><form id="coupon-form"><input name="id" type="hidden"><div class="form-grid four">
-      <label>Store<select name="store_id" id="coupon-store"></select></label><label>Coupon code<input name="code" required maxlength="100"></label><label>Discount type<select name="kind" id="coupon-kind"><option value="fixed">Fixed amount (toman)</option><option value="percent">Percentage (%)</option></select></label><label>Amount / percent<input name="value" type="number" min="0.01" step="0.01" required></label>
-      <label>Minimum subtotal (toman)<input name="minimum_spend" type="number" min="0" step="0.1" value="0" required></label><label>Discount cap (optional, toman)<input name="maximum_discount" type="number" min="0" step="0.1"></label><label>Allowed uses across all carts<input name="max_uses" type="number" min="1" max="3" value="1" required></label>
-    </div><label class="checkbox"><input name="removes_promotions" type="checkbox" checked> Applying this coupon removes promotional item prices.</label><p class="hint">One coupon per cart. Minimum coupon spend is measured before the coupon and after any remaining item promotions. Percentages use basis points; fractional rials are rounded down.</p><div class="form-actions"><button class="primary" type="submit">Save coupon</button><button class="quiet" type="button" id="cancel-coupon">Clear form</button></div></form></section>
+    <div class="section-heading"><div><p class="eyebrow">هزینه‌ها و تخفیف</p><h2>هزینه‌های نهایی خرید</h2><p>هزینه‌ها باید مربوط به آدرس و روش ارسال فعلی باشند.</p></div></div>
+    <div class="workspace-grid"><section class="card"><h3>ارسال و شرایط سفارش</h3><form id="store-form"><label>فروشگاه / گروه ارسال<select name="id" id="store-edit"></select></label><div class="form-grid">
+      <label class="span2">نام فروشگاه<input name="name" required maxlength="300"></label><label>ارسال هر سبد (تومان)<input name="delivery_fee" type="number" min="0" step="0.1" required></label><label>خدمات هر سبد (تومان)<input name="service_fee" type="number" min="0" step="0.1" required></label>
+      <label>حداقل سفارش (تومان)<input name="minimum_order" type="number" min="0" step="0.1" required></label><label>حد ارسال رایگان (اختیاری)<input name="free_delivery_over" type="number" min="0" step="0.1"></label>
+      <label class="span2">مبنای حداقل خرید و ارسال رایگان<select name="threshold_basis"><option value="before_coupon">پیش از کد تخفیف و پس از تخفیف کالاها</option><option value="after_coupon">پس از همه تخفیف‌ها</option></select></label>
+    </div><div class="form-actions"><button class="primary" type="submit">ذخیره شرایط ارسال</button><button class="quiet" id="add-store" type="button">افزودن گروه</button><button class="quiet danger" id="delete-store" type="button">حذف گروه</button></div></form></section>
+    <aside class="card"><h3>تنظیمات محاسبه</h3><form id="settings-form"><label>آدرس / شرایط خرید<input name="context" required maxlength="300" placeholder="مثلاً تهران · ارسال زمان‌دار"></label><label>حداکثر تعداد سبد<select name="max_carts"><option value="1">۱ ـ یک سبد</option><option value="2">۲ ـ امکان دو سبد</option><option value="3">۳ ـ امکان سه سبد</option></select></label><button class="secondary" type="submit">ذخیره تنظیمات</button></form><hr><p class="hint">هر سبد هزینه ارسال جداگانه دارد؛ سهمیه تخفیف حساب بین سبدها مشترک است. سبد اول زودتر خریداری می‌شود.</p><p class="hint">محدودیت تخفیف هر سبد را فقط با تأیید فروشگاه وارد کنید.</p></aside></div>
+    <section class="card"><h3 id="coupon-form-title">افزودن کد تخفیف</h3><form id="coupon-form"><input name="id" type="hidden"><div class="form-grid four">
+      <label>فروشگاه<select name="store_id" id="coupon-store"></select></label><label>کد تخفیف<input name="code" required maxlength="100"></label><label>نوع تخفیف<select name="kind" id="coupon-kind"><option value="fixed">مبلغ ثابت (تومان)</option><option value="percent">درصد (%)</option></select></label><label>مبلغ / درصد<input name="value" type="number" min="0.01" step="0.01" required></label>
+      <label>حداقل مبلغ کالاها (تومان)<input name="minimum_spend" type="number" min="0" step="0.1" value="0" required></label><label>سقف تخفیف (تومان، اختیاری)<input name="maximum_discount" type="number" min="0" step="0.1"></label><label>دفعات استفاده در کل سبدها<input name="max_uses" type="number" min="1" max="3" value="1" required></label>
+    </div><label class="checkbox"><input name="removes_promotions" type="checkbox" checked> این کد جایگزین تخفیف کالاها می‌شود.</label><p class="hint">در هر سبد یک کد قابل استفاده است. حداقل خرید پیش از اعمال کد بررسی می‌شود.</p><div class="form-actions"><button class="primary" type="submit">ذخیره کد</button><button class="quiet" type="button" id="cancel-coupon">پاک‌کردن فرم</button></div></form></section>
     <div id="coupons" class="offer-grid"></div>
   </section>
 
-  <section id="tab-results" class="tab-panel" hidden><div class="section-heading"><div><p class="eyebrow">STEP 04</p><h2>Your next supermarket run.</h2><p>Every total includes the supplied delivery and service fees.</p></div><button id="export-plan" class="secondary" hidden>Export plan ↗</button></div><div id="results"><div class="empty card"><span class="empty-icon">▤</span><h3>Your plan will appear here.</h3><p>Add your list, offers and checkout rules, then find the best cart.</p></div></div></section>
+  <section id="tab-results" class="tab-panel" hidden><div class="section-heading"><div><p class="eyebrow">نتیجه خرید</p><h2>خرید بعدی شما</h2><p>جمع نهایی تابع هزینه‌های تأییدشده فروشگاه است.</p></div><button id="export-plan" class="secondary" hidden>ذخیره نتیجه</button></div><div id="results"><div class="empty card"><span class="empty-icon">▤</span><h3>نتیجه خرید اینجا نمایش داده می‌شود.</h3><p>لیست و آدرس را مشخص کنید؛ ادامه کار با برنامه است.</p></div></div></section>
 
-  <footer class="run-bar"><div><strong id="summary">0 items · 0 confirmed offers</strong><small id="run-hint">Add your list and prices to get started.</small></div><button class="primary" id="optimize">Find the best cart <span>→</span></button></footer>
+  <footer class="run-bar"><div><strong id="summary">لیست خرید خالی است</strong><small id="run-hint">اولین کالا را به لیست اضافه کنید.</small></div><button class="primary" id="optimize">پیدا کردن سبد خرید <span>→</span></button></footer>
+  <section id="tab-settings" class="tab-panel" hidden dir="rtl">
+    <div class="section-heading"><div><p class="eyebrow">به سلیقه شما</p><h2>رنگ و حال سبدچین</h2><p>ظاهر دلخواه روی همین گوشی ذخیره می‌شود.</p></div></div>
+    <section class="card"><fieldset class="theme-picker"><legend>ظاهر برنامه</legend>
+      <label class="theme-choice simple"><input type="radio" name="theme" value="simple"><span class="theme-swatch"></span><strong>ساده</strong><small>آرام، روشن و بی‌حاشیه</small></label>
+      <label class="theme-choice modern"><input type="radio" name="theme" value="modern"><span class="theme-swatch"></span><strong>مدرن</strong><small>فیروزه‌ای و امروزی</small></label>
+      <label class="theme-choice traditional"><input type="radio" name="theme" value="traditional"><span class="theme-swatch"></span><strong>سنتی</strong><small>لاجورد، کاشی و رنگ خاک</small></label>
+    </fieldset></section>
+    <section class="card"><h3>درباره سبدچین</h3><p>همراه مستقل برنامه‌ریزی خرید؛ وابسته به دیجی‌کالا نیست. مبلغ و موجودی نهایی را فروشگاه تعیین می‌کند. برنامه سفارش یا پرداختی ثبت نمی‌کند.</p><p>نسخه ۰٫۷٫۰ آزمایشی · بدون مدل زبانی، تبلیغات یا حساب جداگانه</p></section>
+    <section class="card privacy"><h3>حریم خصوصی شما</h3><p>لیست، ظاهر و آخرین آدرس روی این گوشی ذخیره می‌شوند. برای جست‌وجوی قیمت، نام کالا به دیجی‌کالا فرستاده می‌شود؛ سایت فروشگاه هم آدرس و نشست مرور خود را نگه می‌دارد.</p><p>دسترسی به موقعیت اختیاری است و فقط با انتخاب شما برای دیجی‌کالا فعال می‌شود. سبدچین سرور جمع‌آوری اطلاعات، تحلیل‌گر یا تبلیغات ندارد. پشتیبان‌گیری، فایل اطلاعات شما را در پوشه انتخابی‌تان ذخیره می‌کند.</p><details><summary>جزئیات نگهداری و پاک‌کردن</summary><p>مرورگر فروشگاه می‌تواند نشانی اینترنتی، جست‌وجو، آدرس، موقعیت انتخابی و کوکی‌های خود را پردازش کند. این رفتار تابع سیاست حریم خصوصی دیجی‌کالاست. ورود به حساب فروشگاه اختیاری و تحت مدیریت خود آن است. برنامه رمز عبور یا توکن ورود شما را نمی‌خواند.</p><p>اطلاعات محلی تا پاک‌کردن داده برنامه یا حذف آن نگه داشته می‌شود. دکمه زیر لیست، آدرس، ظاهر و نشست فروشگاه را پاک می‌کند؛ فایل پشتیبان قبلی باقی می‌ماند.</p></details><button type="button" class="secondary danger" id="clear-private-data">پاک‌کردن اطلاعات این گوشی</button></section>
+  </section>
 </main>
 </body></html>

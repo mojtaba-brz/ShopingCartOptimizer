@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- GPS is optional; address search/map selection works without it. No storage permission. -->
-    <application android:allowBackup="false" android:label="Cartwise"
+    <application android:allowBackup="false" android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true" android:usesCleartextTraffic="false" android:theme="@style/AppTheme">
         <activity android:name=".DigikalaActivity" android:exported="false"

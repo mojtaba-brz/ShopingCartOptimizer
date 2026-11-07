@@ -14,23 +14,23 @@
     window.CartwiseAndroid.openDigikala(item?.id || '',item?.name || '',locationOnly);
   }
   const card=document.createElement('section'); card.className='card live-card'; card.id='live-card';
-  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">LIVE DIGIKALA</p><h3>Choose your delivery location.</h3><p id="live-location">Choose an address using Digikala’s map or address search.</p></div><button class="secondary" id="live-location-button">Choose location / map</button></div><p class="hint">Then tap Search Digikala beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
+  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">قیمت‌های روز</p><h3>Choose your delivery location.</h3><p id="live-location">آدرس را با جست‌وجو یا نقشه دیجی‌کالا انتخاب کنید.</p></div><button class="secondary" id="live-location-button">انتخاب آدرس روی نقشه</button></div><p class="hint">Then tap جست‌وجوی دیجی‌کالا beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
   $('tab-list').insertBefore(card,$('tab-list').querySelector('.workspace-grid'));
   $('live-location-button').onclick=()=>open(null,true);
-  $('tab-list').querySelector('.guide').innerHTML='<div class="icon-disc">↗</div><h3>Search real products.</h3><p>Add your shopping-list item, then tap Search Digikala beside it. Select your delivery area on Digikala and read the prices into this planner.</p><hr><p>You choose acceptable brands and package sizes from the imported results. The app fills their prices automatically.</p>';
-  $('tab-offers').querySelector('.import-card').innerHTML='<h3>Find live prices from your list</h3><p>Search Digikala next to an item on your shopping list. Its location picker and catalog open inside Cartwise.</p><button class="secondary" id="live-go-list">Go to shopping list →</button><p class="hint">The form below is available for manual corrections or imported JSON snapshots.</p>';
+  $('tab-list').querySelector('.guide').innerHTML='<div class="icon-disc">↗</div><h3>Search real products.</h3><p>Add your shopping-list item, then tap جست‌وجوی دیجی‌کالا beside it. Select your delivery area on Digikala and read the prices into this planner.</p><hr><p>You choose acceptable brands and package sizes from the imported results. The app fills their prices automatically.</p>';
+  $('tab-offers').querySelector('.import-card').innerHTML='<h3>Find live prices from your list</h3><p>جست‌وجوی دیجی‌کالا next to an item on your shopping list. Its location picker and catalog open inside Cartwise.</p><button class="secondary" id="live-go-list">Go to shopping list →</button><p class="hint">The form below is available for manual corrections or imported JSON snapshots.</p>';
   $('live-go-list').onclick=()=>showTab('list');
   document.querySelectorAll('a[href="https://www.digikala.com/fresh/"]').forEach(a=>a.href='https://www.digikala.com/supermarket/');
   function paint() {
     for(const item of state.items) {
       const row=Array.from($('items').querySelectorAll('.item-row')).find(r=>r.querySelector('[data-quantity]')?.dataset.quantity===item.id);
       if(row && !row.querySelector('[data-live-search]')) {
-        const b=document.createElement('button');b.className='secondary live-search';b.type='button';b.dataset.liveSearch=item.id;b.textContent='Search Digikala';
+        const b=document.createElement('button');b.className='secondary live-search';b.type='button';b.dataset.liveSearch=item.id;b.textContent='جست‌وجوی دیجی‌کالا';
         b.onclick=()=>open(item);row.insertBefore(b,row.lastElementChild);
       }
     }
-    $('live-location-button').textContent=meta.location?'Change location / map':'Choose location / map';
-    $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'Scheduled delivery':'Instant delivery'}` : 'Choose an address using Digikala’s map or address search.';
+    $('live-location-button').textContent=meta.location?'تغییر آدرس روی نقشه':'انتخاب آدرس روی نقشه';
+    $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'ارسال زمان‌دار':'ارسال فوری'}` : 'آدرس را با جست‌وجو یا نقشه دیجی‌کالا انتخاب کنید.';
     for(const node of $('offers').querySelectorAll('.offer-card')) {
       const offerId=node.querySelector('[data-edit-offer]')?.dataset.editOffer;
       if(meta.offers[offerId] && !node.querySelector('.live-price-note')) {
@@ -68,7 +68,7 @@
   window.addEventListener('cartwise:live',e=>{
     try {
       const x=validatePayload(e.detail), key=adoptContext(x);
-      if(x.location_only) {message('Delivery location saved. Search a shopping-list item to read live prices. Previous live offers from another area or delivery mode need refreshing.');return;}
+      if(x.location_only) {message('آدرس ذخیره شد؛ حالا لیست خرید را جست‌وجو کنید.');return;}
       if(!state.items.some(i=>i.id===x.item_id)) throw Error('The shopping-list item no longer exists. Search again from your list.');
       candidates=x.products.map(p=>validateProduct(p,x)).filter(Boolean);
       if(!candidates.length) throw Error('No valid product prices were found. Search on Digikala and read the page again.');
@@ -123,6 +123,7 @@
   const originalRender=render;
   render=function(){originalRender();paint();};
   window.CartwiseLive={
+    rememberAutomatic(x) {meta.location=x.location;meta.shipment_type=x.shipment_type;meta.context=x.location+' | '+x.shipment_type;persist();paint();},
     checkBeforeOptimize(snapshot) {
       const live=snapshot.offers.filter(o=>o.confirmed&&o.id.startsWith('live-'));
       for(const o of live) {
@@ -135,5 +136,6 @@
       return '';
     }
   };
+  try {const x=JSON.parse(window.CartwiseAndroid.savedDelivery?.()||'{}');if(x.location){meta.location=x.location;meta.shipment_type=x.shipment_type;}}catch{}
   paint();
 })();

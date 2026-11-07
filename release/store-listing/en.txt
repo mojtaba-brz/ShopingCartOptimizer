@@ -1,0 +1,8 @@
+Title: Sabadchin
+Short description: Plan grocery quantities, compare package sizes and review a suggested basket.
+
+Sabadchin is an independent Persian grocery planner. Enter a list and delivery area to search readable Digikala supermarket results, compare package amounts and review alternatives. It offers Simple, Modern and Traditional Iranian themes, local list backups, optional GPS and saved-location recovery when the retailer confirms the same context.
+
+No language model, ads or separate Sabadchin account. Internet is required for retailer searches. Results are estimates from readable pages; coverage, stock and coupon eligibility are not guaranteed. Visible fees and basket correction notices are shown with their source. A retailer basket total is labelled as matching only when readable product titles and quantities match the proposal. Sabadchin does not create orders or make payments and is not affiliated with Digikala.
+
+Requires Android 8+ and an up-to-date Android System WebView.

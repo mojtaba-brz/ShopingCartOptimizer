@@ -28,7 +28,7 @@ class ServerTests(unittest.TestCase):
     def test_static_gui_and_headers(self):
         status, body, headers = self.request('GET', '/')
         self.assertEqual(status, 200)
-        self.assertIn(b'Make every toman count', body)
+        self.assertIn('هر تومان، به‌جا خرج شود'.encode('utf-8'), body)
         self.assertEqual(headers['X-Frame-Options'], 'DENY')
         self.assertIn("script-src 'self'", headers['Content-Security-Policy'])
 

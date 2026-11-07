@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const api=require('../../cartoptimizer/web/checkout.js');
+const source=fs.readFileSync('cartoptimizer/web/digikala-checkout.js','utf8');
+const node=(text,hidden=false)=>({innerText:text,children:[],getClientRects:()=>hidden?[]:[{}],parentElement:null});
+function read(rows){return vm.runInNewContext(source,{location:{protocol:'https:',hostname:'www.digikala.com',origin:'https://www.digikala.com',href:'https://www.digikala.com/supermarket/cart/',pathname:'/supermarket/cart/'},document:{querySelectorAll:q=>q==='p,span,div,li,section'?rows:[]},getComputedStyle:()=>({visibility:'visible'}),URL,Date});}
+let r=read([node('هزینه ارسال ۲۵٬۰۰۰ تومان'),node('هزینه خدمات ١٬٠٠٠ تومان'),node('مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان'),node('قیمت کالا تغییر کرده است'),node('هزینه ارسال ۱ تومان',true)]);
+assert.equal(r.fields.delivery_fee.value,250000);assert.equal(r.fields.service_fee.value,10000);assert.equal(r.fields.total.value,1360000);assert.equal(r.notices.length,1);
+assert.equal(read([node('هزینه ارسال رایگان')]).fields.delivery_fee.value,0);
+assert.equal(read([node('هزینه ارسال 25,000')]).fields.delivery_fee,null);
+assert.equal(read([node('هزینه ارسال 1000 تومان'),node('هزینه ارسال 2000 تومان')]).fields.delivery_fee,null);
+assert.equal(read([node('هزینه ارسال از 1000 تا 2000 تومان')]).fields.delivery_fee,null);
+const label=node('هزینه ارسال');label.parentElement=node('هزینه ارسال حداقل سفارش ۲۵۰۰۰ تومان');assert.equal(read([label]).fields.delivery_fee,null);
+const quote={...r,items_complete:true,cart_items:[{title:'شیر کم چرب',quantity:2}]};
+assert.equal(api.clean([quote,quote]).length,1);
+const cleaned=api.clean([quote])[0];assert.equal(api.reconcile(cleaned,[{title:'شیر کم‌چرب',quantity:2}]).verified,true);
+assert.equal(api.reconcile(cleaned,[{title:'شیر کم چرب',quantity:1}]).verified,false);
+assert.equal(api.reconcile(cleaned,[{title:'شیر کم چرب',quantity:2},{title:'نان',quantity:1}]).verified,false);
+assert.equal(api.reconcile({...cleaned,items_complete:false},[{title:'شیر کم چرب',quantity:2}]).verified,false);
+assert.equal(api.clean([{...quote,page_url:'https://www.digikala.com.evil.invalid/'}]).length,0);
+assert.equal(api.clean([{...quote,captured_at:'2000-01-01'}]).length,0);
+assert.equal(api.clean([{...quote,fields:{total:{value:-1}},notices:[]}]).length,0);
+console.log('Fee reading, ambiguity rejection, freshness and basket identity checks passed');

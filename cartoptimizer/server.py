@@ -48,6 +48,9 @@ class Handler(BaseHTTPRequestHandler):
                   '/live.js': ('live.js', 'text/javascript; charset=utf-8'),
                   '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
                   '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
+                  '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
+                  '/fa-ui.js': ('fa-ui.js', 'text/javascript; charset=utf-8'),
+                  '/checkout.js': ('checkout.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8')}
         if path not in assets:
             return self.respond(404, {'error': 'Not found'})

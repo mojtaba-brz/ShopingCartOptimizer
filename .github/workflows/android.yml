@@ -26,7 +26,7 @@ jobs:
           python-version: '3.12'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.11.1'
       - uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: '11076708'
@@ -36,21 +36,28 @@ jobs:
         run: python -m unittest discover -v
       - name: Check browser scripts
         run: |
+          node --check cartoptimizer/web/checkout.js
+          node --check cartoptimizer/web/fa-ui.js
+          node android/tests/checkout.cjs
           node --check cartoptimizer/web/auto-ui.js
           node --check cartoptimizer/web/live.js
           node --check cartoptimizer/web/digikala-capture.js
           node android/tests/live-reader.cjs
           node android/tests/auto-planner.cjs
+      - name: Create original store graphics
+        run: |
+          python -m pip install Pillow==13.0.0
+          python release/create-store-assets.py
       - name: Install Android platform
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Build installable APK and test APK
         working-directory: android
-        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest assembleRelease bundleRelease lintRelease
       - name: Verify APK signature and label output
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.6.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.7.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -64,7 +71,44 @@ jobs:
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cartwise-Store-Candidates-UNSIGNED
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/mapping/release/mapping.txt
+            android/app/build/reports/lint-results-release.html
+            release/**
+          retention-days: 90
+  browser-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm install --no-save playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - name: Check Persian interface and visible checkout reader
+        run: |
+          python -m cartoptimizer --port 8765 --no-browser &
+          export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
+          node android/tests/browser-ui.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-ui-previews
+          path: /tmp/cartwise-ui/*.png
   emulator-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [30, 36]
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -80,7 +124,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -90,8 +134,12 @@ jobs:
             adb install apks/androidTest/debug/app-debug-androidTest.apk
             adb shell am instrument -w com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation.txt
             grep -Eq 'OK \([0-9]+ tests?\)' instrumentation.txt
+            mkdir -p screenshots
+            adb pull /sdcard/Android/data/com.mojtababrz.cartoptimizer/files/store-screenshots/. screenshots/ || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: android-smoke-log
-          path: instrumentation.txt
+          name: android-smoke-log-${{ matrix.api }}
+          path: |
+            instrumentation.txt
+            screenshots/*.png

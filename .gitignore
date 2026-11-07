@@ -18,3 +18,7 @@ local.properties
 *.apk
 *.keystore
 *.jks
+
+*.aab
+signing.properties
+release/store-assets/*.png

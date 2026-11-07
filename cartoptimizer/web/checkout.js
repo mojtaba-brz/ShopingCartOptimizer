@@ -1,0 +1,29 @@
+/* Checkout observations are tied to one location/mode and never treated as general fee rules. */
+(function(root){
+  'use strict';
+  const keys=['delivery_fee','service_fee','minimum_order','free_delivery_over','subtotal','total'];
+  function clean(rows){
+    const quotes=[],seen=new Set();
+    for(const q of Array.isArray(rows)?rows:[]){
+      if(!q||q.source!=='digikala-visible-checkout'||!['cart','store','catalog'].includes(q.page_kind))continue;
+      let url;try{url=new URL(q.page_url);if(url.protocol!=='https:'||!['www.digikala.com','digikala.com'].includes(url.hostname)||url.username||url.password||url.port)continue;}catch{continue;}
+      const date=Date.parse(q.captured_at);if(!Number.isFinite(date)||Math.abs(Date.now()-date)>1800000)continue;
+      const fields={};for(const key of keys){const f=q.fields?.[key];if(f&&Number.isSafeInteger(f.value)&&f.value>=0&&f.value<=1e13)fields[key]={value:f.value,evidence:String(f.evidence||'').slice(0,180)};}
+      const notices=(Array.isArray(q.notices)?q.notices:[]).filter(n=>typeof n==='string'&&n.length<=180).slice(0,20);
+      if(!Object.keys(fields).length&&!notices.length)continue;
+      const cartItems=(Array.isArray(q.cart_items)?q.cart_items:[]).filter(i=>i&&typeof i.title==='string'&&i.title.length<=300&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=50).slice(0,1000);
+      const signature=JSON.stringify([q.page_kind,url.pathname,fields,notices,cartItems]);if(seen.has(signature))continue;seen.add(signature);
+      quotes.push({page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,notices,cart_items:cartItems,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length});
+    }
+    return quotes.slice(-8);
+  }
+  function reconcile(quote,proposed){
+    if(quote?.page_kind!=='cart'||!quote.items_complete||!quote.fields?.total||!proposed?.length)return {verified:false};
+    const norm=s=>String(s).normalize('NFKC').replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[\u200c\s]+/g,' ').trim();
+    function quantities(rows){const m=new Map();for(const x of rows)m.set(norm(x.title),(m.get(norm(x.title))||0)+x.quantity);return m;}
+    const actual=quantities(quote.cart_items),wanted=quantities(proposed);
+    if(actual.size!==wanted.size||[...wanted].some(([title,n])=>actual.get(title)!==n))return {verified:false};
+    return {verified:true,total:quote.fields.total.value,notices:quote.notices};
+  }
+  const api={clean,reconcile};root.CartwiseCheckout=api;if(typeof module!=='undefined')module.exports=api;
+})(typeof globalThis!=='undefined'?globalThis:window);

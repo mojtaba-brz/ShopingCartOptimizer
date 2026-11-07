@@ -99,8 +99,8 @@ public class DeliverySessionTest {
             eval(scenario,"document.querySelector('#root > div').remove();true");
             scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);((Button)((ViewGroup)root.getChildAt(0)).getChildAt(1)).performClick();});
             long until=System.currentTimeMillis()+5000;AtomicReference<String> text=new AtomicReference<>("");
-            while(System.currentTimeMillis()<until){scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);text.set(((android.widget.TextView)root.getChildAt(1)).getText().toString());});if(text.get().contains("Choose your delivery area once"))break;Thread.sleep(100);}
-            assertTrue(text.get(),text.get().contains("Choose your delivery area once"));
+            while(System.currentTimeMillis()<until){scenario.onActivity(a->{ViewGroup root=(ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0);text.set(((android.widget.TextView)root.getChildAt(1)).getText().toString());});if(text.get().contains("یک‌بار آدرس"))break;Thread.sleep(100);}
+            assertTrue(text.get(),text.get().contains("یک‌بار آدرس"));
             assertEquals(Lifecycle.State.RESUMED,scenario.getState());
         }
     }

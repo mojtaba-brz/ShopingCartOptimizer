@@ -36,12 +36,12 @@ public class OfflineSmokeTest {
         try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
             waitFor(scenario, "Boolean(window.CartwiseEngine && document.getElementById('demo'))");
             eval(scenario, "localStorage.clear();state=initialState();dirty.clear();save();document.getElementById('demo').click();true");
-            waitFor(scenario, "document.getElementById('source-badge').textContent.includes('DEMO')");
+            waitFor(scenario, "document.getElementById('source-badge').textContent.includes('نمونه')");
             eval(scenario, "CartwiseEngine.optimize(state).then(renderPlan);true");
-            waitFor(scenario, "document.getElementById('results').textContent.includes('375,000')");
-            assertTrue(eval(scenario, "document.getElementById('results').textContent.includes('Optimal')").equals("true"));
+            waitFor(scenario, "document.getElementById('results').textContent.includes('۳۷۵٬۰۰۰')");
+            assertTrue(eval(scenario, "document.getElementById('results').textContent.includes('بهینه')").equals("true"));
             scenario.recreate();
-            waitFor(scenario, "Boolean(document.getElementById('source-badge') && document.getElementById('source-badge').textContent.includes('DEMO'))");
+            waitFor(scenario, "Boolean(document.getElementById('source-badge') && document.getElementById('source-badge').textContent.includes('نمونه'))");
             assertTrue(eval(scenario, "document.querySelectorAll('.item-row').length === 3").equals("true"));
         }
     }
@@ -57,7 +57,7 @@ public class OfflineSmokeTest {
             eval(scenario,"showTab('rules');document.getElementById('store-edit').value=state.offers[0].store_id;document.getElementById('store-edit').dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('store-form').elements.delivery_fee.value='10000';document.getElementById('live-fees-checked').checked=true;document.getElementById('store-form').requestSubmit();true");
             waitFor(scenario,"state.stores.find(s=>s.id===state.offers[0].store_id).delivery_fee===100000 && !dirty.size");
             eval(scenario,"CartwiseEngine.optimize(state).then(renderPlan);true");
-            waitFor(scenario,"document.getElementById('results').textContent.includes('145,300')");
+            waitFor(scenario,"document.getElementById('results').textContent.includes('۱۴۵٬۳۰۰')");
             scenario.recreate();
             waitFor(scenario,"Boolean(window.CartwiseLive && state.offers.length===1 && document.getElementById('live-location').textContent.includes('ونک'))");
             assertTrue(eval(scenario,"!CartwiseLive.checkBeforeOptimize(state)").equals("true"));

@@ -92,7 +92,7 @@ public class HeaderlessFlowTest {
             // The primary button now starts a new automatic search; validate the imported
             // manual snapshot through the shared engine without launching that flow.
             eval(main,"CartwiseEngine.optimize(state,{timeLimit:5000,stateLimit:200000}).then(r=>document.getElementById('results').textContent=money(r.total));true");
-            waitFor(main,"document.getElementById('results').textContent.includes('145,300')");
+            waitFor(main,"document.getElementById('results').textContent.includes('۱۴۵٬۳۰۰')");
             String deliveryState=eval(main,"JSON.stringify({context:state.context,price:state.offers[0].promo_price})");
             assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
             // Feed a captured search response through the Android result event and
@@ -102,7 +102,7 @@ public class HeaderlessFlowTest {
             InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
             waitFor(main,"!busy");
             eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
-            waitFor(main,"document.getElementById('results').textContent.includes('135,300') && document.getElementById('results').textContent.includes('برآورد')");
+            waitFor(main,"document.getElementById('results').textContent.includes('۱۳۵٬۳۰۰') && document.getElementById('results').textContent.includes('برآورد')");
             waitFor(main,"document.querySelector('[data-auto-item]')?.textContent.includes('پاستا 500 گرم')");
             assertEquals("false",eval(main,"document.querySelector('.auto-result-item li').textContent.includes('پاستا')"));
             assertEquals("false",eval(main,"document.querySelector('[data-auto-item]').textContent.includes('پنیر آزمون')"));
@@ -121,7 +121,7 @@ public class HeaderlessFlowTest {
             read(first);continueChoice();
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             eval(main,"document.getElementById('optimize').click();true");
-            waitFor(main,"document.getElementById('results').textContent.includes('شیر 500 میلی لیتر') && document.getElementById('results').textContent.includes('120')");
+            waitFor(main,"document.getElementById('results').textContent.includes('شیر 500 میلی لیتر') && document.getElementById('results').textContent.includes('۱۲۰')");
         }
     }
     @Test public void automaticSearchRestoresRetailerConfirmedAreaAfterSessionRestart() throws Exception {
@@ -132,7 +132,7 @@ public class HeaderlessFlowTest {
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
             DigikalaActivity browser=child();
             page(browser,"<div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML='<div><img alt=\"نان تست\" style=\"width:60px;height:60px\"><div><p>100</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'})</script>");
-            waitFor(main,"document.getElementById('results').textContent.includes('نان تست') && document.getElementById('results').textContent.includes('100')");
+            waitFor(main,"document.getElementById('results').textContent.includes('نان تست') && document.getElementById('results').textContent.includes('۱۰۰')");
         }
     }
 }
