@@ -7,7 +7,8 @@ import android.content.SharedPreferences;
 final class DeliveryChoice {
     private final SharedPreferences prefs;
     DeliveryChoice(Context context) {prefs=context.getSharedPreferences("digikala-delivery",Context.MODE_PRIVATE);}
-    static String label(String value) {return value==null?"":value.trim().replaceAll("\\s+"," ");}
+    static String label(String value) {return value==null?"":java.text.Normalizer.normalize(value,java.text.Normalizer.Form.NFKC).replace('ي','ی').replace('ك','ک').replaceAll("[\\u200e\\u200f\\u202a-\\u202e\\u2066-\\u2069]","").replaceAll("[\\u200c\\s]+"," ").trim();}
+    static boolean usableLabel(String value){String s=label(value).replaceFirst("^ارسال\\s*به\\s*","");return !s.isEmpty()&&s.length()<=300&&!s.matches("آدرس انتخابی|انتخاب آدرس|انتخاب موقعیت|آدرس تحویل|موقعیت انتخابی");}
     boolean matches(String location,String mode) {
         return RetailerSession.mode(mode) && !label(location).isEmpty()
             && label(location).equals(prefs.getString("label","")) && mode.equals(prefs.getString("mode",""));
@@ -22,8 +23,11 @@ final class DeliveryChoice {
     String coordinates(){return prefs.getString("coordinates","");}
     boolean isJet(){return "jet".equals(prefs.getString("retailer",""));}
     void rememberJet(String location,String coordinates){
-        remember(location,"on_demand");
-        prefs.edit().putString("retailer","jet").apply();rememberCoordinates(coordinates);
+        if(!usableLabel(location))return;
+        boolean point=validCoordinates(coordinates),changed=!isJet()||!matches(location,"on_demand")||!sameCoordinates(coordinates,coordinates());
+        SharedPreferences.Editor edit=prefs.edit().putString("label",label(location)).putString("mode","on_demand").putString("retailer","jet");
+        if(point)edit.putString("coordinates",coordinates);else edit.remove("coordinates");
+        if(changed||updatedAt()==0)edit.putLong("updated-at",System.currentTimeMillis());edit.apply();
     }
     long updatedAt() {return prefs.getLong("updated-at",0);}
     String location() {return prefs.getString("label","");}

@@ -46,6 +46,7 @@ jobs:
           node --check cartoptimizer/web/digikala-capture.js
           node android/tests/live-reader.cjs
           node android/tests/comparison.cjs
+          node android/tests/location-state.cjs
           node android/tests/auto-planner.cjs
       - name: Create original store graphics
         run: |
@@ -60,7 +61,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.9.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.9.1-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -189,6 +190,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.9.0-Publication-Kit
+          name: Sabadchin-0.9.1-Publication-Kit
           path: publication-kit/**
           retention-days: 90

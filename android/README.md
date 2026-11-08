@@ -1,4 +1,4 @@
-# Cartwise for Android 0.9.0
+# Cartwise for Android 0.9.1
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
@@ -186,3 +186,23 @@ Every discovered merchant's full result page is scrolled before returning to the
 global search for more merchants. Limits: 40 merchants, 1,000 offers and five minutes
 per requested item; reaching a bound is reported as incomplete, never full coverage.
 A user-supplied account-transfer URL must never be embedded in the app or logs.
+
+## Location recognition in 0.9.1
+
+A committed Jet `defaultAddress.addressAddress` or registered account address is
+read with its validated coordinates. A guest fallback carrying only name/title is
+not accepted automatically. Guest map selections may have no `addressName`; the
+UI can show “آدرس انتخابی” while the full address is already committed. This
+placeholder, a specific click event, cached network activity and the old route
+are not required for recognition. Visible map/picker controls still block return;
+a stale add-address URL without an editor does not. Two stable observations are
+required. A user-initiated change disables automatic restoration and invalidates
+pending callbacks; a newly configured service choice is never replaced by an old
+app bookmark. The label and point are stored atomically.
+
+Coverage includes headerless delayed guest registration, cached account selection
+with string coordinates and no catalog request, closing the picker, process
+restart, preservation of a changed service address, and late old requests. Tests
+use deterministic Jet fixtures; inspecting the live cloud map on 2026-11-08 did
+not complete a map selection because its confirm control remained disabled. No
+claim of live validation on the owner's phone is made.

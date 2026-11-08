@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 public class HeaderlessFlowTest {
     @Before public void clean() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{RetailerSession.discard();android.webkit.WebStorage.getInstance().deleteAllData();});
         ApplicationProvider.getApplicationContext().getSharedPreferences("digikala-delivery",0).edit().clear().commit();
     }
     @After public void cleanup() {InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{

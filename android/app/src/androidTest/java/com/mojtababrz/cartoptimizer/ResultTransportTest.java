@@ -27,4 +27,17 @@ public class ResultTransportTest {
         assertFalse(DeliveryChoice.sameCoordinates("35.701|51.4","35.7|51.4"));
         assertFalse(DeliveryChoice.sameCoordinates("NaN|51.4","35.7|51.4"));
     }
+    @Test public void lateCatalogCoordinatesCannotRelabelAConfirmedJetAddress(){
+        android.content.Context c=ApplicationProvider.getApplicationContext();new DeliveryChoice(c).clear();RetailerSession.initialize(c);
+        RetailerSession.confirmJetDelivery("ارسال به ونک","35.75|51.4");
+        android.webkit.WebResourceRequest request=new android.webkit.WebResourceRequest(){
+            public android.net.Uri getUrl(){return android.net.Uri.parse("https://api.digikalajet.ir/search/shop/?latitude=36&longitude=52");}
+            public boolean isForMainFrame(){return false;}public boolean isRedirect(){return false;}public boolean hasGesture(){return false;}public String getMethod(){return "GET";}
+            public java.util.Map<String,String> getRequestHeaders(){return java.util.Collections.emptyMap();}
+        };
+        RetailerSession.observe(request);assertEquals("ارسال به ونک",RetailerSession.deliveryLocation());assertEquals("35.75|51.4",new DeliveryChoice(c).coordinates());
+        new DeliveryChoice(c).rememberJet("ارسال به ونک","");assertEquals("A label-only read must not retain old coordinates", "",new DeliveryChoice(c).coordinates());
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
+    }
+
 }

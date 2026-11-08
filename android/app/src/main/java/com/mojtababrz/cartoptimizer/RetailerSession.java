@@ -20,20 +20,27 @@ final class RetailerSession {
     private static WeakReference<Activity> owner=new WeakReference<>(null);
     private static volatile String observedMode="";
     private static int navigationId;
-    private static volatile String confirmedLocation="", confirmedMode="", catalogLocation="";
+    private static volatile String confirmedLocation="", confirmedMode="", catalogLocation="",confirmedCoordinates="";
 
     private static volatile DeliveryChoice savedChoice;
     private static volatile boolean editingLocation;
     static void initialize(Context app) {savedChoice=new DeliveryChoice(app.getApplicationContext());}
     static void confirmDelivery(String location,String mode) {
         if(!DeliveryChoice.label(location).isEmpty() && mode(mode)) {
-            confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;observedMode=mode;editingLocation=false;
+            confirmedCoordinates="";confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;observedMode=mode;editingLocation=false;
             if(savedChoice!=null){savedChoice.remember(confirmedLocation,mode);savedChoice.rememberCoordinates(catalogLocation);}
         }
     }
+    static void confirmJetDelivery(String location,String point){
+        if(!DeliveryChoice.usableLabel(location))return;
+        confirmedLocation=DeliveryChoice.label(location);confirmedMode="on_demand";observedMode="on_demand";editingLocation=false;
+        confirmedCoordinates=DeliveryChoice.validCoordinates(point)?point:"";
+        if(savedChoice!=null)savedChoice.rememberJet(confirmedLocation,confirmedCoordinates);
+    }
+    static String deliveryCoordinates(){return confirmedCoordinates;}
     static String deliveryLocation() {return confirmedLocation;}
     static String deliveryMode() {return mode(observedMode)?observedMode:confirmedMode;}
-    static void changingLocation() {editingLocation=true;confirmedLocation="";confirmedMode="";catalogLocation="";observedMode="";}
+    static void changingLocation() {editingLocation=true;confirmedLocation="";confirmedMode="";confirmedCoordinates="";catalogLocation="";observedMode="";}
     static void noticeNavigation(Uri uri) {
         String path=uri.getPath(), modal=uri.getQueryParameter("MID");
         if((path!=null && path.contains("/user/add-address")) || (modal!=null && (modal.contains("address")||modal.contains("location")))) changingLocation();
@@ -70,8 +77,8 @@ final class RetailerSession {
         }
         if(lat!=null && lon!=null) {
             String next=lat+"|"+lon;
-            if(!catalogLocation.isEmpty() && !DeliveryChoice.sameCoordinates(catalogLocation,next)) {confirmedLocation="";confirmedMode="";}
-            if(!DeliveryChoice.validCoordinates(next)){catalogLocation="";confirmedLocation="";confirmedMode="";return;}
+            if(confirmedCoordinates.isEmpty()&&!catalogLocation.isEmpty() && !DeliveryChoice.sameCoordinates(catalogLocation,next)) {confirmedLocation="";confirmedMode="";}
+            if(!DeliveryChoice.validCoordinates(next)){catalogLocation="";if(confirmedCoordinates.isEmpty()){confirmedLocation="";confirmedMode="";}return;}
             catalogLocation=next;
         }
         // Read only the public delivery-mode header, never auth or account headers.
@@ -82,7 +89,7 @@ final class RetailerSession {
             String restored=savedChoice.restoreFromCatalog(catalogLocation,observedMode);
             if(!restored.isEmpty()) {confirmedLocation=restored;confirmedMode=observedMode;}
         }
-        if(!confirmedLocation.isEmpty() && savedChoice!=null) savedChoice.rememberCoordinates(catalogLocation);
+        if(!confirmedLocation.isEmpty() && savedChoice!=null&&confirmedCoordinates.isEmpty()) savedChoice.rememberCoordinates(catalogLocation);
     }
     static boolean mode(String value) { return "scheduled".equals(value)||"on_demand".equals(value); }
     static boolean coordinatesMatch(String point){return DeliveryChoice.sameCoordinates(point,catalogLocation);}

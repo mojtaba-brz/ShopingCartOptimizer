@@ -16,7 +16,7 @@ for f in candidates.rglob('*'):
     if 'store-assets' in f.parts and f.suffix=='.png':
         target=root/'store-assets'/f.name;target.parent.mkdir(exist_ok=True);shutil.copy2(f,target)
 for f in pathlib.Path('test-apk').glob('*.apk'):
-    shutil.copy2(f,root/'Sabadchin-Android-0.9.0-test.apk')
+    shutil.copy2(f,root/'Sabadchin-Android-0.9.1-test.apk')
 validation={'source_commit':os.environ['SOURCE_COMMIT'],'run_url':os.environ['RUN_URL'],'job_results':json.loads(os.environ['JOB_RESULTS']),'android':{},'live_retailer_validation':False,'store_submission_ready':False}
 for api in [30,36]:
     folder=pathlib.Path('qa')/str(api)
@@ -31,7 +31,7 @@ for api in [30,36]:
         assert f.read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
         target=root/'screenshots'/('api-'+str(api))/f.name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,target)
 (root/'VALIDATION.json').write_text(json.dumps(validation,indent=2,ensure_ascii=False)+'\n')
-(root/'README-English.txt').write_text("""Sabadchin 0.9.0 - publication preparation kit
+(root/'README-English.txt').write_text("""Sabadchin 0.9.1 - publication preparation kit
 
 The included test APK is installable. APK/AAB files in android-candidates are UNSIGNED release candidates requiring owner signing. Do not submit the debug-signed test APK to stores.
 
@@ -41,7 +41,7 @@ Publication still requires public publisher/support details, a public HTTPS priv
 
 VALIDATION.json reports actual completed checks, including incomplete coverage; it is not a claim that a failing or unfinished check passed. The policy and publisher fields remain drafts until the owner completes them. See README-fa.md for build/signing instructions and official store references.
 
-Source: https://github.com/mojtaba-brz/ShopingCartOptimizer/tree/codex/jet-startup-location
+Source: https://github.com/mojtaba-brz/ShopingCartOptimizer/tree/codex/location-recognition
 """)
 manifest=[]
 for f in sorted(root.rglob('*')):

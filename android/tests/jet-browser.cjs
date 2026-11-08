@@ -28,5 +28,18 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await page.addInitScript(`(${pref})('restore',${JSON.stringify(saved)})`);
  html=`<div id="root"><p id="address"></p></div><script>const point=JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).defaultAddress;document.getElementById('address').textContent='ارسال به '+point.addressAddress;</script>`;
  await page.goto('https://www.digikalajet.com/');assert.match(await page.locator('#address').innerText(),/ونک/);assert.equal((await page.evaluate(`(${pref})('read',{})`)).coordinates,'35.7|51.4');assert.equal(await page.evaluate(()=>Array.isArray(JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).addressList)),true);
+
+ // A generic/missing header and a stale add-address URL must not hide a committed
+ // guest selection; a visible picker must still block automatic completion.
+ await context.clearCookies();const check=await context.newPage();
+ html=`<div id="root"><p>ارسال به آدرس انتخابی</p></div><div id="modal-root"><p>انتخاب از روی نقشه</p></div>`;
+ await check.goto('https://www.digikalajet.com/user/add-address');
+ await check.evaluate(()=>localStorage.setItem('persist:DKNow',JSON.stringify({address:JSON.stringify({isLocationMode:true,isUsingDefaultLocation:false,defaultAddress:{addressAddress:'میدان ونک',addressLatitude:'35.75',addressLongitude:'51.4'}})})));
+ let found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.configured,true);assert.equal(found.map_open,true);assert.equal(found.location,'ارسال به میدان ونک');
+ await check.evaluate(()=>document.getElementById('modal-root').remove());found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.editing,false,'Stale URL alone must not block the registered address');
+ // A document reload must preserve a different valid retailer selection rather
+ // than writing the older address bookmarked by the app.
+ await check.addInitScript(`(${pref})('restore',${JSON.stringify(saved)})`);await check.reload();
+ found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.coordinates,'35.75|51.4');
  assert.deepEqual(errors,[]);await browser.close();console.log('Jet grouped merchants, view-all navigation, beyond-carousel results, scoped identity, startup preference restore and account isolation passed');
 })().catch(e=>{console.error(e);process.exit(1)});

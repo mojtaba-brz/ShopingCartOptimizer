@@ -1,4 +1,4 @@
-> **Android 0.9.0 — سبدچین:** Automatic Android lookup now uses
+> **Android 0.9.1 — سبدچین:** Automatic Android lookup now uses
 > **Digikala Jet (`https://www.digikalajet.com/`)**, not the Digikala hypermarket.
 > Reads real merchant-group titles, opens each store's public “view all” results,
 > and compares captured offers per kg/litre/item. Native search progress includes
@@ -6,6 +6,11 @@
 > confirmed Jet address preference and coordinates before lookup; first use still
 > needs the user's location choice. No authentication token is embedded or copied.
 > No LLM or model download. See [release preparation](release/README-fa.md).
+> Location recognition in 0.9.1 reads the committed guest/account address rather
+> than relying on a particular confirmation button, visible address header or
+> a fresh coordinate-bearing request. Existing retailer selections are preserved;
+> only missing preferences are restored. Late callbacks and older catalog requests
+> cannot relabel a newly selected point.
 
 > **Import fix in 0.2.2:** Product search pages do not need an address header.
 > The Android reader uses the delivery area confirmed in the current Digikala
