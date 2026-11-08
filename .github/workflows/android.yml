@@ -148,6 +148,7 @@ jobs:
             if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/simple.png > screenshots/simple.png; fi
             if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/modern.png > screenshots/modern.png; fi
             if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/traditional.png > screenshots/traditional.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/qa/location-picker.png > screenshots/location-picker.png; fi
             grep -Eq 'OK \([0-9]+ tests?\)' instrumentation-core.txt
             grep -Eq 'OK \(1 test\)' instrumentation-appearance.txt
       - uses: actions/upload-artifact@v4

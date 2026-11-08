@@ -55,7 +55,13 @@ public class LocationPickerFlowTest {
     private void confirm(ActivityScenario<DigikalaActivity> s){s.onActivity(a->{AlertDialog d=dialog(a);((LinearLayout)d.findViewById(R.id.address_results)).getChildAt(0).performClick();d.findViewById(R.id.address_confirm).performClick();});}
     @Test public void selectionConfirmsWithoutMapOrGpsAndHydratesJetBeforeReading()throws Exception{
         try(ActivityScenario<DigikalaActivity> s=launch()){
-            s.onActivity(a->a.openAddressPicker(new JetAddressClient(path->path.startsWith("/map/search/")?rows("میدان ونک"):response(true))));search(s,"ونک");waitForRows(s,"ونک");confirm(s);
+            s.onActivity(a->a.openAddressPicker(new JetAddressClient(path->path.startsWith("/map/search/")?rows("میدان ونک"):response(true))));search(s,"ونک");waitForRows(s,"ونک");
+            if(android.os.Build.VERSION.SDK_INT<36){
+                s.onActivity(a->((LinearLayout)dialog(a).findViewById(R.id.address_results)).getChildAt(0).performClick());Thread.sleep(250);
+                android.graphics.Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();assertNotNull(bitmap);
+                java.io.File folder=new java.io.File(ApplicationProvider.getApplicationContext().getFilesDir(),"qa");folder.mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(folder,"location-picker.png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
+            }
+            confirm(s);
             for(int i=0;i<150&&s.getState()!=Lifecycle.State.DESTROYED;i++)Thread.sleep(100);
             assertEquals(Lifecycle.State.DESTROYED,s.getState());assertEquals(Activity.RESULT_OK,s.getResult().getResultCode());
             JSONObject data=new JSONObject(s.getResult().getResultData().getStringExtra("live_data"));assertEquals("ارسال به تهران، میدان ونک",data.getString("location"));assertEquals("35.75|51.4",new DeliveryChoice(ApplicationProvider.getApplicationContext()).coordinates());assertTrue(hydrated.get().contains("میدان ونک"));
