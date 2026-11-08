@@ -21,7 +21,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  const image_url='https://dkstatics-public.digikala.com/digikala-products/fixture.jpg';
  const offer=(title,regular_price,store_name,extra={})=>({title,regular_price,promo_price:null,store_name,store_id:store_name,image_url,...extra});
  const products=[offer('شیر کم چرب ۱ لیتر',700000,'سروش'),offer('شیر کم چرب ۱٫۵ لیتر',1200000,'بهار',{promo_price:900000,amazing:true}),offer('شیر کم چرب ۱٫۵ لیتر',990000,'باغ'),...Array.from({length:65},(_,i)=>offer('شیر کم چرب ۱ لیتر',1000000+i*10000,'فروشگاه '+i))];
- const quote={source:'digikala-visible-checkout',captured_at:new Date().toISOString(),page_kind:'cart',page_url:'https://www.digikala.com/supermarket/cart/',fields:{delivery_fee:{value:250000,evidence:'هزینه ارسال ۲۵۰۰۰ تومان'},total:{value:1750000,evidence:'مبلغ قابل پرداخت ۱۷۵۰۰۰ تومان'}},notices:['قیمت کالا تغییر کرده است'],cart_items:[{title:'شیر کم چرب ۱٫۵ لیتر',quantity:1},{title:'برنج ایرانی ۱ کیلوگرم',quantity:1}],reported_units:2,items_complete:true};
+ const quote={source:'digikala-visible-checkout',captured_at:new Date().toISOString(),page_kind:'cart',page_url:'https://www.digikala.com/supermarket/cart/',fields:{delivery_fee:{value:250000,evidence:'هزینه ارسال ۲۵۰۰۰ تومان'},total:{value:1750000,evidence:'مبلغ قابل پرداخت ۱۷۵۰۰۰ تومان'}},notices:['قیمت کالا تغییر کرده است'],cart_items:[{title:'شیر کم چرب ۱٫۵ لیتر',quantity:1,store_name:'بهار'},{title:'برنج ایرانی ۱ کیلوگرم',quantity:1,store_name:'بهار'}],reported_units:2,items_complete:true};
  await page.evaluate(data=>window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:data})),{source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',checkout_quotes:[quote],items:[{id:'milk',products},{id:'rice',products:[offer('برنج ایرانی ۵۰۰ گرم',400000,'بهار'),offer('برنج ایرانی ۱ کیلوگرم',600000,'بهار')]}]});
  await page.waitForFunction(()=>document.querySelector('#results')?.textContent.includes('مبلغ سبد مطابق'));
  const result=await page.locator('#results').innerText();assert.match(result,/۱۷۵٬۰۰۰/);assert.match(result,/قیمت کالا تغییر/);assert.match(result,/بهار/);assert.match(result,/شگفت‌انگیز/);assert.match(result,/۱۲۰٬۰۰۰/);
@@ -42,11 +42,11 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await page.evaluate(()=>CartwiseLive.rememberAutomatic({location:'ارسال به ونک',shipment_type:'scheduled',captured_at:new Date().toISOString()}));
  await page.reload();await page.waitForFunction(()=>document.querySelector('#live-location')?.textContent.includes('ونک'));
  // Actual retailer readers against visible cards, price icons and cart data.
- let html=`<p>تعداد کالاها ۲</p><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰</span><img src="/toman.svg" alt="" width="16" height="16"></div><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt="شیر کم چرب"><span data-testid="cart-item-quantity">2</span></div>`;
+ let html=`<p>تعداد کالاها ۲</p><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰</span><img src="/toman.svg" alt="" width="16" height="16"></div><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div data-store-name="بهار"><img alt="شیر کم چرب"><span data-testid="cart-item-quantity">2</span></div>`;
  await context.route('https://www.digikala.com/**',route=>route.fulfill({contentType:'text/html; charset=utf-8',body:html}));
  const retailer=await context.newPage();await retailer.goto('https://www.digikala.com/supermarket/cart/');
  const capture=await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-checkout.js','utf8'));
- assert.equal(capture.fields.delivery_fee?.value,250000,JSON.stringify(capture));assert.equal(capture.cart_items[0].quantity,2);assert.equal(capture.items_complete,true);
+ assert.equal(capture.fields.delivery_fee?.value,250000,JSON.stringify(capture));assert.equal(capture.cart_items[0].quantity,2);assert.equal(capture.cart_items[0].store_name,'بهار');assert.equal(capture.items_complete,true);
  html=`<div id="root"><div data-store-name="بهار" data-store-id="s1"><img src="${image_url}" alt="شیر کم چرب ۱ لیتر" width="60" height="60"><p>شگفت‌انگیز</p><div><p>۹۰٬۰۰۰</p><img src="/supermarket/i/toman.svg"></div><p class="line-through">۱۲۰٬۰۰۰</p><button data-cro-id="add-one-more-to-cart">+</button></div></div>`;
  await retailer.goto('https://www.digikala.com/supermarket/search/shop?q=milk');
  const p=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products[0];

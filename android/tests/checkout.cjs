@@ -23,4 +23,8 @@ assert.equal(api.reconcile({...cleaned,items_complete:false},[{title:'شیر ک�
 assert.equal(api.clean([{...quote,page_url:'https://www.digikala.com.evil.invalid/'}]).length,0);
 assert.equal(api.clean([{...quote,captured_at:'2000-01-01'}]).length,0);
 assert.equal(api.clean([{...quote,fields:{total:{value:-1}},notices:[]}]).length,0);
+assert.equal(api.reconcile(cleaned,[{title:'شیر کم چرب',quantity:2,store_name:'بهار'}]).verified,false);
+const known=api.clean([{...quote,cart_items:[{title:'شیر کم چرب',quantity:2,store_name:'بهار'}]}])[0];
+assert.equal(api.reconcile(known,[{title:'شیر کم چرب',quantity:2,store_name:'بهار'}]).verified,true);
+assert.equal(api.reconcile(known,[{title:'شیر کم چرب',quantity:2,store_name:'باغ'}]).verified,false);
 console.log('Fee reading, ambiguity rejection, freshness and basket identity checks passed');

@@ -50,6 +50,17 @@
     if(count)counts.add(Number(count[1]));
   }
   if(counts.size===1)reportedUnits=[...counts][0];
+  function storeFor(row){
+    for(let n=0;row&&n<4;n++,row=row.parentElement){
+      const direct=row.getAttribute?.('data-store-name')||row.getAttribute?.('data-seller-name');
+      if(direct)return {store_name:direct.trim().slice(0,160),store_id:(row.getAttribute?.('data-store-id')||row.getAttribute?.('data-seller-id')||'').slice(0,200)};
+      if(Array.from(row.querySelectorAll('img[alt]')).filter(i=>i.alt.trim().length>=4).length>1)break;
+      const names=Array.from(row.querySelectorAll('[data-testid="seller-name"],[data-testid="store-name"],[data-testid="shop-name"]')).filter(visible).map(text).filter(s=>s&&s.length<=160);
+      if(new Set(names).size===1)return {store_name:names[0],store_id:''};
+      if(new Set(names).size>1)break;
+    }
+    return {store_name:'',store_id:''};
+  }
   const cartItems=[];let unreadable=0;
   if(pageKind==='cart')for(const image of document.querySelectorAll('img[alt]')){
     if(!visible(image)||image.alt.trim().length<4)continue;
@@ -61,7 +72,7 @@
       if(/^\d+$/.test(raw)&&Number(raw)>0&&Number(raw)<=50){quantity=Number(raw);break;}
     }
     if(quantity===null){unreadable++;continue;}
-    cartItems.push({title:image.alt.trim().slice(0,300),quantity});
+    cartItems.push({title:image.alt.trim().slice(0,300),quantity,...storeFor(row)});
   }
   return {source:'digikala-visible-checkout',page_url:location.origin+location.pathname,page_kind:pageKind,
     merchant_key:merchant?merchant[1]:'',captured_at:new Date().toISOString(),fields,notices:notices.slice(0,20),cart_url:cartUrl,
