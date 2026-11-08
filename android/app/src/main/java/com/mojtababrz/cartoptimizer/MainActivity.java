@@ -41,6 +41,7 @@ public final class MainActivity extends Activity {
         RetailerSession.initialize(this);
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::handleBack);
         files.execute(() -> {
+            SearchResult.cleanup(MainActivity.this);
             for (String name : new String[]{"qwen2.5-1.5b-int8.litertlm", "qwen3-1.7b-int4.litertlm", "qwen3-0.6b-mixed-int4.litertlm", "offline-model.download"})
                 new java.io.File(getFilesDir(), name).delete();
         });
@@ -73,6 +74,7 @@ public final class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                if(trusted(uri)&&"/assets/product-image".equals(uri.getPath())&&"GET".equals(request.getMethod()))return ProductImages.read(uri.getQueryParameter("u"));
                 WebResourceResponse response = trusted(uri) ? loader.shouldInterceptRequest(uri) : null;
                 if (response != null) return response;
                 return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", null,
@@ -109,6 +111,9 @@ public final class MainActivity extends Activity {
     private void toast(String text) { runOnUiThread(() -> Toast.makeText(this, text, Toast.LENGTH_LONG).show()); }
 
     private final class Bridge {
+        @JavascriptInterface public void setAppearance(String theme) {
+            if("simple".equals(theme)||"modern".equals(theme)||"traditional".equals(theme))getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("theme",theme).apply();
+        }
         @JavascriptInterface public String savedDelivery() {
             try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}
         }
@@ -119,7 +124,8 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle("پاک‌کردن اطلاعات این گوشی")
                 .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالا از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
                 .setPositiveButton("پاک شود",(dialog,which)->{
-                    android.webkit.GeolocationPermissions.getInstance().clearAll();
+                    android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();
+                    SearchResult.clear(MainActivity.this);getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().clear().apply();
                     RetailerSession.discard();new DeliveryChoice(MainActivity.this).clear();
                     android.webkit.CookieManager.getInstance().removeAllCookies(ok->{android.webkit.WebStorage.getInstance().deleteAllData();webView.evaluateJavascript("localStorage.clear();location.reload()",null);});
                 }).setNegativeButton("انصراف",null).show());
@@ -159,11 +165,10 @@ public final class MainActivity extends Activity {
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == AUTO_DIGIKALA) {
-            if(resultCode==RESULT_OK && data!=null) {
-                String json=data.getStringExtra("auto_data");
-                if(json!=null && json.getBytes(StandardCharsets.UTF_8).length<=500_000)
-                    webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:"+JSONObject.quote(json)+"}));",null);
-            } else webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);
+            if(resultCode==RESULT_OK&&data!=null){files.execute(()->{
+                try{String json=SearchResult.read(MainActivity.this,data);runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&webView!=null)webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:"+JSONObject.quote(json)+"}));",null);});}
+                catch(Exception e){runOnUiThread(()->{if(webView!=null&&!isDestroyed())webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);});}
+            });}else webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);
             return;
         }
         if(requestCode==CHECKOUT_DIGIKALA) {
@@ -207,7 +212,8 @@ public final class MainActivity extends Activity {
         }
     }
     private void handleBack() {
-        webView.evaluateJavascript("document.querySelector('.nav.active').dataset.tab", value -> {
+        webView.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return 'dialog';}return document.querySelector('.nav.active').dataset.tab})()", value -> {
+            if("\"dialog\"".equals(value))return;
             if (!"\"list\"".equals(value)) webView.evaluateJavascript("document.querySelector('[data-tab=list]').click()", null);
             else new AlertDialog.Builder(this).setMessage("از سبدچین خارج می‌شوید؟ لیست خرید روی این گوشی ذخیره می‌ماند.")
                 .setPositiveButton("خروج", (d, w) -> finish()).setNegativeButton("ماندن", null).show();

@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 public class DeliverySessionTest {
     private Intent intent(String query) {return new Intent(ApplicationProvider.getApplicationContext(),DigikalaActivity.class).putExtra("query",query).putExtra("item_id","milk");}
     private WebView shop(DigikalaActivity activity) {
-        return (WebView)((ViewGroup)((ViewGroup)activity.findViewById(android.R.id.content)).getChildAt(0)).getChildAt(2);
+        return RetailerFixtures.browser(activity);
     }
     private String eval(ActivityScenario<DigikalaActivity> scenario,String script) throws Exception {
         CountDownLatch done=new CountDownLatch(1);AtomicReference<String> value=new AtomicReference<>("");

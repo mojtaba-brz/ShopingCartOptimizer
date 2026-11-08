@@ -1,10 +1,11 @@
-> **Android 0.7.0 — سبدچین:** Persian RTL interface with Simple, Modern and
-> Traditional Iranian themes, saved location recovery from fresh retailer catalog
-> evidence, and visible delivery-fee/cart-notice reading. A basket-specific total
-> is labelled as matching only when readable product names and quantities agree.
-> No LLM or model download. Release APK/AAB candidates and publication drafts are
-> prepared; owner signing, public contact/policy details and live retailer validation
-> remain required. See [release preparation](release/README-fa.md).
+> **Android 0.8.0 — سبدچین:** Compare and sort by price per kg/litre/item,
+> with product photos, merchant names, Amazing badges and observed normal prices.
+> Search runs behind a native progress screen. The retained retailer session,
+> confirmed catalog coordinates and an unambiguous saved-address picker recover
+> delivery location; expired/missing addresses require a separate location step.
+> Persian RTL interface with three Iranian themes. No LLM or model download.
+> Release APK/AAB candidates are prepared; owner signing, public contact/policy
+> details and live retailer validation remain required. See [release preparation](release/README-fa.md).
 
 > **Import fix in 0.2.2:** Product search pages do not need an address header.
 > The Android reader uses the delivery area confirmed in the current Digikala

@@ -14,14 +14,40 @@
   if (location.protocol !== 'https:' || !['www.digikala.com', 'digikala.com'].includes(location.hostname)) return {error:'Open Digikala Supermarket first.'};
   if (!location.pathname.startsWith('/supermarket')) return {error:'Open the Digikala Supermarket catalog before reading products.'};
   const products = [], seen = new Set();
+  function productImage(e){return e&&typeof e.alt==='string'&&e.alt.trim().length>=4&&!/toman\.|amazing\.|logo/i.test(e.getAttribute?.('src')||'')&&!['تومان','شگفت انگیز','شگفت‌انگیز'].includes(e.alt.trim());}
+  function publicURL(value,image=false){try{const u=new URL(value,location.origin);if(u.protocol!=='https:'||u.username||u.password||u.port)return '';
+    if(image)return ['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname)?u.href:'';
+    return ['www.digikala.com','digikala.com'].includes(u.hostname)&&/\/product\//.test(u.pathname)?u.origin+u.pathname:'';
+  }catch{return '';}}
+  function storeOf(card){
+    let node=card;
+    for(let depth=0;node&&depth<4;depth++,node=node.parentElement){
+      const names=new Map();
+      const direct=node.getAttribute?.('data-store-name')||node.getAttribute?.('data-seller-name');
+      if(direct)names.set(direct.trim(),node.getAttribute?.('data-store-id')||node.getAttribute?.('data-seller-id')||'');
+      for(const e of Array.from(node.querySelectorAll?.('[data-testid="seller-name"], [data-testid="store-name"], [data-testid="shop-name"], a[href*="/store/"], a[href*="/seller/"], a[href*="/shop/"]')||[])){
+        const label=text(e);if(!visible(e)||!label||label.length>160)continue;
+        let identity='';try{const u=new URL(e.getAttribute?.('href'),location.origin);if(u.origin===location.origin)identity=u.pathname;}catch{}
+        names.set(label,identity);
+      }
+      for(const e of Array.from(node.querySelectorAll?.('p,span')||[])){
+        if(!visible(e))continue;const match=text(e).match(/^(?:فروشگاه|فروشنده|سوپرمارکت)\s*[:：]\s*(.{2,120})$/);if(match)names.set(match[1],'');
+      }
+      if(names.size===1){const [name,id]=[...names][0];return {name:name.slice(0,160),id:id.slice(0,200)};}
+      if(names.size>1)break;
+    }
+    const selected=document.querySelector?.('[data-testid="selected-store-name"], [data-testid="selected-shop-name"]');
+    if(selected&&visible(selected)&&text(selected).length<=160)return {name:text(selected),id:''};
+    return {name:'',id:''};
+  }
   for (const image of document.querySelectorAll('img[alt]')) {
     if (products.length >= 1000) break;
+    if(!productImage(image))continue;
     const title = image.alt.trim();
-    if (title.length < 4 || title.length > 300 || !visible(image)) continue;
+    if (title.length > 300 || !visible(image)) continue;
     let card = image.parentElement, current = null;
-    for (let depth = 0; card && depth < 6; depth++, card = card.parentElement) {
-      // A card has exactly one product image and a toman-marked price.
-      if (card.querySelectorAll('img[alt]').length !== 1) break;
+    for (let depth = 0; card && depth < 8; depth++, card = card.parentElement) {
+      if(Array.from(card.querySelectorAll('img[alt]')).filter(productImage).length!==1)break;
       const toman = card.querySelector('img[src*="/toman."]');
       if (!toman) continue;
       current = Array.from(toman.parentElement.querySelectorAll('p,span')).map(e => price(text(e))).find(p => p !== null);
@@ -31,15 +57,18 @@
     const originalNode = card.querySelector('.line-through, [class*="strikethrough"]');
     const originalText = originalNode ? text(originalNode) : '';
     const original = originalText ? price(originalText) : null;
-    // Ambiguous crossed-out prices fail closed, rather than silently lose a promo.
     if (originalText && (!original || original < current)) continue;
-    const regular = original || current;
-    const key = title + '\u0000' + regular + '\u0000' + current;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const regular = original || current, store=storeOf(card);
+    const anchor=card.querySelector('a[href*="/product/"]');
+    const url=publicURL(anchor?.getAttribute?.('href'))||location.origin+location.pathname;
+    const imageURL=[image.currentSrc,image.getAttribute?.('src'),image.getAttribute?.('data-src')].map(x=>publicURL(x,true)).find(Boolean)||'';
+    const amazing=/(?:شگفت\s*انگیز|شگفت‌انگیز)/.test(text(card))||!!card.querySelector('[data-testid="amazing-badge"], [data-cro-id="amazing-offer"], img[alt*="شگفت"]');
+    const key = title+'\u0000'+store.id+'|'+store.name+'|'+url+'|'+regular+'|'+current;
+    if (seen.has(key)) continue;seen.add(key);
     products.push({title, regular_price:regular, promo_price:current < regular ? current : null,
-      promo_limit:current < regular ? 1 : 0, stock:1, url:location.origin + location.pathname,
-      warning:'Page shows availability, not remaining stock or promotional quota. Planning is capped at 1 unit of this product across all carts.'});
+      amazing,regular_verified:!!original||!amazing,store_name:store.name,store_id:store.id,image_url:imageURL,
+      promo_limit:current < regular ? 1 : 0,stock:1,url,
+      warning:'Remaining stock and promotional quota are not published on this product card.'});
   }
   const locationNodes = Array.from(document.querySelectorAll('header *, #root p, #root span, #root div'))
     .filter(e => visible(e) && e.children.length < 4 && /^ارسال به/.test(text(e)) && text(e).length > 8 && text(e).length <= 300)

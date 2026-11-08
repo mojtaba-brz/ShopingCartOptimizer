@@ -1,11 +1,14 @@
-# Cartwise for Android 0.7.0
+# Cartwise for Android 0.8.0
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
 three locally saved themes, a privacy explanation and local-data deletion.
-Count-based automatic allocation now considers every readable matching result (up to
-the reader limit), including combinations that use different single-unit promotions.
-An independent exhaustive oracle checks small quantity cases.
+Automatic choices are ranked by displayed price per kilogram/litre/item,
+not by package cost or basket subtotal. Unlike dimensions are kept separate;
+explicit requested amounts determine how many packages cover the target.
+A visual choice sheet lists every captured match in ascending unit-price order,
+with image, merchant, package size, observed normal price and Amazing badge.
+All options are ranked before display pagination; only render batches are limited.
 Visible monetary rows and correction notices can be read from the selected
 supermarket and retailer basket. Basket fees are observations, not universal
 rules: a retailer total is labelled matching only for an exact readable
@@ -14,14 +17,19 @@ Catalog coordinates and delivery mode can restore a saved address after process
 restart when fresh retailer requests match. Old labels alone are never proof.
 Android release preparation is documented in [release/README-fa.md](../release/README-fa.md).
 
-The Android planner searches Digikala automatically after the shopping list and
-delivery area are supplied. When an item includes a weight or volume, it compares
-package combinations and shows price per kilogram or litre, including clearly
-labelled smaller-quantity alternatives. Search coverage, unknown stock, fees,
-coupon eligibility and discount limits remain uncertain; totals are estimates.
-After an app restart, the saved delivery choice is reused automatically when
-Digikala still displays the same area and delivery mode; otherwise it asks for
-the area so it does not silently use prices for an unverified location.
+The Android planner searches Digikala automatically after the list and delivery
+area are supplied. An opaque native progress screen covers the retailer page while
+it remains measured for lazy-loading. It reports completed list items, current
+query, captured products/stores and scrolling steps, without claiming full catalog
+coverage. A retained session, fresh matching catalog coordinates or an exact,
+unambiguous saved address in the public picker can restore location after restart.
+An expired/missing/ambiguous address needs the separate address/map step. No new
+address is created automatically. Product photos are fetched from approved public
+retailer image CDNs without login cookies, authorization or referrer headers.
+Unknown store, image, normal price and package size are stated explicitly.
+Stock, promotion quotas and final fees are not inferred. For multiple promotional
+packages the estimate assumes one discounted package and the rest at the normal
+price; the observed checkout is reported separately.
 
 Matching runs locally using Persian/Arabic character and digit normalization,
 known spelling variants, a small grocery category dictionary and conservative

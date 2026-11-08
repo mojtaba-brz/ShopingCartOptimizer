@@ -1,65 +1,36 @@
-/* Main Android flow: list + location -> automatic candidates -> review. */
+/* Persian shopping flow: normalized unit price, public offer metadata and visual review. */
 (function(){
-  'use strict';
-  if(!window.CartwiseAndroid?.findAutomatically || !window.CartwiseAuto)return;
-  document.body.classList.add('automatic');
-  document.querySelector('#tab-list .section-heading h2').textContent='لیست خرید شما';
-  document.querySelector('#tab-list .section-heading p:last-child').textContent='نام و تعداد را وارد کنید. اگر وزن یا حجم بنویسید، تعداد در آن ضرب می‌شود؛ مثلاً ۲ × شیر ۱ لیتر یعنی ۲ لیتر.';
-  document.querySelector('#tab-results .section-heading h2').textContent='بررسی سبد پیشنهادی';
-  document.querySelector('#tab-results .section-heading p:last-child').textContent='کالاها و محدودیت‌های برآورد را بررسی کنید.';
-  const itemForm=$('item-form');itemForm.elements.name.placeholder='مثلاً شیر کم چرب ۱ لیتر';
-  itemForm.querySelector('label.grow').firstChild.textContent='نام کالا';
-  itemForm.querySelector('.qty-field').firstChild.textContent='تعداد';
-  itemForm.querySelector('button').textContent='افزودن';
-  const live=$('live-card');live.querySelector('h3').textContent='موقعیت تحویل';
-  live.querySelectorAll('.hint')[0].textContent='فهرست را وارد کنید و دکمه پیدا کردن سبد را بزنید؛ برنامه خودش کالاها و قیمت‌ها را جست‌وجو می‌کند.';
-  live.querySelectorAll('.hint')[1].textContent='در صورت نیاز، موقعیت تحویل را یک‌بار انتخاب کنید.';
-  const locationButton=$('live-location-button');
-  const oldRender=render;
-  render=function(){oldRender();if(locationButton)locationButton.textContent=metaLabel();
-    $('summary').textContent=state.items.length.toLocaleString('fa-IR')+' قلم کالا';$('run-hint').textContent='جست‌وجو و محاسبه خودکار';};
-  function metaLabel(){return !$('live-location')?.textContent.startsWith('ارسال به')?'انتخاب موقعیت':'تغییر موقعیت';}
-  const originalMessage=message;
-  message=function(text,error){originalMessage(text==='Saved. Your cart plan will use these inputs.'?'ذخیره شد.':text,error);};
-  const oldButton=$('optimize'),button=oldButton.cloneNode(false);button.id='optimize';button.textContent='پیدا کردن سبد خرید';oldButton.replaceWith(button);
-  let requested=[], lastResult=null, selected={};
-  function currentItems(){
-    const rows=[],byName=new Map();
-    for(const item of state.items){
-      const key=CartwiseAuto.normalize(item.name);if(!key)throw Error('نام کالا را وارد کنید.');
-      if(byName.has(key)){const row=byName.get(key);row.quantity+=item.quantity;if(row.quantity>50)throw Error('تعداد هر کالا حداکثر ۵۰ عدد است.');}
-      else {const query=CartwiseAuto.amount(item.name)?CartwiseAuto.searchTerm(item.name):item.name;const row={id:item.id,name:item.name,quantity:item.quantity,query:query||item.name};rows.push(row);byName.set(key,row);}
-    }
-    return rows;
-  }
-  button.addEventListener('click',()=>{
-    if(busy)return;if(dirty.size)return message('ابتدا تغییرات فرم را ذخیره کنید.',true);
-    try{requested=currentItems();if(!requested.length)throw Error('ابتدا کالاهای مورد نیاز را به لیست اضافه کنید.');
-      selected={};lastResult=null;busy=true;button.disabled=true;button.textContent='در حال جست‌وجو…';
-      message('در حال آماده‌سازی جست‌وجوی خودکار…');window.CartwiseAndroid.findAutomatically(JSON.stringify(requested));
-    }catch(e){busy=false;button.disabled=false;button.textContent='پیدا کردن سبد خرید';message(e.message,true);}
-  });
-  function done(){busy=false;button.disabled=false;button.textContent='جست‌وجو و محاسبه دوباره';}
-  window.addEventListener('cartwise:auto-cancelled',()=>{done();message('جست‌وجو متوقف شد.');});
-  window.addEventListener('cartwise:auto-results',async e=>{
-    try{
-      const payload=typeof e.detail==='string'?JSON.parse(e.detail):e.detail;
-      if(payload?.error)throw Error(payload.error);
-      if(!payload||payload.source!=='digikala-automatic'||typeof payload.location!=='string'||!payload.location.trim()||
-        !['scheduled','on_demand'].includes(payload.shipment_type)||!Array.isArray(payload.items)||payload.items.length!==requested.length)
-        throw Error('نتایج فروشگاه ناقص است. دوباره تلاش کنید.');
-      if(JSON.stringify(currentItems())!==JSON.stringify(requested))throw Error('لیست تغییر کرده است؛ جست‌وجو را دوباره اجرا کنید.');
-      lastResult=payload;window.CartwiseLive?.rememberAutomatic(payload);
-      await calculate();
-    }catch(error){message(error.message||'جست‌وجو ناموفق بود.',true);}
-    finally{done();}
-  });
-  window.addEventListener('cartwise:checkout',async e=>{
-    try{const x=typeof e.detail==='string'?JSON.parse(e.detail):e.detail;
-      if(!lastResult||x.location!==lastResult.location||x.shipment_type!==lastResult.shipment_type)throw Error('آدرس یا روش ارسال سبد با نتیجه فعلی متفاوت است؛ جست‌وجو را دوباره اجرا کنید.');
-      lastResult.checkout_quotes=[...(lastResult.checkout_quotes||[]),x.checkout];await calculate();
-    }catch(e){message(e.message,true);}
-  });
+ 'use strict';
+ if(!window.CartwiseAndroid?.findAutomatically||!window.CartwiseComparison)return;
+ const cmp=CartwiseComparison,fa=n=>Number(n).toLocaleString('fa-IR'),labels={g:'کیلوگرم',ml:'لیتر',count:'عدد',unknown:'اندازه نامشخص'};
+ document.body.classList.add('automatic','catalogue-ui');
+ document.querySelector('#tab-list .section-heading h2').textContent='خرید بعدی شما';
+ document.querySelector('#tab-list .section-heading p:last-child').textContent='نام کالا و مقدار مورد نیاز را بنویسید؛ مثلاً برنج ۲ کیلوگرم یا تخم‌مرغ ۶ عدد.';
+ document.querySelector('#tab-results .section-heading h2').textContent='انتخاب بهتر، با قیمت واحد';
+ document.querySelector('#tab-results .section-heading p:last-child').textContent='مقایسه بر پایه قیمت هر کیلو، لیتر یا عدد؛ مقدار خرید و مبلغ پرداخت جداگانه نمایش داده می‌شوند.';
+ const live=$('live-card');live.querySelector('h3').textContent='آدرس تحویل شما';
+ live.querySelectorAll('.hint')[0].textContent='جست‌وجو در پس‌زمینه انجام می‌شود و پیشرفت آن را می‌بینید.';
+ live.querySelectorAll('.hint')[1].textContent='آدرس قبلی از نشست و انتخاب‌گر دیجی‌کالا بازیابی می‌شود.';
+ const oldRender=render;render=function(){oldRender();$('summary').textContent=fa(state.items.length)+' قلم کالا';$('run-hint').textContent='اولویت با کمترین قیمت واحد است';};
+ const oldButton=$('optimize'),button=oldButton.cloneNode(false);button.id='optimize';button.textContent='جست‌وجو و مقایسه قیمت';oldButton.replaceWith(button);
+ let requested=[],lastResult=null,selected={},quantities={},plans=new Map(),activeItem=null,activeUnit='',visibleCount=60;
+ const sheet=document.createElement('dialog');sheet.className='choice-sheet';sheet.id='choice-dialog';sheet.setAttribute('aria-label','تغییر انتخاب کالا');document.body.appendChild(sheet);
+ function currentItems(){const rows=[],byName=new Map();for(const i of state.items){const key=CartwiseAuto.normalize(i.name);if(!key)throw Error('نام کالا را وارد کنید.');if(byName.has(key)){byName.get(key).quantity+=i.quantity;if(byName.get(key).quantity>50)throw Error('تعداد هر قلم حداکثر ۵۰ است.');}else{const row={id:i.id,name:i.name,quantity:i.quantity,query:cmp.query(i.name)||i.name};rows.push(row);byName.set(key,row);}}return rows;}
+ button.addEventListener('click',()=>{if(busy)return;if(dirty.size)return message('ابتدا تغییرات فرم را ذخیره کنید.',true);try{requested=currentItems();if(!requested.length)throw Error('ابتدا لیست خرید را وارد کنید.');selected={};quantities={};lastResult=null;busy=true;button.disabled=true;button.textContent='در حال جست‌وجو…';message('در حال بازیابی آدرس و آماده‌سازی جست‌وجو…');window.CartwiseAndroid.findAutomatically(JSON.stringify(requested));}catch(e){finish();message(e.message,true);}});
+ function finish(){busy=false;button.disabled=false;button.textContent='جست‌وجو و مقایسه دوباره';}
+ window.addEventListener('cartwise:auto-cancelled',()=>{finish();message('جست‌وجو متوقف شد.');});
+ window.addEventListener('cartwise:auto-results',e=>{try{const p=typeof e.detail==='string'?JSON.parse(e.detail):e.detail;if(p?.error)throw Error(p.error);if(!p||p.source!=='digikala-automatic'||!p.location?.trim()||!['scheduled','on_demand'].includes(p.shipment_type)||!Array.isArray(p.items)||p.items.length!==requested.length||p.items.some(x=>!Array.isArray(x.products)||x.products.length>1000))throw Error('نتایج فروشگاه ناقص است. دوباره تلاش کنید.');if(JSON.stringify(currentItems())!==JSON.stringify(requested))throw Error('لیست تغییر کرده است؛ دوباره جست‌وجو کنید.');lastResult=p;window.CartwiseLive?.rememberAutomatic(p);calculate();}catch(e){message(e.message,true);}finally{finish();}});
+ window.addEventListener('cartwise:checkout',e=>{try{const x=typeof e.detail==='string'?JSON.parse(e.detail):e.detail;if(!lastResult||x.location!==lastResult.location||x.shipment_type!==lastResult.shipment_type)throw Error('آدرس یا روش ارسال سبد با نتیجه فعلی یکسان نیست.');lastResult.checkout_quotes=[...(lastResult.checkout_quotes||[]),x.checkout];calculate();}catch(e){message(e.message,true);}});
+ function rows(i){return lastResult.items.find(r=>r.id===i.id)?.products||[];}
+ function image(p){const url=p.image_url?'/assets/product-image?u='+encodeURIComponent(p.image_url):'';return `<span class="product-photo ${url?'':'no-image'}"><span class="image-fallback" aria-label="تصویر در دسترس نیست">▧<small>تصویر در دسترس نیست</small></span>${url?`<img src="${escapeHTML(url)}" alt="${escapeHTML(p.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}</span>`;}
+ function moneyLine(p){const current=p.promo_price??p.regular_price,discount=p.promo_price!==null;return `<span class="offer-prices"><strong>${money(current)} <small>تومان / بسته</small></strong>${discount?`<span class="normal-price">قیمت عادی: <del>${money(p.regular_price)}</del> تومان</span>`:p.regular_verified===false?'<span class="normal-price">قیمت عادی در صفحه خوانده نشد</span>':'<span class="normal-price">قیمت عادی؛ بدون تخفیف خوانده‌شده</span>'}</span>`;}
+ function badge(p){return p.amazing?'<span class="deal-badge amazing">شگفت‌انگیز</span>':p.promo_price!==null?'<span class="deal-badge">تخفیف‌دار</span>':'';}
+ function sizeText(size){if(!size.value)return 'اندازه بسته نامشخص';return size.unit==='count'?fa(size.value)+' عدد در بسته':fa(size.value/1000)+' '+labels[size.unit]+' در بسته';}
+ function unitText(p){return p.unit_price===null?'قیمت واحد قابل محاسبه نیست':`${money(p.unit_price)} تومان / ${labels[p.size.unit]}`;}
+ function store(p){return p.store_name?escapeHTML(p.store_name):'نام فروشگاه در صفحه خوانده نشد';}
+ function prepareImages(container){container.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;img.parentElement.classList.add('no-image');},{once:true}));}
+ function openChoices(item){activeItem=item;visibleCount=60;const all=[...cmp.options(item,rows(item)),...cmp.options(item,rows(item),true)];activeUnit=plans.get(item.id)?.unit||cmp.group(item,all);sheet.innerHTML=`<header class="choice-header"><div><small>گزینه‌ها از کم به زیاد بر پایه قیمت واحد</small><h3>${escapeHTML(item.name)}</h3></div><button type="button" class="icon-button" data-close-choice aria-label="بستن گزینه‌ها">×</button></header><div class="choice-search"><input type="search" placeholder="جست‌وجوی برند یا فروشگاه" aria-label="جست‌وجوی گزینه‌ها" id="choice-query"><div id="choice-units" class="choice-units"></div></div><div id="choice-list" class="choice-list"></div><footer class="choice-foot" id="choice-count"></footer>`;sheet.querySelector('[data-close-choice]').onclick=()=>sheet.close();sheet.querySelector('#choice-query').oninput=()=>{visibleCount=60;paintChoices();};paintChoices();if(!sheet.open)sheet.showModal();}
+ function paintChoices(){if(!activeItem)return;const exact=cmp.options(activeItem,rows(activeItem)),review=cmp.options(activeItem,rows(activeItem),true),reviewKeys=new Set(review.map(p=>p.key)),all=[...exact,...review];const groups=['g','ml','count','unknown'].filter(unit=>all.some(p=>p.size.unit===unit));if(!groups.includes(activeUnit))activeUnit=groups[0]||'unknown';sheet.querySelector('#choice-units').innerHTML=groups.map(unit=>`<button type="button" data-choice-unit="${unit}" aria-pressed="${unit===activeUnit}">مقایسه ${labels[unit]==='عدد'?'عددی':labels[unit]}</button>`).join('');sheet.querySelectorAll('[data-choice-unit]').forEach(b=>b.onclick=()=>{activeUnit=b.dataset.choiceUnit;visibleCount=60;paintChoices();});const term=CartwiseAuto.normalize(sheet.querySelector('#choice-query').value);const list=all.filter(p=>p.size.unit===activeUnit&&(!term||CartwiseAuto.normalize(p.title+' '+p.store_name).includes(term))).sort((a,b)=>(a.unit_price??Infinity)-(b.unit_price??Infinity)||(a.promo_price??a.regular_price)-(b.promo_price??b.regular_price)||a.key.localeCompare(b.key));const current=plans.get(activeItem.id)?.product.key;sheet.querySelector('#choice-list').innerHTML=list.slice(0,visibleCount).map((p,index)=>`<button type="button" class="offer-option ${p.key===current?'selected':''}" data-choice-id="${escapeHTML(p.key)}" data-review="${reviewKeys.has(p.key)}" aria-pressed="${p.key===current}" ${cmp.requiredUnit(activeItem)&&cmp.requiredUnit(activeItem)!==p.size.unit?'disabled':''}>${image(p)}<span class="offer-content"><span class="offer-meta"><small>گزینه ${fa(index+1)}</small>${badge(p)}</span><strong class="offer-title">${escapeHTML(p.title)}</strong><span class="store-name">فروشگاه: ${store(p)}</span><span class="pack-size">${sizeText(p.size)}</span><span class="unit-price">${unitText(p)}</span>${moneyLine(p)}${reviewKeys.has(p.key)?'<span class="review-badge">تطبیق پیشنهادی؛ عنوان را بررسی کنید</span>':''}<span class="choice-action">${cmp.requiredUnit(activeItem)&&cmp.requiredUnit(activeItem)!==p.size.unit?'واحد با درخواست شما سازگار نیست':p.key===current?'✓ انتخاب فعلی':'انتخاب این کالا'}</span></span></button>`).join('')||'<p class="empty">گزینه‌ای با این عبارت پیدا نشد.</p>';sheet.querySelector('#choice-count').innerHTML=`<span>${fa(Math.min(visibleCount,list.length))} از ${fa(list.length)} گزینه · مرتب بر پایه ${labels[activeUnit]}</span>${visibleCount<list.length?'<button type="button" class="secondary" id="more-choices">نمایش گزینه‌های بیشتر</button>':''}`;sheet.querySelector('#more-choices')?.addEventListener('click',()=>{visibleCount+=60;paintChoices();});sheet.querySelectorAll('[data-choice-id]').forEach(b=>b.onclick=()=>{selected[activeItem.id]=b.dataset.choiceId;delete quantities[activeItem.id];sheet.close();calculate();});prepareImages(sheet);}
   function checkoutSection(proposed=[]){
     const quotes=CartwiseCheckout.clean(lastResult?.checkout_quotes);
     const names={delivery_fee:'هزینه ارسال',service_fee:'هزینه خدمات / بسته‌بندی',minimum_order:'حداقل سفارش',free_delivery_over:'حد ارسال رایگان',subtotal:'مبلغ کالاهای سبد فروشگاه',total:'مبلغ قابل پرداخت سبد فروشگاه'};
@@ -69,47 +40,21 @@
     }).join('');
     return `<section class="card" dir="rtl"><h3>هزینه‌ها و اصلاحات فروشگاه</h3>${verified?`<p class="auto-total">${money(verified.total)} <small>تومان؛ مبلغ سبد مطابق در دیجی‌کالا</small></p>`:''}${details||'<p>هنوز هزینه قابل خواندنی پیدا نشده است. صفحه سوپرمارکت یا سبد دیجی‌کالا باید مبلغ و واحد پول را نشان دهد.</p>'}<p class="hint">هزینه و اصلاحات بالا مربوط به صفحه خوانده‌شده است. فقط در صورت تطابق نام و تعداد همه کالاهای خوانده‌شده، مبلغ سبد فروشگاه جداگانه نمایش داده می‌شود. هزینه سبد دیگر به پیشنهاد شما اضافه نمی‌شود.</p><button type="button" class="secondary" data-read-checkout>بررسی و به‌روزرسانی سبد دیجی‌کالا</button></section>`;
   }
-  async function calculate(){
-    if(!lastResult)return;
-    const amountItems=requested.filter(i=>CartwiseAuto.amount(i.name)), countItems=requested.filter(i=>!CartwiseAuto.amount(i.name));
-    const amountResults=new Map(amountItems.map(i=>{const rows=lastResult.items.find(r=>r.id===i.id)?.products,title=(selected[i.id]||'').startsWith('review:')?selected[i.id].slice(7):'';return [i.id,CartwiseAuto.amountPlans(i,rows,CartwiseAuto.suggestions(i,rows).some(p=>p.title===title)?title:'')];}));
-    const countResults=new Map(countItems.map(i=>[i.id,CartwiseAuto.countPlan(i,lastResult.items.find(r=>r.id===i.id)?.products,selected[i.id]||'')]));
-    const missing=countItems.filter(i=>!countResults.get(i.id)).map(i=>i.name);
-    for(const item of amountItems)if(!amountResults.get(item.id)?.plans.length)missing.push(item.name);
-    const location=escapeHTML(lastResult.location),mode=lastResult.shipment_type==='scheduled'?'زمان‌دار':'فوری';
-    const incomplete=lastResult.items.filter(i=>i.error).map(i=>requested.find(x=>x.id===i.id)?.name||i.id);
-    const warning='<div class="auto-notice">این جمع برآورد قیمت کالاهاست. هزینه‌های خوانده‌شده و پیام‌های اصلاح سبد در بخش پایین دیده می‌شوند؛ کوپن قابل استفاده، موجودی دقیق و سهمیه تخفیف باید در فروشگاه تأیید شوند. برای کالای تخفیف‌دار، یک عدد با قیمت تخفیف و بقیه با قیمت عادی فرض شده است. قیمت واحد فقط وقتی اندازه بسته قابل تشخیص باشد نشان داده می‌شود.</div>'+(incomplete.length?`<div class="auto-notice">جست‌وجوی این اقلام ممکن است کامل نباشد: ${incomplete.map(escapeHTML).join('، ')}</div>`:'');
-    const assumptions=`<details class="auto-assumptions"><summary>شرایط برآورد و پوشش جست‌وجو</summary>${warning}</details>`;
-    function reviewOptions(item){return CartwiseAuto.suggestions(item,lastResult.items.find(r=>r.id===item.id)?.products).map(p=>`<option value="${escapeHTML('review:'+p.title)}" ${selected[item.id]==='review:'+p.title?'selected':''}>احتمال تطابق؛ بررسی کنید: ${escapeHTML(p.title)}</option>`).join('');}
-    function bind(){ $('results').querySelectorAll('[data-read-checkout]').forEach(el=>el.onclick=()=>window.CartwiseAndroid.readCheckout()); $('results').querySelectorAll('[data-auto-item]').forEach(el=>el.addEventListener('change',async()=>{selected[el.dataset.autoItem]=el.value;try{await calculate();}catch(e){message(e.message,true);}})); }
-    if(missing.length){const choices=requested.filter(i=>missing.includes(i.name)).map(i=>{const options=reviewOptions(i);return options?`<label>${escapeHTML(i.name)}<select data-auto-item="${escapeHTML(i.id)}"><option value="">انتخاب کنید</option>${options}</select></label>`:'';}).join('');$('results').innerHTML=`<section class="card" dir="rtl"><h3>برای بعضی اقلام نتیجه قابل اتکا پیدا نشد</h3><p>${missing.map(escapeHTML).join('، ')}</p>${choices}<p>نام، وزن یا برند را دقیق‌تر بنویسید و دوباره جست‌وجو کنید.</p>${assumptions}</section>${checkoutSection()}`;bind();showTab('results');$('tab-label').textContent='نتیجه';message('جست‌وجو کامل نشد؛ اقلام بالا بررسی شوند.',true);return;}
-    const countLines=countItems.flatMap(i=>countResults.get(i.id).lines);
-    const result={total:countItems.reduce((n,i)=>n+countResults.get(i.id).cost,0),carts:countItems.length?[{lines:countLines}]:[],warnings:[]};
-    result.optimal=false;result.status='estimate';result.warnings=[...(result.warnings||[]),'Shipping fees, coupon eligibility, stock and promotion limits were not verified.'];
-    plan=result;
-    const lines=result.carts.flatMap(c=>c.lines);
-    let total=result.total;const proposed=[...lines];
-    const details=requested.map(item=>{
-      const byAmount=amountResults.get(item.id);
-      if(byAmount){
-        const ix=Math.max(0,Math.min(byAmount.plans.length-1,Number(selected[item.id]||0)||0)), chosen=byAmount.plans[ix];total+=chosen.cost;proposed.push(...chosen.lines);
-        const unit=byAmount.unit==='g'?'گرم':'میلی‌لیتر';
-        const isReview=(selected[item.id]||'').startsWith('review:');
-        const choices=byAmount.plans.map((p,n)=>`<option value="${n}" ${n===ix&&!isReview?'selected':''}>${p.total<byAmount.target?'کمتر از مقدار درخواستی':n===0?'کمترین هزینه پیدا شده':'گزینه '+(n+1)} · ${p.total.toLocaleString('fa-IR')} ${unit} · ${p.quantity.toLocaleString('fa-IR')} بسته · ${money(p.cost)} تومان</option>`).join('')+reviewOptions(item);
-        const purchased=chosen.lines.map(l=>`<li>${escapeHTML(l.title)} × ${l.quantity.toLocaleString('fa-IR')} — ${money(l.subtotal)} تومان</li>`).join('');
-        return `<article class="auto-result-item"><h4>${escapeHTML(item.name)} · نیاز: ${byAmount.target.toLocaleString('fa-IR')} ${unit}</h4><ul>${purchased}</ul><p>مقدار پیشنهادی: ${chosen.total.toLocaleString('fa-IR')} ${unit}${chosen.total<byAmount.target?' (کمتر از نیاز)':''} · میانگین هر ${byAmount.unit==='g'?'کیلوگرم':'لیتر'}: ${money(chosen.cost*1000/chosen.total)} تومان</p><label>گزینه‌های مقدار و قیمت<select data-auto-item="${escapeHTML(item.id)}">${choices}</select></label>${byAmount.complete?'':'<p>مقایسه به محدودیت محاسباتی رسید و ممکن است گزینه بهتری وجود داشته باشد.</p>'}</article>`;
-      }
-      const options=CartwiseAuto.rank(item,lastResult.items.find(r=>r.id===item.id)?.products,1000), chosen=lines.filter(l=>l.item_id===item.id);
-      const choices=options.map(o=>{const a=CartwiseAuto.amount(o.title), unit=a?` · هر ${a.unit==='g'?'کیلوگرم':'لیتر'}: ${money(CartwiseAuto.estimated(o,item.quantity)*1000/(a.value*item.quantity))} تومان`:'';return `<option value="${escapeHTML(o.title)}" ${selected[item.id]===o.title?'selected':''}>${escapeHTML(o.title)} — ${money(CartwiseAuto.estimated(o,item.quantity))} تومان${unit}</option>`;}).join('')+reviewOptions(item);
-      const purchased=chosen.map(l=>`<li>${escapeHTML(l.title)} × ${l.quantity.toLocaleString('fa-IR')} — ${money(l.subtotal)} تومان</li>`).join('');
-      return `<article class="auto-result-item"><h4>${escapeHTML(item.name)} · ${item.quantity.toLocaleString('fa-IR')} عدد</h4><ul>${purchased}</ul><label>تغییر انتخاب (در صورت نیاز)<select data-auto-item="${escapeHTML(item.id)}"><option value="">انتخاب خودکار</option>${choices}</select></label></article>`;
-    }).join('');
-    const matches=CartwiseCheckout.clean(lastResult.checkout_quotes).map(q=>CartwiseCheckout.reconcile(q,proposed)).filter(q=>q.verified);
-    const observed=matches.length?matches[matches.length-1]:null;
-    const headline=observed?`${money(observed.total)} <small>تومان؛ مبلغ سبد مطابق در دیجی‌کالا</small><span class="hint observed-breakdown">برآورد قیمت کالاهای پیشنهادی: ${money(total)} تومان؛ هزینه و اصلاحات فروشگاه در مبلغ بالا لحاظ شده‌اند.</span>`:`${money(total)} <small>تومان، برآورد قیمت کالاها</small>`;
-    $('results').innerHTML=`<section class="card" dir="rtl"><h3>سبد پیشنهادی</h3><p>${location} · ارسال ${mode}</p><p class="auto-total">${headline}</p>${assumptions}${details}<p class="hint">فقط کالاهای خوانده‌شده بررسی شده‌اند. نام و اندازه کالاها را پیش از خرید مرور کنید.</p></section>${checkoutSection(proposed)}`;
-    bind();
-    $('export-plan').hidden=true;showTab('results');$('tab-label').textContent='نتیجه';message('سبد پیشنهادی آماده است.');
-  }
-  render();
+ function calculate(){
+  if(!lastResult)return;plans=new Map(requested.map(i=>[i.id,cmp.plan(i,rows(i),selected[i.id]||'',true,quantities[i.id]??null)]));
+  const missing=requested.filter(i=>!plans.get(i.id)),completed=requested.filter(i=>plans.get(i.id));
+  const lines=completed.map(i=>plans.get(i.id).line),total=completed.reduce((n,i)=>n+plans.get(i.id).cost,0),allProducts=lastResult.items.flatMap(x=>x.products),stores=new Set(allProducts.map(x=>x.store_name).filter(Boolean));
+  const actual=CartwiseCheckout.clean(lastResult.checkout_quotes).map(q=>CartwiseCheckout.reconcile(q,lines)).filter(q=>q.verified),observed=missing.length?null:actual[actual.length-1];
+  const details=requested.map(item=>{const picked=plans.get(item.id);if(!picked)return `<article class="card auto-result-item unresolved"><h3>${escapeHTML(item.name)}</h3><p>برای مقایسه قابل اتکا، کالا یا اندازه مناسب پیدا نشد.</p><button class="secondary" type="button" data-change-item="${escapeHTML(item.id)}">دیدن و بررسی گزینه‌ها</button></article>`;
+   const p=picked.product,short=picked.target!==null&&picked.total<picked.target,unit=p.size.unit==='count'?'عدد':labels[p.size.unit],amount=picked.total===null?'اندازه نامشخص':fa(picked.total/(p.size.unit==='count'?1:1000))+' '+unit;
+   return `<article class="card auto-result-item product-result"><div class="result-item-heading"><div><small>درخواست شما</small><h3>${escapeHTML(item.name)}</h3></div><span class="result-choice-label">${selected[item.id]?'انتخاب شما':'کمترین قیمت واحد در گروه'}</span></div><div class="product-main">${image(p)}<div><div class="offer-meta">${badge(p)}</div><h4>${escapeHTML(p.title)}</h4><p class="store-name">فروشگاه: ${store(p)}</p><p class="pack-size">${sizeText(p.size)}</p><p class="unit-price">${unitText(p)}</p>${moneyLine(p)}</div></div><div class="purchase-row"><div><small>مقدار خرید</small><strong>${amount}</strong>${short?'<span class="shortfall">کمتر از مقدار درخواستی</span>':''}</div><div class="quantity-stepper"><button type="button" data-quantity-item="${escapeHTML(item.id)}" data-delta="-1" aria-label="یک بسته کمتر" ${picked.quantity<=1?'disabled':''}>−</button><output>${fa(picked.quantity)} بسته</output><button type="button" data-quantity-item="${escapeHTML(item.id)}" data-delta="1" aria-label="یک بسته بیشتر" ${picked.quantity>=50?'disabled':''}>+</button></div></div><ul class="purchase-lines"><li data-selected-product>${escapeHTML(p.title)} × ${fa(picked.quantity)} — ${money(picked.cost)} تومان</li></ul>${picked.quantity>1&&p.promo_price!==null?`<p class="hint">با فرض تخفیف برای یک بسته و قیمت عادی برای بقیه؛ میانگین این تعداد: ${money(picked.effective_unit_price)} تومان / ${unit}</p>`:''}<div class="product-footer"><strong>${money(picked.cost)} <small>تومان، برآورد این قلم</small></strong><button class="secondary" type="button" data-change-item="${escapeHTML(item.id)}">تغییر انتخاب <span>←</span></button></div></article>`;
+  }).join('');
+  const incomplete=lastResult.items.filter(x=>x.error),notice=`<details class="auto-assumptions"><summary>جزئیات قیمت‌ها و پوشش جست‌وجو</summary><p>رتبه‌بندی بر پایه قیمت نمایشی هر کیلو، لیتر یا عدد است؛ کمترین مبلغ بسته یا کمترین جمع سبد، معیار انتخاب نیست. وزن، حجم و تعداد با هم مقایسه نمی‌شوند. برای بیش از یک بسته تخفیف‌دار، تا زمانی که سهمیه واقعی معلوم نباشد، فقط یک بسته تخفیف‌دار و بقیه با قیمت عادی برآورد می‌شوند.</p><p>موجودی دقیق، سهمیه تخفیف، هزینه نهایی و پوشش کامل موجودی فروشگاه از همه صفحات قابل تأیید نیست.${incomplete.length?' بخشی از جست‌وجو محدود یا تأییدنشده است.':''}</p></details>`;
+  $('results').innerHTML=`<section class="basket-summary card" dir="rtl"><small>نتیجه مقایسه بر پایه قیمت واحد</small><h3>${missing.length?'بررسی چند قلم باقی مانده':'سبد پیشنهادی شما'}</h3><p>${escapeHTML(lastResult.location)} · ${lastResult.shipment_type==='scheduled'?'ارسال زمان‌دار':'ارسال فوری'}</p><div class="summary-price"><strong>${money(observed?.total??total)}</strong><span>تومان · ${observed?'مبلغ سبد مطابق دیجی‌کالا':missing.length?'جمع اقلام قابل مقایسه':'برآورد قیمت کالاها'}</span></div><div class="summary-stats"><span>${fa(allProducts.length)} نتیجه خوانده‌شده</span><span>${fa(stores.size)} فروشگاه شناسایی‌شده</span><span>${fa(completed.length)} از ${fa(requested.length)} قلم</span></div>${notice}</section>${details}${checkoutSection(lines)}`;
+  $('results').querySelectorAll('[data-change-item]').forEach(b=>b.onclick=()=>openChoices(requested.find(i=>i.id===b.dataset.changeItem)));
+  $('results').querySelectorAll('[data-quantity-item]').forEach(b=>b.onclick=()=>{const i=b.dataset.quantityItem;quantities[i]=plans.get(i).quantity+Number(b.dataset.delta);calculate();});
+  $('results').querySelectorAll('[data-read-checkout]').forEach(b=>b.onclick=()=>window.CartwiseAndroid.readCheckout());prepareImages($('results'));
+  plan={status:'unit-price-estimate',optimal:false,total,carts:[{lines}]};$('export-plan').hidden=true;showTab('results');message(missing.length?'گزینه‌های بعضی اقلام نیاز به بررسی دارند.':'مقایسه آماده است؛ مقدار خرید و انتخاب‌ها را مرور کنید.',!!missing.length);
+ }
+ render();
 })();

@@ -32,7 +32,7 @@ public class HeaderlessFlowTest {
         RetailerSession.discard();
     });}
     private WebView planner(MainActivity a) {return (WebView)((ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0)).getChildAt(0);}
-    private WebView browser(DigikalaActivity a) {return (WebView)((ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0)).getChildAt(2);}
+    private WebView browser(DigikalaActivity a) {return RetailerFixtures.browser(a);}
     private String eval(WebView view,String script) throws Exception {
         CountDownLatch latch=new CountDownLatch(1);AtomicReference<String> value=new AtomicReference<>("");
         InstrumentationRegistry.getInstrumentation().runOnMainSync(()->view.evaluateJavascript(script,r->{value.set(r);latch.countDown();}));
@@ -63,7 +63,9 @@ public class HeaderlessFlowTest {
     }
     private void continueChoice() throws Exception {
         long until=System.currentTimeMillis()+10000;
-        while(System.currentTimeMillis()<until){AccessibilityNodeInfo root=InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow();
+        while(System.currentTimeMillis()<until){
+            AtomicReference<Boolean> returned=new AtomicReference<>(false);InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{for(Activity a:ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED))if(a instanceof MainActivity)returned.set(true);});if(returned.get())return;
+            AccessibilityNodeInfo root=InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow();
             if(root!=null) for(AccessibilityNodeInfo n:root.findAccessibilityNodeInfosByText("ادامه"))if(n.isClickable()&&n.performAction(AccessibilityNodeInfo.ACTION_CLICK))return;
             Thread.sleep(100);
         }throw new AssertionError("Delivery confirmation did not appear");
@@ -103,12 +105,13 @@ public class HeaderlessFlowTest {
             waitFor(main,"!busy");
             eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
             waitFor(main,"document.getElementById('results').textContent.includes('۱۳۵٬۳۰۰') && document.getElementById('results').textContent.includes('برآورد')");
-            waitFor(main,"document.querySelector('[data-auto-item]')?.textContent.includes('پاستا 500 گرم')");
-            assertEquals("false",eval(main,"document.querySelector('.auto-result-item li').textContent.includes('پاستا')"));
-            assertEquals("false",eval(main,"document.querySelector('[data-auto-item]').textContent.includes('پنیر آزمون')"));
+            eval(main,"document.querySelector('[data-change-item]').click();document.querySelector('[data-choice-unit=g]').click();true");
+            waitFor(main,"document.querySelector('#choice-list').textContent.includes('پاستا 500 گرم')");
+            assertEquals("false",eval(main,"document.querySelector('[data-selected-product]').textContent.includes('پاستا')"));
+            assertEquals("false",eval(main,"document.querySelector('#choice-list').textContent.includes('پنیر آزمون')"));
             assertEquals("true",eval(main,"typeof window.CartwiseAndroid.suggestOffline==='undefined'"));
-            eval(main,"let s=document.querySelector('[data-auto-item]');s.value='review:پاستا 500 گرم';s.dispatchEvent(new Event('change'));true");
-            waitFor(main,"document.querySelector('.auto-result-item li')?.textContent.includes('پاستا 500 گرم')");
+            eval(main,"document.querySelector('[data-choice-id][data-review=true]').click();true");
+            waitFor(main,"document.querySelector('[data-selected-product]')?.textContent.includes('پاستا 500 گرم')");
         }
     }
     @Test public void automaticSearchLoadsFurtherResultsAndComparesAmounts() throws Exception {
@@ -135,4 +138,22 @@ public class HeaderlessFlowTest {
             waitFor(main,"document.getElementById('results').textContent.includes('نان تست') && document.getElementById('results').textContent.includes('۱۰۰')");
         }
     }
+    @Test public void savedPickerReplaysAutomaticallyBehindProgressScreen() throws Exception {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
+            waitFor(main,"Boolean(window.CartwiseComparison && document.getElementById('optimize'))");
+            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان 1 کیلوگرم',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
+            DigikalaActivity automatic=child();
+            page(automatic,"<div id='root'><div role='dialog'><button onclick=\"document.getElementById('root').innerHTML='<p>ارسال به ونک</p><button aria-pressed=true>ارسال زمان‌دار</button>'\">ونک</button></div></div><script>window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML='<div data-store-name=\"بهار\" data-store-id=\"s1\"><img alt=\"نان 1 کیلوگرم\" src=\"https://dkstatics-public.digikala.com/fixture.jpg\" style=\"width:60px;height:60px\"><p>شگفت‌انگیز</p><div><p>100</p><img src=\"/supermarket/i/toman.svg\"></div><p class=\"line-through\">150</p><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'})</script>");
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
+                WebView web=browser(automatic);assertEquals(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS,web.getImportantForAccessibility());
+                ViewGroup frame=(ViewGroup)web.getParent();assertEquals(android.view.View.VISIBLE,frame.getChildAt(1).getVisibility());
+                assertEquals(android.view.View.VISIBLE,web.getVisibility());
+            });
+            waitFor(main,"document.querySelector('#results')?.textContent.includes('نان 1 کیلوگرم') && document.querySelector('#results')?.textContent.includes('شگفت‌انگیز')");
+            assertEquals("true",eval(main,"document.querySelector('#results').textContent.includes('بهار') && document.querySelector('#results').textContent.includes('۱۵۰') && document.querySelector('.product-result img').getAttribute('src').startsWith('/assets/product-image')"));
+        }
+    }
+
 }

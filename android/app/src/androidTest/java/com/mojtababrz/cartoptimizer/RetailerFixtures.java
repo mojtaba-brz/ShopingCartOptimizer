@@ -11,6 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Offline HTTPS responses, retaining the real URL/lifecycle used by native security checks. */
 final class RetailerFixtures {
+    static android.webkit.WebView browser(android.app.Activity a){return find(a.findViewById(android.R.id.content));}
+    private static android.webkit.WebView find(android.view.View view){
+        if(view instanceof android.webkit.WebView)return (android.webkit.WebView)view;
+        if(view instanceof android.view.ViewGroup){android.view.ViewGroup group=(android.view.ViewGroup)view;for(int n=0;n<group.getChildCount();n++){android.webkit.WebView result=find(group.getChildAt(n));if(result!=null)return result;}}
+        return null;
+    }
+
     private static final AtomicInteger sequence=new AtomicInteger();
     static String load(WebView view,String base,String html) {
         String token=String.valueOf(sequence.incrementAndGet());

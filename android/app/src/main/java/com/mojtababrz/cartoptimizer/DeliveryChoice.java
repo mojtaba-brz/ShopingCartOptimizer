@@ -30,8 +30,13 @@ final class DeliveryChoice {
             return Double.isFinite(lat)&&Double.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;
         }catch(Exception e){return false;}
     }
+    static boolean sameCoordinates(String a,String b) {
+        if(!validCoordinates(a)||!validCoordinates(b))return false;
+        String[] x=a.split("\\|"),y=b.split("\\|");
+        return Double.compare(Double.parseDouble(x[0]),Double.parseDouble(y[0]))==0&&Double.compare(Double.parseDouble(x[1]),Double.parseDouble(y[1]))==0;
+    }
     String restoreFromCatalog(String coordinates,String mode) {
-        return validCoordinates(coordinates)&&coordinates.equals(prefs.getString("coordinates",""))&&matches(location(),mode)?location():"";
+        return validCoordinates(coordinates)&&sameCoordinates(coordinates,prefs.getString("coordinates",""))&&matches(location(),mode)?location():"";
     }
     void clear() {prefs.edit().clear().apply();}
     String mode() {return prefs.getString("mode","");}

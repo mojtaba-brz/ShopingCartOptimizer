@@ -29,7 +29,7 @@ public class LiveReaderTest {
             scenario.onActivity(activity -> {
                 android.view.ViewGroup content=activity.findViewById(android.R.id.content);
                 android.view.ViewGroup root=(android.view.ViewGroup)content.getChildAt(0);
-                WebView shop=(WebView)root.getChildAt(2);
+                WebView shop=RetailerFixtures.browser(activity);
                 shop.stopLoading();
                 shop.loadDataWithBaseURL("https://www.digikala.com/supermarket/search/shop", "<div id='root'><div><p>ارسال به</p><p>ونک</p></div><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>","text/html","utf-8",null);
             });
@@ -41,7 +41,7 @@ public class LiveReaderTest {
                         java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] buf=new byte[4096];int n;
                         while((n=input.read(buf))!=-1)out.write(buf,0,n);
                         android.view.ViewGroup root=(android.view.ViewGroup)((android.view.ViewGroup)activity.findViewById(android.R.id.content)).getChildAt(0);
-                        WebView shop=(WebView)root.getChildAt(2);
+                        WebView shop=RetailerFixtures.browser(activity);
                         shop.evaluateJavascript("({bridge:typeof CartwiseAndroid,read:"+out.toString("UTF-8")+"})",r->{value.set(r);done.countDown();});
                     }catch(Exception e){done.countDown();}
                 });

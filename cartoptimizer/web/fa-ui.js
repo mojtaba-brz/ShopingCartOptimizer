@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const key='cartwise.theme.v1', themes=['simple','modern','traditional'];
-  function theme(value){if(!themes.includes(value))value='simple';document.documentElement.dataset.theme=value;for(const input of document.querySelectorAll('[name=theme]'))input.checked=input.value===value;try{localStorage.setItem(key,value);}catch{}}
+  function theme(value){if(!themes.includes(value))value='simple';window.CartwiseAndroid?.setAppearance?.(value);document.documentElement.dataset.theme=value;for(const input of document.querySelectorAll('[name=theme]'))input.checked=input.value===value;try{localStorage.setItem(key,value);}catch{}}
   let saved='simple';try{saved=localStorage.getItem(key)||saved;}catch{}theme(saved);
   document.querySelectorAll('[name=theme]').forEach(input=>input.addEventListener('change',()=>theme(input.value)));
   document.getElementById('clear-private-data')?.addEventListener('click',()=>{

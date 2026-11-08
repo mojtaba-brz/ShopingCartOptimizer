@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class CheckoutFlowTest {
-    private WebView browser(Activity a){return (WebView)((ViewGroup)((ViewGroup)a.findViewById(android.R.id.content)).getChildAt(0)).getChildAt(2);}
+    private WebView browser(Activity a){return RetailerFixtures.browser(a);}
     @Test public void cartReaderReturnsVisibleFeesAndCorrectionsWithoutNativeBridge() throws Exception {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
         RetailerSession.confirmDelivery("ارسال به تهران، انقلاب","scheduled");
