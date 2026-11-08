@@ -20,7 +20,8 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  assert.equal(await page.evaluate(()=>localStorage.getItem('jet:first-load')),null);
  state=await page.evaluate(`(${pref})('read',{})`);assert.equal(state.coordinates,'35.7|51.4');assert.ok(!JSON.stringify(state).includes('NEVER_EXPORT'));
  assert.equal((await page.evaluate(`(${pref})('restore',${JSON.stringify(saved)})`)).changed,false);
- assert.equal((await page.evaluate(`(${pref})('restore',{location:'x',coordinates:'|'})`)).state,'missing-coordinates');
+ assert.equal((await page.evaluate(`(${pref})('restore',{location:'x',coordinates:'|'})`)).state,'service-set','An existing Jet choice takes precedence even over an invalid old bookmark');
+ await page.evaluate(()=>localStorage.setItem('persist:DKNow',JSON.stringify({address:JSON.stringify({defaultAddress:{}})})));assert.equal((await page.evaluate(`(${pref})('restore',{location:'x',coordinates:'|'})`)).state,'missing-coordinates');
  await page.evaluate(()=>localStorage.setItem('persist:DKNow','broken-json'));assert.equal((await page.evaluate(`(${pref})('restore',${JSON.stringify(saved)})`)).state,'unreadable-preference');assert.equal(await page.evaluate(()=>localStorage.getItem('persist:DKNow')),'broken-json');
  await page.evaluate(()=>localStorage.removeItem('persist:DKNow'));
  // Document-start restoration must work before documentElement exists and before

@@ -22,7 +22,7 @@
   return {header,editing:map||picker||form,map_open:map,picker_open:picker,form_open:form};
  }
  function selected(a,ui){
-  const p=a.defaultAddress||{},lat=number(p.addressLatitude),lon=number(p.addressLongitude),ok=valid(lat,lon);
+  const p=a.defaultAddress||{},lat=number(p.addressLatitude),lon=number(p.addressLongitude),ok=valid(lat,lon)&&p.addressIsCoordinatesValid!==false;
   const label=clean(p.addressAddress)||clean(p.addressName)||clean(p.addressTitle)||ui.header;
   const id=p.addressId,account=typeof id==='number'?Number.isSafeInteger(id)&&id>0:typeof id==='string'&&/^\d+$/.test(id)&&Number(id)>0;
   // Jet's automatic guest fallback has only name/title + coordinates. It is
