@@ -40,6 +40,8 @@ jobs:
           node --check cartoptimizer/web/fa-ui.js
           node android/tests/checkout.cjs
           node --check cartoptimizer/web/auto-ui.js
+          node --check cartoptimizer/web/jet-dom.js
+          node --check cartoptimizer/web/jet-location.js
           node --check cartoptimizer/web/live.js
           node --check cartoptimizer/web/digikala-capture.js
           node android/tests/live-reader.cjs
@@ -58,7 +60,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.8.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.9.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -101,6 +103,7 @@ jobs:
           curl --fail --silent --retry 20 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:8765/
           export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
           node android/tests/browser-ui.cjs
+          node android/tests/jet-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -186,6 +189,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.8.0-Publication-Kit
+          name: Sabadchin-0.9.0-Publication-Kit
           path: publication-kit/**
           retention-days: 90

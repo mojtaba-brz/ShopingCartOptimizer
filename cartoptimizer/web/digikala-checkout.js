@@ -2,7 +2,7 @@
  * No cookies, account fields, hidden application state or cart mutations. */
 (function(){
   'use strict';
-  if(location.protocol!=='https:'||!['www.digikala.com','digikala.com'].includes(location.hostname))return null;
+  if(location.protocol!=='https:'||!['www.digikala.com','digikala.com','www.digikalajet.com','digikalajet.com'].includes(location.hostname))return null;
   const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
   const text=e=>(e?.innerText||'').trim().replace(/[\u200c\s]+/g,' ');
   const digits=s=>String(s).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));

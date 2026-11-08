@@ -1,4 +1,4 @@
-# Cartwise for Android 0.8.0
+# Cartwise for Android 0.9.0
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
@@ -17,11 +17,19 @@ Catalog coordinates and delivery mode can restore a saved address after process
 restart when fresh retailer requests match. Old labels alone are never proof.
 Android release preparation is documented in [release/README-fa.md](../release/README-fa.md).
 
-The Android planner searches Digikala automatically after the list and delivery
+The Android planner searches Digikala Jet automatically after the list and delivery
 area are supplied. An opaque native progress screen covers the retailer page while
 it remains measured for lazy-loading. It reports completed list items, current
 query, captured products/stores and scrolling steps, without claiming full catalog
-coverage. A retained session, fresh matching catalog coordinates or an exact,
+coverage. At app startup, a dedicated preflight restores the user's confirmed Jet address
+preference and coordinate pair before the first catalog query. Only the address
+subfield of Jet's documented-in-source persisted schema is read/written inside its
+own WebView; the native app stores only the selected label and coordinates. User,
+credential and account state is never exported or overwritten. This schema is based
+on the publicly served Jet x-app bundle observed on 2026-11-08 and needs maintenance
+if the retailer changes it. First use requires a location choice; an old hypermarket
+label with no usable coordinates cannot be treated as a confirmed Jet location.
+A retained session, fresh matching catalog coordinates or an exact,
 unambiguous saved address in the public picker can restore location after restart.
 An expired/missing/ambiguous address needs the separate address/map step. No new
 address is created automatically. Product photos are fetched from approved public
@@ -167,3 +175,14 @@ when only an old saved choice exists and the retailer session is unconfirmed.
 Retailer regression pages are served as intercepted HTTPS responses inside the
 test APK. They have unique document markers and retain the native URL and page
 lifecycle, so tests cannot accidentally read the previous page or a data URL.
+
+## Jet integration validation
+
+The live Jet search UI was inspected on 2026-11-08: `/search/v2/result?q=…` groups
+products under merchant headings, and “مشاهده همه” opens `/search/shop?q=…&shopId=…`.
+The adapter extracts the visible heading outside product and navigation buttons;
+store-specific pages inherit only the name matched to their current shopId.
+Every discovered merchant's full result page is scrolled before returning to the
+global search for more merchants. Limits: 40 merchants, 1,000 offers and five minutes
+per requested item; reaching a bound is reported as incomplete, never full coverage.
+A user-supplied account-transfer URL must never be embedded in the app or logs.

@@ -39,7 +39,7 @@
     if(!p || typeof p.title!=='string' || !p.title.trim() || p.title.length>300 ||
       !Number.isSafeInteger(p.regular_price) || p.regular_price<1 || p.regular_price>1e13) return null;
     if(p.promo_price!==null && (!Number.isSafeInteger(p.promo_price) || p.promo_price<0 || p.promo_price>=p.regular_price)) return null;
-    const url=typeof p.url==='string'&&/^https:\/\/(?:www\.)?digikala\.com\//.test(p.url)?p.url:'';
+    const url=typeof p.url==='string'&&/^https:\/\/(?:www\.)?(?:digikala|digikalajet)\.com\//.test(p.url)?p.url:'';
     let image='';try{const u=new URL(p.image_url);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname))image=u.href;}catch{}
     return {title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
       image_url:image,store_name:typeof p.store_name==='string'?p.store_name.trim().slice(0,160):'',store_id:typeof p.store_id==='string'?p.store_id.slice(0,200):'',

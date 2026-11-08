@@ -38,7 +38,7 @@ public class DeliverySessionTest {
     }
     private void fixture(ActivityScenario<DigikalaActivity> scenario,String location) throws Exception {
         AtomicReference<String> token=new AtomicReference<>();
-        scenario.onActivity(a->token.set(RetailerFixtures.load(shop(a),"https://www.digikala.com/supermarket/search/shop?q=fixture",
+        scenario.onActivity(a->token.set(RetailerFixtures.load(shop(a),"https://www.digikalajet.com/search/shop?q=fixture",
             "<div id='root'><div><p>ارسال به</p><p>"+location+"</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div></div>")));
         waitFor(scenario,"document.querySelector('meta[name=cartwise-fixture]')?.content==="+JSONObject.quote(token.get()));
 
@@ -49,10 +49,10 @@ public class DeliverySessionTest {
     }
     @After public void release() {InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);}
     @Test public void choicePersistsAndChangedAddressOrModeRequiresConfirmation() {
-        DeliveryChoice first=new DeliveryChoice(ApplicationProvider.getApplicationContext());first.remember("ارسال به ونک","scheduled");
+        DeliveryChoice first=new DeliveryChoice(ApplicationProvider.getApplicationContext());first.remember("ارسال به ونک","on_demand");
         DeliveryChoice second=new DeliveryChoice(ApplicationProvider.getApplicationContext());
-        assertTrue(second.matches("ارسال به   ونک","scheduled"));
-        assertFalse(second.matches("ارسال به آزادی","scheduled"));assertFalse(second.matches("ارسال به ونک","on_demand"));
+        assertTrue(second.matches("ارسال به   ونک","on_demand"));
+        assertFalse(second.matches("ارسال به آزادی","on_demand"));assertFalse(second.matches("ارسال به ونک","scheduled"));
         assertFalse(second.matches("ارسال به ونک",""));
     }
     @Test public void sameTabAndLiveStateSurviveClosingAndAnotherSearch() throws Exception {
@@ -73,11 +73,11 @@ public class DeliverySessionTest {
         }
     }
     @Test public void sameConfirmedLocationImportsWithoutAnotherDialog() throws Exception {
-        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به ونک","");
         try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launchActivityForResult(intent("شیر"))) {
             fixture(scenario,"ونک");
             AtomicReference<String> reader=new AtomicReference<>();
-            scenario.onActivity(a->{try(java.io.InputStream in=a.getAssets().open("digikala-capture.js")){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);reader.set(out.toString("UTF-8"));}catch(Exception e){throw new RuntimeException(e);}});
+            scenario.onActivity(a->{try(java.io.InputStream in=a.getAssets().open("jet-dom.js")){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);reader.set("("+out.toString("UTF-8")+")({})");}catch(Exception e){throw new RuntimeException(e);}});
             String captured=eval(scenario,reader.get());
             AtomicReference<String> nativeUrl=new AtomicReference<>("");scenario.onActivity(a->nativeUrl.set(shop(a).getUrl()));
             assertTrue("Native fixture URL: "+nativeUrl.get(),DigikalaActivity.retailer(android.net.Uri.parse(nativeUrl.get())));
@@ -89,11 +89,11 @@ public class DeliverySessionTest {
             assertEquals("Repeated import status: "+nativeStatus.get()+"; capture: "+captured,Lifecycle.State.DESTROYED,scenario.getState());
             assertEquals(Activity.RESULT_OK,scenario.getResult().getResultCode());
             JSONObject data=new JSONObject(scenario.getResult().getResultData().getStringExtra("live_data"));
-            assertEquals("scheduled",data.getString("shipment_type"));assertEquals("ارسال به ونک",data.getString("location"));
+            assertEquals("on_demand",data.getString("shipment_type"));assertEquals("ارسال به ونک",data.getString("location"));
         }
     }
     @Test public void headerlessPageDoesNotTrustAnOldChoiceAfterSessionDiscard() throws Exception {
-        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به ونک","");
         try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launch(intent("شیر"))) {
             fixture(scenario,"ونک");
             eval(scenario,"document.querySelector('#root > div').remove();true");
@@ -105,10 +105,10 @@ public class DeliverySessionTest {
         }
     }
     @Test public void explicitAddressChangeInvalidatesTheRetainedLocation() {
-        RetailerSession.confirmDelivery("ارسال به ونک","scheduled");assertEquals("ارسال به ونک",RetailerSession.deliveryLocation());
-        RetailerSession.noticeNavigation(android.net.Uri.parse("https://www.digikala.com/supermarket?MID=main-change-address"));
+        RetailerSession.confirmDelivery("ارسال به ونک","on_demand");assertEquals("ارسال به ونک",RetailerSession.deliveryLocation());
+        RetailerSession.noticeNavigation(android.net.Uri.parse("https://www.digikalajet.com/supermarket?MID=main-change-address"));
         assertEquals("",RetailerSession.deliveryLocation());
-        RetailerSession.confirmDelivery("ارسال به آزادی","scheduled");InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
+        RetailerSession.confirmDelivery("ارسال به آزادی","on_demand");InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
         assertEquals("",RetailerSession.deliveryLocation());
     }
 

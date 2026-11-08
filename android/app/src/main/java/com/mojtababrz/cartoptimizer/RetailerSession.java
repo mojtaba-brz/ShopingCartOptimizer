@@ -49,6 +49,7 @@ final class RetailerSession {
         if(tab.getParent() instanceof ViewGroup) ((ViewGroup)tab.getParent()).removeView(tab);
         context.setBaseContext(activity);
         owner=new WeakReference<>(activity);
+        tab.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
         tab.onResume();
         return tab;
     }
@@ -56,21 +57,27 @@ final class RetailerSession {
         Uri uri=request.getUrl();String path=uri.getPath();
         if(!"GET".equals(request.getMethod()) || !"https".equals(uri.getScheme())
             || !"api.digikalajet.ir".equals(uri.getHost()) || path==null
-            || !(path.startsWith("/fresh/") || path.startsWith("/search/")
+            || !(path.startsWith("/v3/") || path.startsWith("/products/") || path.startsWith("/shop/") || path.startsWith("/fresh/") || path.startsWith("/search/")
                 || path.startsWith("/v2/search/") || path.equals("/first-load/"))) return;
         // The user-selected location stays in private local preferences.
         // Only an exact fresh catalog coordinate + delivery-mode match can restore its label.
         // Changed catalog coordinates invalidate the prior label; no guessing a new area.
         String lat=uri.getQueryParameter("latitude"), lon=uri.getQueryParameter("longitude");
+        // Jet sends the public delivery coordinates as request headers as well.
+        for(Map.Entry<String,String> h:request.getRequestHeaders().entrySet()){
+            if("latitude".equalsIgnoreCase(h.getKey()))lat=h.getValue();
+            if("longitude".equalsIgnoreCase(h.getKey()))lon=h.getValue();
+        }
         if(lat!=null && lon!=null) {
             String next=lat+"|"+lon;
-            if(!catalogLocation.isEmpty() && !catalogLocation.equals(next)) {confirmedLocation="";confirmedMode="";}
+            if(!catalogLocation.isEmpty() && !DeliveryChoice.sameCoordinates(catalogLocation,next)) {confirmedLocation="";confirmedMode="";}
             if(!DeliveryChoice.validCoordinates(next)){catalogLocation="";confirmedLocation="";confirmedMode="";return;}
             catalogLocation=next;
         }
         // Read only the public delivery-mode header, never auth or account headers.
         for(Map.Entry<String,String> entry:request.getRequestHeaders().entrySet())
             if("shipment-type".equalsIgnoreCase(entry.getKey()) && mode(entry.getValue())) observedMode=entry.getValue();
+        if(savedChoice!=null&&savedChoice.isJet())observedMode="on_demand";
         if(!editingLocation && confirmedLocation.isEmpty() && savedChoice!=null) {
             String restored=savedChoice.restoreFromCatalog(catalogLocation,observedMode);
             if(!restored.isEmpty()) {confirmedLocation=restored;confirmedMode=observedMode;}
@@ -78,6 +85,7 @@ final class RetailerSession {
         if(!confirmedLocation.isEmpty() && savedChoice!=null) savedChoice.rememberCoordinates(catalogLocation);
     }
     static boolean mode(String value) { return "scheduled".equals(value)||"on_demand".equals(value); }
+    static boolean coordinatesMatch(String point){return DeliveryChoice.sameCoordinates(point,catalogLocation);}
     static String observedMode() { return observedMode; }
     static void navigate(WebView view,String url) {
         final int requestId=++navigationId;
@@ -86,7 +94,7 @@ final class RetailerSession {
         // Retain Redux and tab storage while changing the site's own router route.
         // A cold/unfinished document falls back to normal HTTPS navigation.
         if(current!=null && DigikalaActivity.retailer(Uri.parse(current))
-            && Uri.parse(current).getPath()!=null && Uri.parse(current).getPath().startsWith("/supermarket")) {
+            && Uri.parse(current).getHost().equals(Uri.parse(url).getHost())) {
             view.evaluateJavascript("Boolean(document.getElementById('root'))",ready->{
                 if(requestId!=navigationId) return;
                 if("true".equals(ready)) {

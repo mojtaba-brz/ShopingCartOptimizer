@@ -6,7 +6,7 @@
     const quotes=[],seen=new Set();
     for(const q of Array.isArray(rows)?rows:[]){
       if(!q||q.source!=='digikala-visible-checkout'||!['cart','store','catalog'].includes(q.page_kind))continue;
-      let url;try{url=new URL(q.page_url);if(url.protocol!=='https:'||!['www.digikala.com','digikala.com'].includes(url.hostname)||url.username||url.password||url.port)continue;}catch{continue;}
+      let url;try{url=new URL(q.page_url);if(url.protocol!=='https:'||!['www.digikala.com','digikala.com','www.digikalajet.com','digikalajet.com'].includes(url.hostname)||url.username||url.password||url.port)continue;}catch{continue;}
       const date=Date.parse(q.captured_at);if(!Number.isFinite(date)||Math.abs(Date.now()-date)>1800000)continue;
       const fields={};for(const key of keys){const f=q.fields?.[key];if(f&&Number.isSafeInteger(f.value)&&f.value>=0&&f.value<=1e13)fields[key]={value:f.value,evidence:String(f.evidence||'').slice(0,180)};}
       const notices=(Array.isArray(q.notices)?q.notices:[]).filter(n=>typeof n==='string'&&n.length<=180).slice(0,20);

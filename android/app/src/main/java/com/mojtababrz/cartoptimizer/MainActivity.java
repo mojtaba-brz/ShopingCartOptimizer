@@ -29,16 +29,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
-    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12, AUTO_DIGIKALA = 13, CHECKOUT_DIGIKALA = 14;
+    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12, AUTO_DIGIKALA = 13, CHECKOUT_DIGIKALA = 14, PREPARE_DELIVERY = 15;
     private static final int MAX_BYTES = 1_000_000;
     private static final String HOST = "appassets.androidplatform.net";
     private WebView webView;
     private String pendingExport;
+    private boolean preflightStarted;
     private final ExecutorService files = Executors.newSingleThreadExecutor();
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         RetailerSession.initialize(this);
+        preflightStarted=savedInstanceState!=null&&savedInstanceState.getBoolean("delivery-preflight-started",false);
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::handleBack);
         files.execute(() -> {
             SearchResult.cleanup(MainActivity.this);
@@ -72,6 +74,12 @@ public final class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
         webView.addJavascriptInterface(new Bridge(), "CartwiseAndroid");
         webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view,String url){
+                if(preflightStarted||!trusted(Uri.parse(url))||getIntent().getBooleanExtra("skip_delivery_preflight",false))return;
+                preflightStarted=true;
+                view.postDelayed(()->{if(!isFinishing()&&!isDestroyed())startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("prepare_location",true),PREPARE_DELIVERY);},700);
+            }
+
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if(trusted(uri)&&"/assets/product-image".equals(uri.getPath())&&"GET".equals(request.getMethod()))return ProductImages.read(uri.getQueryParameter("u"));
@@ -122,7 +130,7 @@ public final class MainActivity extends Activity {
         }
         @JavascriptInterface public void clearPrivateData() {
             runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle("پاک‌کردن اطلاعات این گوشی")
-                .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالا از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
+                .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالاجت از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
                 .setPositiveButton("پاک شود",(dialog,which)->{
                     android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();
                     SearchResult.clear(MainActivity.this);getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().clear().apply();
@@ -176,7 +184,7 @@ public final class MainActivity extends Activity {
                 webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:checkout',{detail:"+JSONObject.quote(json)+"}));",null);}
             return;
         }
-        if (requestCode == LIVE_DIGIKALA) {
+        if (requestCode == LIVE_DIGIKALA || requestCode == PREPARE_DELIVERY) {
             if (resultCode == RESULT_OK && data != null) {
                 String json = data.getStringExtra("live_data");
                 if (json != null && json.getBytes(StandardCharsets.UTF_8).length <= 500_000)
@@ -211,6 +219,7 @@ public final class MainActivity extends Activity {
             });
         }
     }
+    @Override protected void onSaveInstanceState(Bundle out){out.putBoolean("delivery-preflight-started",preflightStarted);super.onSaveInstanceState(out);}
     private void handleBack() {
         webView.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return 'dialog';}return document.querySelector('.nav.active').dataset.tab})()", value -> {
             if("\"dialog\"".equals(value))return;

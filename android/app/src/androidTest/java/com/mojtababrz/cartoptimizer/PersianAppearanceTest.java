@@ -31,7 +31,7 @@ public class PersianAppearanceTest {
     }
     private void progress(String value){android.os.Bundle data=new android.os.Bundle();data.putString("stream","Appearance: "+value+"\n");InstrumentationRegistry.getInstrumentation().sendStatus(2,data);}
     @Test public void persianThemesPersistAndDoNotOverflowOnPhone()throws Exception{
-        progress("launching");try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
+        progress("launching");try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())){
             progress("launched");
             ready(scenario);progress("ready");assertEquals("true",eval(scenario,"document.documentElement.lang==='fa' && document.documentElement.dir==='rtl' && money(123450)==='۱۲٬۳۴۵'"));
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم‌چرب ۱ لیتر',quantity:2},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];dirty.clear();save();showTab('list');true");

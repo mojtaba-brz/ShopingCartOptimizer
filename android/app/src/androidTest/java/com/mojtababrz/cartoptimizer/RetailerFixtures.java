@@ -18,15 +18,18 @@ final class RetailerFixtures {
         return null;
     }
 
+    static android.content.Intent plannerIntent(){return new android.content.Intent(androidx.test.core.app.ApplicationProvider.getApplicationContext(),MainActivity.class).putExtra("skip_delivery_preflight",true);}
     private static final AtomicInteger sequence=new AtomicInteger();
     static String load(WebView view,String base,String html) {
         String token=String.valueOf(sequence.incrementAndGet());
         String url=Uri.parse(base).buildUpon().appendQueryParameter("_fixture",token).build().toString();
-        byte[] page=("<meta name='cartwise-fixture' content='"+token+"'>"+html).getBytes(StandardCharsets.UTF_8);
+        String clean=html.contains("persist:DKNow")?"":"<script>localStorage.removeItem('persist:DKNow');</script>";
+        byte[] page=(clean+"<meta name='cartwise-fixture' content='"+token+"'>"+html).getBytes(StandardCharsets.UTF_8);
         WebViewClient original=view.getWebViewClient();
         view.stopLoading();view.getSettings().setBlockNetworkLoads(false);
         view.setWebViewClient(new WebViewClient(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r) {
+                original.shouldInterceptRequest(v,r);
                 if(r.isForMainFrame() && url.equals(r.getUrl().toString()))
                     return new WebResourceResponse("text/html","UTF-8",new ByteArrayInputStream(page));
                 return new WebResourceResponse("text/plain","UTF-8",404,"Fixture only",null,new ByteArrayInputStream(new byte[0]));

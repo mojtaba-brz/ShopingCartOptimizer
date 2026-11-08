@@ -33,7 +33,7 @@ public class OfflineSmokeTest {
         throw new AssertionError("UI condition timed out: " + condition);
     }
     @Test public void demoWorksOfflineAndWorkspaceSurvivesRecreation() throws Exception {
-        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             waitFor(scenario, "Boolean(window.CartwiseEngine && document.getElementById('demo'))");
             eval(scenario, "localStorage.clear();state=initialState();dirty.clear();save();document.getElementById('demo').click();true");
             waitFor(scenario, "document.getElementById('source-badge').textContent.includes('نمونه')");
@@ -46,10 +46,10 @@ public class OfflineSmokeTest {
         }
     }
     @Test public void liveImportAddsPricesChecksFeesAndSurvivesRecreation() throws Exception {
-        try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+        try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             waitFor(scenario,"Boolean(window.CartwiseLive && document.getElementById('live-location-button'))");
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر',quantity:1}];dirty.clear();save();true");
-            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به ونک',shipment_type:'scheduled',page_url:'https://www.digikala.com/supermarket/search/shop',item_id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000}]}}));true");
+            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به ونک',shipment_type:'scheduled',page_url:'https://www.digikalajet.com/search/shop',item_id:'milk',products:[{title:'شیر یک لیتری',regular_price:1650000,promo_price:1353000}]}}));true");
             waitFor(scenario,"document.querySelectorAll('[data-live-add]').length===1");
             eval(scenario,"document.querySelector('[data-live-add]').click();true");
             assertTrue(eval(scenario,"state.offers.length===1 && state.offers[0].promo_price===1353000 && state.offers[0].stock===1").equals("true"));
@@ -61,7 +61,7 @@ public class OfflineSmokeTest {
             scenario.recreate();
             waitFor(scenario,"Boolean(window.CartwiseLive && state.offers.length===1 && document.getElementById('live-location').textContent.includes('ونک'))");
             assertTrue(eval(scenario,"!CartwiseLive.checkBeforeOptimize(state)").equals("true"));
-            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به آزادی',shipment_type:'scheduled',page_url:'https://www.digikala.com/supermarket/',location_only:true,products:[]}}));true");
+            eval(scenario,"window.dispatchEvent(new CustomEvent('cartwise:live',{detail:{source:'digikala-live-page',captured_at:new Date().toISOString(),location:'ارسال به آزادی',shipment_type:'scheduled',page_url:'https://www.digikalajet.com/',location_only:true,products:[]}}));true");
             assertTrue(eval(scenario,"state.offers[0].confirmed===false").equals("true"));
         }
     }

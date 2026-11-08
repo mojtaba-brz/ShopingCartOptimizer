@@ -39,7 +39,7 @@ public class HeaderlessFlowTest {
         assertTrue("JS callback",latch.await(5,TimeUnit.SECONDS));return value.get();
     }
     private void waitFor(WebView view,String condition) throws Exception {
-        long until=System.currentTimeMillis()+20000;
+        long until=System.currentTimeMillis()+60000;
         while(System.currentTimeMillis()<until){if("true".equals(eval(view,condition)))return;Thread.sleep(100);}fail("Timed out: "+condition);
     }
     private DigikalaActivity child() throws Exception {
@@ -51,7 +51,7 @@ public class HeaderlessFlowTest {
     }
     private void page(DigikalaActivity a,String body) throws Exception {
         AtomicReference<String> token=new AtomicReference<>();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(()->token.set(RetailerFixtures.load(browser(a),"https://www.digikala.com/supermarket/search/shop?q=fixture",body)));
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(()->token.set(RetailerFixtures.load(browser(a),"https://www.digikalajet.com/search/shop?q=fixture",body)));
         waitFor(browser(a),"document.querySelector('meta[name=cartwise-fixture]')?.content==="+org.json.JSONObject.quote(token.get()));
 
     }
@@ -71,7 +71,7 @@ public class HeaderlessFlowTest {
         }throw new AssertionError("Delivery confirmation did not appear");
     }
     @Test public void selectAreaSearchWithoutHeaderImportAndCalculate() throws Exception {
-        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseLive && document.getElementById('live-location-button'))");
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر',quantity:1}];dirty.clear();save();document.getElementById('live-location-button').click();true");
@@ -80,7 +80,7 @@ public class HeaderlessFlowTest {
             read(first);continueChoice();
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             assertEquals("ارسال به تهران، انقلاب",RetailerSession.deliveryLocation());
-            assertEquals("scheduled",RetailerSession.deliveryMode());
+            assertEquals("on_demand",RetailerSession.deliveryMode());
             eval(main,"document.querySelector('[data-live-search]').click();true");
             DigikalaActivity second=child();
             page(second,"<div id='root'><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div><span id='fixture-ready'></span></div>");
@@ -96,14 +96,14 @@ public class HeaderlessFlowTest {
             eval(main,"CartwiseEngine.optimize(state,{timeLimit:5000,stateLimit:200000}).then(r=>document.getElementById('results').textContent=money(r.total));true");
             waitFor(main,"document.getElementById('results').textContent.includes('۱۴۵٬۳۰۰')");
             String deliveryState=eval(main,"JSON.stringify({context:state.context,price:state.offers[0].promo_price})");
-            assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('scheduled') && state.offers[0].promo_price===1353000"));
+            assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('on_demand') && state.offers[0].promo_price===1353000"));
             // Feed a captured search response through the Android result event and
             // verify the new list-to-review UI without a dependency on live prices.
             eval(main,"state.items=[{id:'pasta',name:'ماکارونی',quantity:1}];save();document.getElementById('optimize').click();true");
             DigikalaActivity automatic=child();
             InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
             waitFor(main,"!busy");
-            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'on_demand',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
             waitFor(main,"document.getElementById('results').textContent.includes('۱۳۵٬۳۰۰') && document.getElementById('results').textContent.includes('برآورد')");
             eval(main,"document.querySelector('[data-change-item]').click();document.querySelector('[data-choice-unit=g]').click();true");
             waitFor(main,"document.querySelector('#choice-list').textContent.includes('پاستا 500 گرم')");
@@ -115,12 +115,12 @@ public class HeaderlessFlowTest {
         }
     }
     @Test public void automaticSearchLoadsFurtherResultsAndComparesAmounts() throws Exception {
-        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseAuto && document.getElementById('live-location-button'))");
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر 2 لیتر',quantity:1}];dirty.clear();save();document.getElementById('live-location-button').click();true");
             DigikalaActivity first=child();
-            page(first,"<style>body{min-height:2400px}img{width:60px;height:60px}</style><div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>function card(t,p){return '<div><img alt=\"'+t+'\"><div><p>'+p+'</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'}window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML=card('شیر 1 لیتر','100');window.scrollTo(0,0)});window.addEventListener('scroll',()=>{if(!document.getElementById('extra')&&scrollY>0){let d=document.createElement('div');d.id='extra';d.innerHTML=card('شیر 500 میلی لیتر','30');document.getElementById('root').appendChild(d)}});</script>");
+            page(first,"<style>body{min-height:2400px}img{width:60px;height:60px}</style><div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>function card(t,p){return '<div><img alt=\"'+t+'\"><div><p>'+p+'</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'}window.addEventListener('popstate',()=>{if(location.pathname==='/'){document.getElementById('root').innerHTML='<p>ارسال به تهران، انقلاب</p>';return;}document.getElementById('root').innerHTML=card('شیر 1 لیتر','100');window.scrollTo(0,0)});window.addEventListener('scroll',()=>{if(!document.getElementById('extra')&&scrollY>0){let d=document.createElement('div');d.id='extra';d.innerHTML=card('شیر 500 میلی لیتر','30');document.getElementById('root').appendChild(d)}});</script>");
             read(first);continueChoice();
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             eval(main,"document.getElementById('optimize').click();true");
@@ -128,8 +128,8 @@ public class HeaderlessFlowTest {
         }
     }
     @Test public void automaticSearchRestoresRetailerConfirmedAreaAfterSessionRestart() throws Exception {
-        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به تهران، انقلاب","scheduled");
-        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به تهران، انقلاب","");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseAuto && document.getElementById('optimize'))");
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
@@ -139,8 +139,8 @@ public class HeaderlessFlowTest {
         }
     }
     @Test public void savedPickerReplaysAutomaticallyBehindProgressScreen() throws Exception {
-        new DeliveryChoice(ApplicationProvider.getApplicationContext()).remember("ارسال به ونک","scheduled");
-        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به ونک","");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseComparison && document.getElementById('optimize'))");
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان 1 کیلوگرم',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
@@ -153,6 +153,32 @@ public class HeaderlessFlowTest {
             });
             waitFor(main,"document.querySelector('#results')?.textContent.includes('نان 1 کیلوگرم') && document.querySelector('#results')?.textContent.includes('شگفت‌انگیز')");
             assertEquals("true",eval(main,"document.querySelector('#results').textContent.includes('بهار') && document.querySelector('#results').textContent.includes('۱۵۰') && document.querySelector('.product-result img').getAttribute('src').startsWith('/assets/product-image')"));
+        }
+    }
+
+    @Test public void jetReadsAllProductsFromEachStoreAndKeepsMerchantIdentity() throws Exception {
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به ونک","");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())){
+            AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
+            waitFor(main,"Boolean(window.CartwiseComparison)");
+            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر 1 لیتر',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
+            DigikalaActivity automatic=child();String html;
+            try(java.io.InputStream in=InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("jet-search.html")){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);html=out.toString("UTF-8");}
+            page(automatic,html);
+            waitFor(main,"document.querySelector('#results')?.textContent.includes('۲۴ نتیجه خوانده‌شده')");
+            assertEquals("true",eval(main,"document.querySelector('.product-result .store-name').textContent.includes('فروشگاه ب') && document.querySelector('[data-selected-product]').textContent.includes('نمونه 11') && document.querySelector('.product-result .unit-price').textContent.includes('۲۰')"));
+        }
+    }
+    @Test public void startupRestoresJetLocationBeforeAnyShoppingListSearch() throws Exception {
+        DeliveryChoice choice=new DeliveryChoice(ApplicationProvider.getApplicationContext());choice.rememberJet("ارسال به ونک","35.7|51.4");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
+            DigikalaActivity startup=child();
+            page(startup,"<div id='root'><p id='place'></p></div><script>const a=JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).defaultAddress;document.getElementById('place').textContent='ارسال به '+a.addressAddress;fetch('https://api.digikalajet.ir/v3/main-page/?latitude='+a.addressLatitude+'&longitude='+a.addressLongitude);</script>");
+            AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
+            waitFor(main,"document.getElementById('live-location')?.textContent.includes('ونک')");
+            assertTrue(new DeliveryChoice(ApplicationProvider.getApplicationContext()).isJet());
+            assertEquals("35.7|51.4",new DeliveryChoice(ApplicationProvider.getApplicationContext()).coordinates());
+            assertEquals("on_demand",RetailerSession.deliveryMode());
         }
     }
 

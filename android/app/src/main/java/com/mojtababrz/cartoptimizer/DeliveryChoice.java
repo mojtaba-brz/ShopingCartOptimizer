@@ -19,6 +19,12 @@ final class DeliveryChoice {
         if(!matches(location,mode)||prefs.getLong("updated-at",0)==0)edit.putLong("updated-at",System.currentTimeMillis());
         edit.putString("label",label(location)).putString("mode",mode).apply();
     }
+    String coordinates(){return prefs.getString("coordinates","");}
+    boolean isJet(){return "jet".equals(prefs.getString("retailer",""));}
+    void rememberJet(String location,String coordinates){
+        remember(location,"on_demand");
+        prefs.edit().putString("retailer","jet").apply();rememberCoordinates(coordinates);
+    }
     long updatedAt() {return prefs.getLong("updated-at",0);}
     String location() {return prefs.getString("label","");}
     void rememberCoordinates(String coordinates) {

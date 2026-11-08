@@ -1,0 +1,9 @@
+<style>img[alt]{width:60px;height:60px}button{min-height:30px} .group{padding:8px}</style><div id="root"></div>
+<script>
+function card(i,shop){return `<div class="product"><picture><img alt="شیر 1 لیتر نمونه ${i}" src="https://dkstatics-public.digikala.com/fixture.jpg"></picture><div><p>${shop==='b'&&i===11?20:100+i}</p><img src="/i/toman.svg"></div><button data-cro-id="add-one-more-to-cart" onclick="throw Error('Cart must never change')">+</button><p>شیر 1 لیتر نمونه ${i}</p></div>`}
+function expand(id){history.pushState(null,'','/search/shop?q='+encodeURIComponent('شیر')+'&shopId='+id);render()}
+function render(){let shop=new URLSearchParams(location.search).get('shopId');if(location.pathname==='/search/shop'&&shop){document.getElementById('root').innerHTML=Array.from({length:12},(_,i)=>card(i,shop)).join('');return;}
+if(location.pathname==='/search/v2/result'){document.getElementById('root').innerHTML=['a','b'].map(id=>`<section class="group"><div><p class="truncate">فروشگاه ${id==='a'?'الف':'ب'}</p></div><div class="overflow-x-auto">${card(0,id)}${card(1,id)}</div><button onclick="expand('${id}')"><p class="truncate">مشاهده همه</p></button></section>`).join('');return;}
+document.getElementById('root').innerHTML='<p>ارسال به ونک</p>';}
+window.addEventListener('popstate',render);render();
+</script>

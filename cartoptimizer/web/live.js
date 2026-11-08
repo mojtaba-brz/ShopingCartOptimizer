@@ -14,23 +14,23 @@
     window.CartwiseAndroid.openDigikala(item?.id || '',item?.name || '',locationOnly);
   }
   const card=document.createElement('section'); card.className='card live-card'; card.id='live-card';
-  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">قیمت‌های روز</p><h3>Choose your delivery location.</h3><p id="live-location">آدرس را با جست‌وجو یا نقشه دیجی‌کالا انتخاب کنید.</p></div><button class="secondary" id="live-location-button">انتخاب آدرس روی نقشه</button></div><p class="hint">Then tap جست‌وجوی دیجی‌کالا beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
+  card.innerHTML='<div class="section-heading"><div><p class="eyebrow">قیمت‌های روز</p><h3>Choose your delivery location.</h3><p id="live-location">آدرس را با جست‌وجو یا نقشه دیجی‌کالاجت انتخاب کنید.</p></div><button class="secondary" id="live-location-button">انتخاب آدرس روی نقشه</button></div><p class="hint">Then tap جست‌وجوی دیجی‌کالاجت beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
   $('tab-list').insertBefore(card,$('tab-list').querySelector('.workspace-grid'));
   $('live-location-button').onclick=()=>open(null,true);
-  $('tab-list').querySelector('.guide').innerHTML='<div class="icon-disc">↗</div><h3>Search real products.</h3><p>Add your shopping-list item, then tap جست‌وجوی دیجی‌کالا beside it. Select your delivery area on Digikala and read the prices into this planner.</p><hr><p>You choose acceptable brands and package sizes from the imported results. The app fills their prices automatically.</p>';
-  $('tab-offers').querySelector('.import-card').innerHTML='<h3>Find live prices from your list</h3><p>جست‌وجوی دیجی‌کالا next to an item on your shopping list. Its location picker and catalog open inside Cartwise.</p><button class="secondary" id="live-go-list">Go to shopping list →</button><p class="hint">The form below is available for manual corrections or imported JSON snapshots.</p>';
+  $('tab-list').querySelector('.guide').innerHTML='<div class="icon-disc">↗</div><h3>Search real products.</h3><p>Add your shopping-list item, then tap جست‌وجوی دیجی‌کالاجت beside it. Select your delivery area on Digikala and read the prices into this planner.</p><hr><p>You choose acceptable brands and package sizes from the imported results. The app fills their prices automatically.</p>';
+  $('tab-offers').querySelector('.import-card').innerHTML='<h3>Find live prices from your list</h3><p>جست‌وجوی دیجی‌کالاجت next to an item on your shopping list. Its location picker and catalog open inside Cartwise.</p><button class="secondary" id="live-go-list">Go to shopping list →</button><p class="hint">The form below is available for manual corrections or imported JSON snapshots.</p>';
   $('live-go-list').onclick=()=>showTab('list');
-  document.querySelectorAll('a[href="https://www.digikala.com/fresh/"]').forEach(a=>a.href='https://www.digikala.com/supermarket/');
+  document.querySelectorAll('a[href="https://www.digikalajet.com/"]').forEach(a=>a.href='https://www.digikalajet.com/');
   function paint() {
     for(const item of state.items) {
       const row=Array.from($('items').querySelectorAll('.item-row')).find(r=>r.querySelector('[data-quantity]')?.dataset.quantity===item.id);
       if(row && !row.querySelector('[data-live-search]')) {
-        const b=document.createElement('button');b.className='secondary live-search';b.type='button';b.dataset.liveSearch=item.id;b.textContent='جست‌وجوی دیجی‌کالا';
+        const b=document.createElement('button');b.className='secondary live-search';b.type='button';b.dataset.liveSearch=item.id;b.textContent='جست‌وجوی دیجی‌کالاجت';
         b.onclick=()=>open(item);row.insertBefore(b,row.lastElementChild);
       }
     }
     $('live-location-button').textContent=meta.location?'تغییر آدرس روی نقشه':'انتخاب آدرس روی نقشه';
-    $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'ارسال زمان‌دار':'ارسال فوری'}` : 'آدرس را با جست‌وجو یا نقشه دیجی‌کالا انتخاب کنید.';
+    $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'ارسال زمان‌دار':'ارسال فوری'}` : 'آدرس را با جست‌وجو یا نقشه دیجی‌کالاجت انتخاب کنید.';
     for(const node of $('offers').querySelectorAll('.offer-card')) {
       const offerId=node.querySelector('[data-edit-offer]')?.dataset.editOffer;
       if(meta.offers[offerId] && !node.querySelector('.live-price-note')) {

@@ -27,7 +27,7 @@ public class CheckoutFlowTest {
         Intent intent=new Intent(ApplicationProvider.getApplicationContext(),DigikalaActivity.class).putExtra("checkout_only",true);
         try(ActivityScenario<DigikalaActivity> scenario=ActivityScenario.launchActivityForResult(intent)) {
             AtomicReference<String> token=new AtomicReference<>();
-            scenario.onActivity(a->token.set(RetailerFixtures.load(browser(a),"https://www.digikala.com/supermarket/cart/",
+            scenario.onActivity(a->token.set(RetailerFixtures.load(browser(a),"https://www.digikalajet.com/cart/",
                 "<p>تعداد کالاها ۲</p><div id='root'><p>ارسال به تهران، انقلاب</p><button aria-selected='true'>ارسال زمان‌دار</button><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰</span><img src='/toman.svg' alt='' width='16' height='16'></div><p>هزینه خدمات ۱٬۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div><img alt='شیر کم چرب'><span data-testid='cart-item-quantity'>2</span></div></div>")));
             boolean ready=false;
             for(int n=0;n<80&&!ready;n++){
