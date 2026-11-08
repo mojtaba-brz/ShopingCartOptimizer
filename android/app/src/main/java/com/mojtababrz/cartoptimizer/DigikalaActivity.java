@@ -314,6 +314,9 @@ public final class DigikalaActivity extends Activity {
                 JSONObject data=(JSONObject)parsed;
                 if (data.toString().getBytes(StandardCharsets.UTF_8).length>500_000) throw new IllegalArgumentException();
                 JSONObject registered=data.optJSONObject("delivery_preference");
+                if(registered!=null&&registered.optBoolean("invalid_address")){
+                    captureNotice=true;status.setText("جت مختصات این آدرس را معتبر نمی‌داند؛ از «تغییر موقعیت» آن را اصلاح کنید.");return;
+                }
                 if(registered!=null&&registered.optBoolean("configured")&&!registered.optBoolean("map_open")&&!registered.optBoolean("picker_open"))data.put("location_editing",false);
                 if(data.optBoolean("location_editing",false)) {
                     RetailerSession.changingLocation();status.setText("انتخاب آدرس را تمام کنید؛ سپس به کالاها برگردید.");return;

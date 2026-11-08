@@ -67,6 +67,8 @@ public class LocationRecognitionTest {
         try(ActivityScenario<DigikalaActivity> s=ActivityScenario.launchActivityForResult(prepare())){
             Thread.sleep(2000);assertEquals("A stale in-memory label must not stand in for an invalid new address",Lifecycle.State.RESUMED,s.getState());
             assertTrue(eval(s,"localStorage.getItem('persist:DKNow')").contains("addressIsCoordinatesValid"));
+            s.onActivity(a->{try{java.lang.reflect.Field f=DigikalaActivity.class.getDeclaredField("read");f.setAccessible(true);((android.widget.Button)f.get(a)).performClick();}catch(Exception e){throw new AssertionError(e);}});
+            Thread.sleep(700);assertEquals("Manual verification must also reject the invalid address",Lifecycle.State.RESUMED,s.getState());
         }
     }
 
