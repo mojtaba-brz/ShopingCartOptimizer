@@ -57,4 +57,17 @@ public class LocationRecognitionTest {
             assertEquals("35.75001|51.41001",new DeliveryChoice(ApplicationProvider.getApplicationContext()).coordinates());assertFalse(data.toString().contains("KEEP_ACCOUNT"));assertFalse(data.toString().contains("addressId"));
         }
     }
+    @Test public void invalidNewServiceAddressCannotBeHiddenByAnOldConfirmedLabel()throws Exception{
+        Intent manual=new Intent(ApplicationProvider.getApplicationContext(),DigikalaActivity.class).putExtra("query","fixture");
+        try(ActivityScenario<DigikalaActivity> seed=ActivityScenario.launch(manual)){
+            fixture(seed,"search/v2/result?q=fixture","<div id='root'><p>نشانی نیاز به اصلاح دارد</p></div><script>localStorage.setItem('persist:DKNow',JSON.stringify({address:JSON.stringify({isLocationMode:false,defaultAddress:{addressId:123,addressAddress:'نشانی جدید',addressLatitude:35.76,addressLongitude:51.41,addressIsCoordinatesValid:false}})}));</script>");
+        }
+        new DeliveryChoice(ApplicationProvider.getApplicationContext()).rememberJet("ارسال به نشانی قدیمی","35.75|51.4");
+        RetailerSession.confirmJetDelivery("ارسال به نشانی قدیمی","35.75|51.4");
+        try(ActivityScenario<DigikalaActivity> s=ActivityScenario.launchActivityForResult(prepare())){
+            Thread.sleep(2000);assertEquals("A stale in-memory label must not stand in for an invalid new address",Lifecycle.State.RESUMED,s.getState());
+            assertTrue(eval(s,"localStorage.getItem('persist:DKNow')").contains("addressIsCoordinatesValid"));
+        }
+    }
+
 }

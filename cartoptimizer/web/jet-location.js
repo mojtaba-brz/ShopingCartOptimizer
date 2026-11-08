@@ -27,8 +27,9 @@
   const id=p.addressId,account=typeof id==='number'?Number.isSafeInteger(id)&&id>0:typeof id==='string'&&/^\d+$/.test(id)&&Number(id)>0;
   // Jet's automatic guest fallback has only name/title + coordinates. It is
   // not a user selection. A committed map address has addressAddress instead.
-  const configured=ok&&!!label&&a.isUsingDefaultLocation!==true&&(!!clean(p.addressAddress)||account||norm(p.addressName)==='اطراف من');
-  return {coordinates:ok?lat+'|'+lon:'',label,configured,account_address:account,preference_present:ok};
+  const registered=!!clean(p.addressAddress)||account||norm(p.addressName)==='اطراف من';
+  const configured=ok&&!!label&&a.isUsingDefaultLocation!==true&&registered;
+  return {has_address_record:!!a.defaultAddress&&typeof a.defaultAddress==='object'&&Object.keys(a.defaultAddress).length>0,invalid_address:registered&&!ok,coordinates:ok?lat+'|'+lon:'',label,configured,account_address:account,preference_present:ok};
  }
  let ui=controls();
  try{
@@ -36,6 +37,7 @@
   if(command==='read')return {...ui,...p,state:'ok',location:p.configured?p.label:ui.header,restored:document.documentElement?.dataset.cartwiseLocationRestored==='1'};
   if(command!=='restore')return {state:'listening'};
   if(p.configured)return {state:'service-set',changed:false};
+  if(p.invalid_address)return {state:'invalid-address',changed:false};
   const parts=String(saved.coordinates||'').split('|').map(number);if(parts.length!==2||!valid(parts[0],parts[1])||!clean(saved.location))return {state:'missing-coordinates'};
   // Read an alternate address representation, but never guess its write schema.
   if(all.address!==undefined&&typeof all.address!=='string')return {state:'unreadable-preference'};

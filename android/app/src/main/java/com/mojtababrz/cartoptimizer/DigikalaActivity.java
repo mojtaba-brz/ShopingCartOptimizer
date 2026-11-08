@@ -255,7 +255,7 @@ public final class DigikalaActivity extends Activity {
                     if(p==null||"wrong-origin".equals(p.optString("state"))){scanHandler.postDelayed(()->pollLocation(epoch,attempts+1),700);return;}
                     String location=DeliveryChoice.label(data.optString("location")),point=p.optString("coordinates");
                     boolean validPoint=DeliveryChoice.validCoordinates(point),configured=p!=null&&p.optBoolean("configured")&&validPoint&&DeliveryChoice.usableLabel(location);
-                    replay=!configured&&!manualLocationChange;
+                    replay="ok".equals(p.optString("state"))&&!p.optBoolean("has_address_record")&&!manualLocationChange;
                     if(validPoint){lastLocationPoint=point;if(manualLocationChange&&!DeliveryChoice.validCoordinates(locationBaseline))locationBaseline=point;}
                     boolean editing=p!=null&&p.optBoolean("editing"),blocking=p!=null&&(p.optBoolean("map_open")||p.optBoolean("picker_open"));
                     if(editing)sawLocationEditor=true;
@@ -268,8 +268,9 @@ public final class DigikalaActivity extends Activity {
                     }else{
                         stableLocationKey="";
                         if(!editing&&!manualLocationChange){
-                            boolean headerConfirmed=deliveryChoice.isJet()&&deliveryChoice.matches(location,"on_demand")&&DeliveryChoice.usableLabel(location)&&!validPoint;
-                            boolean retained=!RetailerSession.deliveryLocation().isEmpty()&&!validPoint;
+                            boolean emptyPreference="ok".equals(p.optString("state"))&&!p.optBoolean("has_address_record");
+                            boolean headerConfirmed=emptyPreference&&deliveryChoice.isJet()&&deliveryChoice.matches(location,"on_demand")&&DeliveryChoice.usableLabel(location)&&!validPoint;
+                            boolean retained=emptyPreference&&!RetailerSession.deliveryLocation().isEmpty()&&!validPoint;
                             if(headerConfirmed||retained){if(retained)data.put("location",RetailerSession.deliveryLocation());completeCapture(data,"on_demand");return;}
                             if(!locationRestoreTried&&automated()&&DeliveryChoice.validCoordinates(deliveryChoice.coordinates())){
                                 locationRestoreTried=true;
@@ -283,8 +284,9 @@ public final class DigikalaActivity extends Activity {
                     }
                     if(manualLocationChange){status.setText(configured?"موقعیت ثبت‌شده پیدا شد؛ در حال تأیید…":editing?"پس از ثبت موقعیت در جت، برنامه آن را خودکار می‌خواند.":"در حال بررسی موقعیت ثبت‌شده در جت…");}
                     else if(automated()){
-                        showProgress(configured?"تأیید موقعیت ثبت‌شده":"بررسی موقعیت جت",configured?"اطلاعات موقعیت دریافت شد؛ در حال تأیید پایداری انتخاب…":"منتظر اطلاعات آدرس انتخاب‌شده در جت…");
-                        if(attempts>=12||deliveryChoice.location().isEmpty())addressFallback.setVisibility(android.view.View.VISIBLE);
+                        boolean invalid=p.optBoolean("invalid_address");
+                        showProgress(invalid?"موقعیت نیاز به اصلاح دارد":configured?"تأیید موقعیت ثبت‌شده":"بررسی موقعیت جت",invalid?"جت مختصات این آدرس را معتبر نمی‌داند؛ از «تغییر موقعیت» آن را اصلاح کنید.":configured?"اطلاعات موقعیت دریافت شد؛ در حال تأیید پایداری انتخاب…":"منتظر اطلاعات آدرس انتخاب‌شده در جت…");
+                        if(invalid||attempts>=12||deliveryChoice.location().isEmpty())addressFallback.setVisibility(android.view.View.VISIBLE);
                     }
                 }
             }catch(Exception ignored){}
