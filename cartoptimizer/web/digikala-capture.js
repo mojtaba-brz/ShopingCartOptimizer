@@ -21,17 +21,18 @@
   }catch{return '';}}
   function storeOf(card){
     let node=card;
+    function otherProduct(e,ancestor){let branch=e;while(branch.parentElement&&branch.parentElement!==ancestor)branch=branch.parentElement;let own=card;while(own&&own!==branch)own=own.parentElement;return !own&&Array.from(branch.querySelectorAll?.('img[alt]')||[]).some(productImage);}
     for(let depth=0;node&&depth<4;depth++,node=node.parentElement){
       const names=new Map();
       const direct=node.getAttribute?.('data-store-name')||node.getAttribute?.('data-seller-name');
       if(direct)names.set(direct.trim(),node.getAttribute?.('data-store-id')||node.getAttribute?.('data-seller-id')||'');
       for(const e of Array.from(node.querySelectorAll?.('[data-testid="seller-name"], [data-testid="store-name"], [data-testid="shop-name"], a[href*="/store/"], a[href*="/seller/"], a[href*="/shop/"]')||[])){
-        const label=text(e);if(!visible(e)||!label||label.length>160)continue;
+        const label=text(e);if(!visible(e)||!label||label.length>160||otherProduct(e,node))continue;
         let identity='';try{const u=new URL(e.getAttribute?.('href'),location.origin);if(u.origin===location.origin)identity=u.pathname;}catch{}
         names.set(label,identity);
       }
       for(const e of Array.from(node.querySelectorAll?.('p,span')||[])){
-        if(!visible(e))continue;const match=text(e).match(/^(?:فروشگاه|فروشنده|سوپرمارکت)\s*[:：]\s*(.{2,120})$/);if(match)names.set(match[1],'');
+        if(!visible(e)||otherProduct(e,node))continue;const match=text(e).match(/^(?:فروشگاه|فروشنده|سوپرمارکت)\s*[:：]\s*(.{2,120})$/);if(match)names.set(match[1],'');
       }
       if(names.size===1){const [name,id]=[...names][0];return {name:name.slice(0,160),id:id.slice(0,200)};}
       if(names.size>1)break;

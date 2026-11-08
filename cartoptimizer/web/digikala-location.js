@@ -7,7 +7,8 @@
  const text=e=>(e.innerText||'').trim().replace(/\s+/g,' '),wanted=norm(saved.location);
  if(location.protocol!=='https:'||!['www.digikala.com','digikala.com'].includes(location.hostname)||!wanted)return {state:'unavailable'};
  const nodes=Array.from(document.querySelectorAll('button,[role=button],label,p,span')).filter(visible);
- const current=nodes.filter(e=>/^ارسال به/.test(text(e))&&text(e).length<300).map(e=>norm(text(e)));
+ const headers=[...nodes,...document.querySelectorAll('header *,#root p,#root span,#root div')];
+ const current=headers.filter(e=>visible(e)&&e.children.length<4&&/^ارسال به/.test(text(e))&&text(e).length<300).map(e=>norm(text(e)));
  if(current.includes(wanted)){
   const mode=saved.shipment_type==='scheduled'?/ارسال زمان.?دار/:/ارسال فوری/;
   const target=nodes.find(e=>e.tagName==='BUTTON'&&mode.test(text(e)));
@@ -16,7 +17,7 @@
   }
   return {state:'address-matches'};
  }
- const dialog=document.querySelector('[role=dialog],dialog[open]');
+ const dialog=Array.from(document.querySelectorAll('[role=dialog],dialog[open]')).find(visible);
  const editing=!!dialog||/add-address|[?&]MID=[^&]*(?:address|location)/i.test(location.href);
  if(editing){
   const candidates=nodes.filter(e=>norm(text(e))===wanted).map(e=>e.closest('button,[role=button],label')||e);
