@@ -11,7 +11,7 @@
   }
   function tokens(s){return normalize(s).split(/\s+/).filter(Boolean);}
   const amountPattern=/(\d+(?:\.\d+)?)\s*(کیلوگرم|کیلو|گرم|میلی\s*لیتر|لیتر|kg|g|ml|l)(?:ی)?(?![\p{L}])/gu;
-  function digits(text){return String(text||'').normalize('NFKC').toLowerCase().replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/٫/g,'.').replace(/ك/g,'ک').replace(/ي/g,'ی')
+  function digits(text){return String(text||'').normalize('NFKC').toLowerCase().replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/٫/g,'.').replace(/سی[\s‌]*سی|\bcc\b/giu,' میلی لیتر ').replace(/ك/g,'ک').replace(/ي/g,'ی')
     .replace(/(?:^|\s)(یک و نیم|یک|دو|سه|چهار|نیم)\s*(?=کیلوگرم|کیلو|گرم|میلی\s*لیتر|لیتر)/g,(_,word)=>' '+({'یک و نیم':'1.5','یک':'1','دو':'2','سه':'3','چهار':'4','نیم':'0.5'}[word])+' ');}
   function searchTerm(text){return digits(text).replace(amountPattern,' ').replace(/\s+/g,' ').trim();}
   // Return the amount per package in grams or millilitres when the label is clear.

@@ -27,6 +27,6 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  // the retailer initializes its own persisted address state.
  await page.addInitScript(`(${pref})('restore',${JSON.stringify(saved)})`);
  html=`<div id="root"><p id="address"></p></div><script>const point=JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).defaultAddress;document.getElementById('address').textContent='ارسال به '+point.addressAddress;</script>`;
- await page.goto('https://www.digikalajet.com/');assert.match(await page.locator('#address').innerText(),/ونک/);assert.equal((await page.evaluate(`(${pref})('read',{})`)).coordinates,'35.7|51.4');
+ await page.goto('https://www.digikalajet.com/');assert.match(await page.locator('#address').innerText(),/ونک/);assert.equal((await page.evaluate(`(${pref})('read',{})`)).coordinates,'35.7|51.4');assert.equal(await page.evaluate(()=>Array.isArray(JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).addressList)),true);
  assert.deepEqual(errors,[]);await browser.close();console.log('Jet grouped merchants, view-all navigation, beyond-carousel results, scoped identity, startup preference restore and account isolation passed');
 })().catch(e=>{console.error(e);process.exit(1)});

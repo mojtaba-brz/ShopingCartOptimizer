@@ -17,4 +17,6 @@ assert.equal(c.plan(item,[p('برنج ۶ عددی 200 گرم',10000)]),null);
 assert.equal(c.plan(item,[p('برنج ۱ کیلوگرم',1000000)],'',false,2).cost,2000000);
 rows=Array.from({length:20},(_,i)=>p('برنج '+(i+1)+' کیلوگرم',2000000+i*10000));assert.equal(c.options({name:'برنج',quantity:1},rows)[0].title,'برنج 20 کیلوگرم');
 assert.equal(c.plan({...item,name:'برنج ۱۰۰ کیلوگرم'},[p('برنج ۱ کیلوگرم',100),p('برنج ۱۰ کیلوگرم',10000)]).quantity,10);
+assert.deepEqual(c.measure('شیر ۹۴۵ سی سی'),{unit:'ml',value:945});
+assert.equal(c.query('شیر 945 cc'),'شیر');
 console.log('Normalized kg/litre/item ordering, larger-package preference, merchant identity and size guards passed');

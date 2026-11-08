@@ -176,6 +176,9 @@ public class HeaderlessFlowTest {
             page(startup,"<div id='root'><p id='place'></p></div><script>const a=JSON.parse(JSON.parse(localStorage.getItem('persist:DKNow')).address).defaultAddress;document.getElementById('place').textContent='ارسال به '+a.addressAddress;fetch('https://api.digikalajet.ir/v3/main-page/?latitude='+a.addressLatitude+'&longitude='+a.addressLongitude);</script>");
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"document.getElementById('live-location')?.textContent.includes('ونک')");
+            long until=System.currentTimeMillis()+45000;boolean returned=false;
+            while(System.currentTimeMillis()<until){AtomicReference<Boolean> resumed=new AtomicReference<>(false);InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{for(Activity a:ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED))if(a instanceof MainActivity)resumed.set(true);});if(resumed.get()){returned=true;break;}Thread.sleep(100);}
+            assertTrue("Startup must actually finish validation and return to the planner; a saved label alone is not proof",returned);
             assertTrue(new DeliveryChoice(ApplicationProvider.getApplicationContext()).isJet());
             assertEquals("35.7|51.4",new DeliveryChoice(ApplicationProvider.getApplicationContext()).coordinates());
             assertEquals("on_demand",RetailerSession.deliveryMode());

@@ -6,8 +6,8 @@
  saved=saved||{};
  if(location.protocol!=='https:'||!['www.digikalajet.com','digikalajet.com'].includes(location.hostname))return {state:'wrong-origin'};
  const key='persist:DKNow',valid=(lat,lon)=>typeof lat==='number'&&typeof lon==='number'&&Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;
- function root(){const raw=localStorage.getItem(key);if(raw&&raw.length>2000000)throw Error('Preference too large');return raw?JSON.parse(raw):{};}
- function address(all){return typeof all.address==='string'?JSON.parse(all.address):{};}
+ function root(){const raw=localStorage.getItem(key);if(raw&&raw.length>2000000)throw Error('Preference too large');const value=raw?JSON.parse(raw):{};if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid preference');return value;}
+ function address(all){if(all.address===undefined)return {};if(typeof all.address!=='string')throw Error('Invalid address preference');const a=JSON.parse(all.address);if(!a||typeof a!=='object'||Array.isArray(a))throw Error('Invalid address preference');return a;}
  function listen(){if(!document.documentElement){document.addEventListener('DOMContentLoaded',listen,{once:true});return;}if(document.documentElement.dataset.cartwiseLocationListener)return;document.documentElement.dataset.cartwiseLocationListener='1';document.addEventListener('click',e=>{if(!e.isTrusted)return;const b=e.target.closest('button');if(b&&/^(?:تایید|تأیید|ثبت) (?:موقعیت مکانی|موقعیت|آدرس)/.test((b.innerText||'').trim()))document.documentElement.dataset.cartwiseLocationIntent=String(Date.now());},true);}
  try{
   listen();
@@ -20,7 +20,7 @@
   const all=root(),a=address(all),p=a.defaultAddress||{};
   const same=p.addressLatitude===parts[0]&&p.addressLongitude===parts[1]&&a.isLocationMode===true;
   if(!same){const label=String(saved.location).replace(/^ارسال به\s*/,'').slice(0,300),point={addressLatitude:parts[0],addressLongitude:parts[1],addressAddress:label,addressName:label,addressTitle:label};
-   a.defaultAddress=point;a.approxAddress={addressLatitude:parts[0],addressLongitude:parts[1],addressAddress:label};a.isLocationMode=true;a.isUsingDefaultLocation=false;a.isAddressListInitCompleted=false;
+   if(!Array.isArray(a.addressList))a.addressList=[];a.defaultAddress=point;a.approxAddress={addressLatitude:parts[0],addressLongitude:parts[1],addressAddress:label};a.isLocationMode=true;a.isUsingDefaultLocation=false;a.isAddressListInitCompleted=false;
    all.address=JSON.stringify(a);localStorage.setItem(key,JSON.stringify(all));
    // First-load cache depends on the old area and must be revalidated by Jet.
    localStorage.removeItem('jet:first-load');
