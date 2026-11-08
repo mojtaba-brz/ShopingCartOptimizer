@@ -1,0 +1,40 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.mojtababrz.cartoptimizer'
+    compileSdk 35
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId 'com.mojtababrz.cartoptimizer'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '0.1.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('generated/webAssets')]
+}
+
+tasks.register('syncWebAssets', Copy) {
+    from('../../cartoptimizer/web') {
+        include '*.html', '*.css', '*.js'
+        filter { line -> line.replace('href="/style.css"', 'href="/assets/style.css"')
+            .replace('src="/app.js"', 'src="/assets/app.js"')
+            .replace('src="/engine.js"', 'src="/assets/engine.js"')
+            .replace('src="/mobile.js"', 'src="/assets/mobile.js"') }
+    }
+    from('../../cartoptimizer') { include 'demo.json' }
+    into(layout.buildDirectory.dir('generated/webAssets'))
+}
+tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+}
