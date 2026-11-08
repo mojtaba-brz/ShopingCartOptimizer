@@ -1,4 +1,4 @@
-# Cartwise for Android 0.9.1
+# Cartwise for Android 0.9.2
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
@@ -187,7 +187,7 @@ global search for more merchants. Limits: 40 merchants, 1,000 offers and five mi
 per requested item; reaching a bound is reported as incomplete, never full coverage.
 A user-supplied account-transfer URL must never be embedded in the app or logs.
 
-## Location recognition in 0.9.1
+## Location recognition in 0.9.2
 
 A committed Jet `defaultAddress.addressAddress` or registered account address is
 read with its validated coordinates. A guest fallback carrying only name/title is
@@ -206,3 +206,9 @@ restart, preservation of a changed service address, and late old requests. Tests
 use deterministic Jet fixtures; inspecting the live cloud map on 2026-11-08 did
 not complete a map selection because its confirm control remained disabled. No
 claim of live validation on the owner's phone is made.
+
+## Address selection without GPS (0.9.2)
+
+The native picker sends the entered query to Jet's public `GET /map/search/`, then validates the chosen point using `GET /map/reverse/no-modal/`. It sends no account credentials or cookies. Missing/false coverage, malformed responses and failed requests cannot confirm an address. Cancellation and query generations reject late callbacks. The selection is applied to the address preference before Jet initializes, then reread from the loaded page before the app remembers it. The map is optional, opens without a synthetic MID route, and has a native exit. Closed panels clipped/transformed out of view are ignored.
+
+Tests cover live public address lookup/range from Android, native confirmation and hydration, out-of-order search, outside-service results, cancellation during verification, native map exit, and kept-mounted closed-map recognition. Actual phone and authenticated retailer checkout validation remains owner testing.

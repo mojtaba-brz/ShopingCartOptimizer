@@ -61,6 +61,11 @@ public final class DigikalaActivity extends Activity {
     private GeolocationPermissions.Callback locationCallback;
     private String locationOrigin;
     private DeliveryChoice deliveryChoice;
+    private JetAddressPicker addressPicker;
+    private JSONObject addressToApply;
+    private boolean applyingPickedAddress,officialLocationEditor;
+    private Button closeMap;
+    private AlertDialog geolocationDialog;
     private JSONArray autoItems, autoResults;
     private int autoIndex, stableCount;
     private String lastFingerprint="", priorFingerprint="", autoQuery="", scanLocation="", scanMode="";
@@ -107,13 +112,14 @@ public final class DigikalaActivity extends Activity {
             return insets;
         });
         LinearLayout toolbar = new LinearLayout(this);
-        Button back = new Button(this); back.setText(automated()?"بازگشت":"بازگشت"); back.setOnClickListener(v -> finish());
+        Button back = new Button(this); back.setText("بازگشت"); back.setOnClickListener(v -> handleBack());
         toolbar.addView(back);
         read = new Button(this); read.setText(autoItems!=null && locationOnly ? "ثبت موقعیت و شروع" : locationOnly ? "ثبت موقعیت" : "خواندن کالاها");
         if(cartOnly)read.setText("خواندن سبد");
         read.setOnClickListener(v -> capture()); toolbar.addView(read);
         Button home = new Button(this); home.setText("تغییر موقعیت");
-        home.setOnClickListener(v -> {if(shop!=null) {captureNotice=false;RetailerSession.changingLocation();RetailerSession.navigate(shop,HOME);updateStatus();}}); toolbar.addView(home);
+        home.setOnClickListener(v -> beginLocationChange()); toolbar.addView(home);
+        closeMap=new Button(this);closeMap.setId(R.id.address_close_map);closeMap.setText("بستن نقشه");closeMap.setVisibility(android.view.View.GONE);closeMap.setOnClickListener(v->closeOfficialMap());toolbar.addView(closeMap);
         if(automated()){home.setVisibility(android.view.View.GONE);if(!locationOnly||!deliveryChoice.location().isEmpty()||preparing)read.setVisibility(android.view.View.GONE);}
         root.addView(toolbar);
         status = new TextView(this); status.setPadding(16,8,16,8);
@@ -151,6 +157,8 @@ public final class DigikalaActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 CookieManager.getInstance().flush();
                 if (!retailer(Uri.parse(url))) return;
+                if(addressToApply!=null){writePickedAddress();return;}
+                applyingPickedAddress=false;
                 updateStatus();
                 if(locationOnly&&!scanning)restartLocationPolling();
             }
@@ -164,13 +172,15 @@ public final class DigikalaActivity extends Activity {
                 if(deliveryChoice.locationApproved() && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
                     callback.invoke(origin,true,true);return;
                 }
-                new AlertDialog.Builder(DigikalaActivity.this).setMessage("برای انتخاب آدرس، موقعیت گوشی با دیجی‌کالاجت به اشتراک گذاشته شود؟ بدون دسترسی به موقعیت هم می‌توانید آدرس را جست‌وجو یا نقشه را جابه‌جا کنید.")
+                finishGeolocation(false);locationCallback=callback;locationOrigin=origin;
+                geolocationDialog=new AlertDialog.Builder(DigikalaActivity.this).setMessage("موقعیت گوشی با دیجی‌کالاجت به اشتراک گذاشته شود؟ این دسترسی اختیاری است؛ از «بستن نقشه» می‌توانید نشانی را بدون GPS انتخاب کنید.")
                     .setPositiveButton("استفاده از موقعیت گوشی", (d,w) -> {
-                        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {deliveryChoice.approveLocation();callback.invoke(origin,true,true);}
-                        else { locationCallback=callback; locationOrigin=origin; requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST); }
-                    }).setNegativeButton("انتخاب روی نقشه", (d,w) -> callback.invoke(origin,false,false))
-                    .setOnCancelListener(d -> callback.invoke(origin,false,false)).show();
+                        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {deliveryChoice.approveLocation();finishGeolocation(true);}
+                        else requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
+                    }).setNegativeButton("انتخاب بدون GPS", (d,w) -> {finishGeolocation(false);closeOfficialMap();})
+                    .setOnCancelListener(d -> finishGeolocation(false)).create();geolocationDialog.show();
             }
+            @Override public void onGeolocationPermissionsHidePrompt(){locationCallback=null;locationOrigin=null;if(geolocationDialog!=null){geolocationDialog.dismiss();geolocationDialog=null;}}
         });
         try (java.io.InputStream input=getAssets().open("digikala-capture.js")) {
             captureScript=new String(readScript(input), StandardCharsets.UTF_8);
@@ -199,7 +209,7 @@ public final class DigikalaActivity extends Activity {
         RetailerSession.navigate(shop,url);
         if(automated()){
             if(deliveryChoice.location().isEmpty()){
-                showProgress("موقعیت تحویل را یک‌بار انتخاب کنید","پس از انتخاب، موقعیت در همین گوشی نگهداری و در شروع‌های بعدی خودکار بازیابی می‌شود.");
+                showProgress("موقعیت تحویل را یک‌بار انتخاب کنید","نشانی را بدون GPS جست‌وجو کنید؛ موقعیت در همین گوشی نگهداری می‌شود.");
                 addressFallback.setVisibility(android.view.View.VISIBLE);
             }
         }
@@ -229,15 +239,64 @@ public final class DigikalaActivity extends Activity {
         int epoch=++locationEpoch;stableLocationKey="";scanHandler.postDelayed(()->pollLocation(epoch,0),350);
     }
     private void beginLocationChange(){
+        openAddressPicker(new JetAddressClient());
+    }
+    void openAddressPicker(JetAddressClient client){
         if(shop==null)return;
+        if(addressPicker!=null&&addressPicker.isShowing())return;
         ++locationEpoch;manualLocationChange=true;locationRestoreTried=true;sawLocationEditor=false;
         locationBaseline=lastLocationPoint.isEmpty()?deliveryChoice.coordinates():lastLocationPoint;
         if(locationHandler!=null){locationHandler.remove();locationHandler=null;}
+        locationOnly=true;locationCompleted=false;scanning=false;addressToApply=null;applyingPickedAddress=false;
         RetailerSession.changingLocation();
-        progressLayer.setVisibility(android.view.View.GONE);shop.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
-        read.setVisibility(android.view.View.VISIBLE);read.setText("بررسی موقعیت ثبت‌شده");
-        status.setText("موقعیت را در جت انتخاب کنید؛ پس از ثبت، برنامه آن را خودکار تشخیص می‌دهد.");
-        RetailerSession.navigate(shop,HOME+"user/add-address?MID=add-address-map");restartLocationPolling();
+        addressPicker=new JetAddressPicker(this,client,new JetAddressPicker.Listener(){
+            public void selected(JetAddressClient.Verified address){acceptPickedAddress(address);}
+            public void map(){openOfficialAddressSearch();}
+            public void cancelled(){setResult(RESULT_CANCELED);finish();}
+        });addressPicker.show();
+    }
+    private void openOfficialAddressSearch(){
+        ++locationEpoch;officialLocationEditor=true;manualLocationChange=true;sawLocationEditor=false;closeMap.setVisibility(android.view.View.VISIBLE);
+        progressLayer.setVisibility(android.view.View.GONE);shop.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);read.setVisibility(android.view.View.GONE);
+        status.setText("نام شهر و خیابان را جست‌وجو کنید. اگر نقشه یا GPS پاسخ نداد، «بستن نقشه» را بزنید و نشانی را بدون آن انتخاب کنید.");
+        // A normal document initializes Jet's own modal/history controller.
+        // Injecting MID=add-address-map bypassed that controller and its close callbacks.
+        shop.stopLoading();shop.loadUrl(HOME+"user/add-address");restartLocationPolling();
+    }
+    private void closeOfficialMap(){
+        if(shop==null)return;
+        ++locationEpoch;officialLocationEditor=false;closeMap.setVisibility(android.view.View.GONE);
+        finishGeolocation(false);shop.stopLoading();shop.loadUrl(HOME);beginLocationChange();
+    }
+    private void acceptPickedAddress(JetAddressClient.Verified address){
+        if(shop==null||!address.inService||!DeliveryChoice.validCoordinates(address.point.coordinates)||!DeliveryChoice.usableLabel(address.point.label))return;
+        try{
+            ++locationEpoch;officialLocationEditor=false;closeMap.setVisibility(android.view.View.GONE);sawLocationEditor=true;captureNotice=false;
+            addressToApply=new JSONObject().put("location","ارسال به "+address.point.label).put("coordinates",address.point.coordinates);applyingPickedAddress=true;
+            if(androidx.webkit.WebViewFeature.isFeatureSupported(androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT)){
+                locationHandler=androidx.webkit.WebViewCompat.addDocumentStartJavaScript(shop,"("+preferenceScript+")('select',"+addressToApply+")",new java.util.HashSet<>(java.util.Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
+            }
+            final int epoch=locationEpoch;scanHandler.postDelayed(()->{
+                if(epoch==locationEpoch&&applyingPickedAddress&&!isFinishing()){
+                    ++locationEpoch;addressToApply=null;applyingPickedAddress=false;shop.stopLoading();
+                    status.setText("پاسخ جت برای ثبت موقعیت نرسید؛ دوباره تلاش کنید.");showProgress("ثبت موقعیت کامل نشد","اتصال به جت کامل نشد. نشانی انتخاب‌شده هنوز در برنامه تأیید نشده است.");addressFallback.setVisibility(android.view.View.VISIBLE);
+                }
+            },22000);
+            status.setText("در حال ثبت و بررسی موقعیت انتخاب‌شده در جت…");showProgress("تأیید موقعیت انتخاب‌شده","جت خدمات این نقطه را تأیید کرده است؛ در حال آماده‌سازی جست‌وجو…");
+            shop.stopLoading();shop.loadUrl(HOME);
+        }catch(Exception e){status.setText("ثبت موقعیت کامل نشد؛ نشانی را دوباره انتخاب کنید.");beginLocationChange();}
+    }
+    private void writePickedAddress(){
+        if(addressToApply==null||shop==null)return;int epoch=locationEpoch;
+        String script="(()=>{const p="+preference("read")+";if(p.configured&&p.coordinates==="+JSONObject.quote(addressToApply.optString("coordinates"))+")return {already_loaded:true};return ("+preferenceScript+")('select',"+addressToApply+");})()";
+        shop.evaluateJavascript(script,raw->{
+            if(epoch!=locationEpoch||shop==null||isFinishing())return;
+            try{Object value=new JSONTokener(raw).nextValue();if(!(value instanceof JSONObject))throw new IllegalStateException();JSONObject applied=(JSONObject)value;
+                if(!applied.optBoolean("changed")&&!applied.optBoolean("already_loaded"))throw new IllegalStateException();
+                addressToApply=null;if(locationHandler!=null){locationHandler.remove();locationHandler=null;}
+                if(applied.optBoolean("already_loaded")){applyingPickedAddress=false;restartLocationPolling();}else shop.reload();
+            }catch(Exception e){addressToApply=null;applyingPickedAddress=false;status.setText("جت موقعیت را ذخیره نکرد؛ دوباره انتخاب کنید.");beginLocationChange();}
+        });
     }
     private boolean stableLocation(String location,String point){
         String key=DeliveryChoice.label(location)+"|"+point;long now=System.currentTimeMillis();
@@ -245,7 +304,7 @@ public final class DigikalaActivity extends Activity {
         return now-stableLocationSince>=450;
     }
     private void pollLocation(int epoch,int attempts){
-        if(epoch!=locationEpoch||locationCompleted||!locationOnly||scanning||shop==null||isFinishing()||isDestroyed())return;
+        if(epoch!=locationEpoch||locationCompleted||!locationOnly||scanning||shop==null||isFinishing()||isDestroyed()||addressToApply!=null||applyingPickedAddress||addressPicker!=null&&addressPicker.isShowing())return;
         shop.evaluateJavascript(locationSnapshot(),raw->{
             if(epoch!=locationEpoch||locationCompleted||!locationOnly||scanning||shop==null||isFinishing()||isDestroyed())return;
             boolean replay=false;
@@ -380,7 +439,7 @@ public final class DigikalaActivity extends Activity {
         scrollSpinner=new ProgressBar(this);scrollSpinner.setIndeterminate(true);progressLayer.addView(scrollSpinner,new LinearLayout.LayoutParams(72,72));
         progressBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progressBar.setMax(autoItems==null?1:autoItems.length());progressBar.setIndeterminate(autoItems==null);progressLayer.addView(progressBar,new LinearLayout.LayoutParams(-1,24));
         progressCount=new TextView(this);progressCount.setTextSize(14);progressCount.setPadding(0,20,0,20);progressCount.setGravity(android.view.Gravity.CENTER);progressLayer.addView(progressCount);
-        addressFallback=new Button(this);addressFallback.setText("انتخاب آدرس روی نقشه");addressFallback.setVisibility(android.view.View.GONE);addressFallback.setOnClickListener(v->beginLocationChange());progressLayer.addView(addressFallback);
+        addressFallback=new Button(this);addressFallback.setText("انتخاب نشانی بدون GPS");addressFallback.setVisibility(android.view.View.GONE);addressFallback.setOnClickListener(v->beginLocationChange());progressLayer.addView(addressFallback);
         progressLayer.setVisibility(android.view.View.GONE);parent.addView(progressLayer,new FrameLayout.LayoutParams(-1,-1));
     }
     private String fa(int n){return java.text.NumberFormat.getInstance(new java.util.Locale("fa")).format(n);}
@@ -585,11 +644,16 @@ public final class DigikalaActivity extends Activity {
         if(code==LOCATION_REQUEST && locationCallback!=null) {
             boolean allowed=checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED;
             if(allowed) deliveryChoice.approveLocation();
-            locationCallback.invoke(locationOrigin,allowed,allowed);locationCallback=null;locationOrigin=null;
+            finishGeolocation(allowed);
         }
     }
+    private void finishGeolocation(boolean allowed){
+        GeolocationPermissions.Callback callback=locationCallback;String origin=locationOrigin;locationCallback=null;locationOrigin=null;
+        if(geolocationDialog!=null){geolocationDialog.dismiss();geolocationDialog=null;}
+        if(callback!=null)callback.invoke(origin,allowed,allowed);
+    }
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); }
-    private void handleBack() { if(automated()){scanning=false;setResult(RESULT_CANCELED);finish();return;}if(shop!=null && shop.canGoBack()) shop.goBack();else finish(); }
+    private void handleBack() { if(officialLocationEditor&&shop!=null){closeOfficialMap();return;}if(automated()){scanning=false;setResult(RESULT_CANCELED);finish();return;}if(shop!=null && shop.canGoBack()) shop.goBack();else finish(); }
     @Override public void onBackPressed() {handleBack();}
-    @Override protected void onDestroy() { if(locationHandler!=null)locationHandler.remove();scanning=false;scanHandler.removeCallbacksAndMessages(null);if(locationCallback!=null) locationCallback.invoke(locationOrigin,false,false); if(shop!=null) RetailerSession.release(this,shop);super.onDestroy(); }
+    @Override protected void onDestroy() { ++locationEpoch;if(locationHandler!=null)locationHandler.remove();if(addressPicker!=null)addressPicker.dismiss();scanning=false;scanHandler.removeCallbacksAndMessages(null);finishGeolocation(false); if(shop!=null) RetailerSession.release(this,shop);super.onDestroy(); }
 }

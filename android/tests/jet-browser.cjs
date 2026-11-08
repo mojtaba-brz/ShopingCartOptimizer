@@ -37,6 +37,10 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await check.goto('https://www.digikalajet.com/user/add-address');
  await check.evaluate(()=>localStorage.setItem('persist:DKNow',JSON.stringify({address:JSON.stringify({isLocationMode:true,isUsingDefaultLocation:false,defaultAddress:{addressAddress:'میدان ونک',addressLatitude:'35.75',addressLongitude:'51.4'}})})));
  let found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.configured,true);assert.equal(found.map_open,true);assert.equal(found.location,'ارسال به میدان ونک');
+ // Jet keeps a closed map mounted, translates it below the viewport, and
+ // clips its zero-width outer container. getClientRects() alone reports it visible.
+ await check.evaluate(()=>{const modal=document.getElementById('modal-root');modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden';modal.firstElementChild.insertAdjacentHTML('afterend','<button id="close-map">بستن نقشه</button>');document.getElementById('close-map').onclick=()=>{modal.style.width='0px';modal.style.height='0px';modal.firstElementChild.style.transform='translateY(100vh)';};});
+ await check.getByRole('button',{name:'بستن نقشه',exact:true}).click();found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.map_open,false,'A closed, kept-mounted map must not block address confirmation');assert.equal(found.configured,true);
  await check.evaluate(()=>document.getElementById('modal-root').remove());found=await check.evaluate(`(${pref})('read',{})`);assert.equal(found.editing,false,'Stale URL alone must not block the registered address');
  // A document reload must preserve a different valid retailer selection rather
  // than writing the older address bookmarked by the app.

@@ -1,4 +1,4 @@
-> **Android 0.9.1 — سبدچین:** Automatic Android lookup now uses
+> **Android 0.9.2 — سبدچین:** Automatic Android lookup now uses
 > **Digikala Jet (`https://www.digikalajet.com/`)**, not the Digikala hypermarket.
 > Reads real merchant-group titles, opens each store's public “view all” results,
 > and compares captured offers per kg/litre/item. Native search progress includes
@@ -6,7 +6,7 @@
 > confirmed Jet address preference and coordinates before lookup; first use still
 > needs the user's location choice. No authentication token is embedded or copied.
 > No LLM or model download. See [release preparation](release/README-fa.md).
-> Location recognition in 0.9.1 reads the committed guest/account address rather
+> Location recognition in 0.9.2 reads the committed guest/account address rather
 > than relying on a particular confirmation button, visible address header or
 > a fresh coordinate-bearing request. Existing retailer selections are preserved;
 > only missing preferences are restored. Late callbacks and older catalog requests
@@ -150,3 +150,7 @@ tests/                  Pricing, adapter and HTTP regression tests
 - Interface text is English; Persian product names use automatic text direction. A complete Persian interface can be added separately.
 - The desktop GUI assets and HTTP endpoints are tested; desktop interactive browser QA was unavailable in the development environment. The Android workflow separately runs an emulator UI smoke test; check its run result for device validation.
 - SnappMarket and Tapsi Market can be added through adapters sharing the same normalized model.
+
+### Location picker recovery in 0.9.2
+
+The native address picker searches Jet's public address service and checks service coverage before selecting a delivery point. It works without GPS or a rendered map. The optional official map starts through Jet's ordinary address-search page, with a native close control. Closed, kept-mounted map panels no longer block location recognition. Selecting a new point preserves account state and is checked again after Jet reloads. No address is created on the account and no basket is submitted.

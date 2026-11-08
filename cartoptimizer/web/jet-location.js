@@ -8,7 +8,13 @@
  const key='persist:DKNow';
  const norm=s=>String(s||'').normalize('NFKC').replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[\u200c\s]+/g,' ').replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069\ue000-\uf8ff]/g,'').trim();
  const clean=s=>{if(typeof s!=='string')return '';s=norm(s).replace(/^ارسال\s*به\s*/,'').trim();return s&&s.length<=300&&!/^(?:آدرس انتخابی|انتخاب آدرس|انتخاب موقعیت|آدرس تحویل|موقعیت انتخابی)$/.test(s)?'ارسال به '+s:'';};
- const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
+ const visible=e=>{
+  if(!e||!e.getClientRects().length)return false;
+  let r=e.getBoundingClientRect(),left=Math.max(0,r.left),top=Math.max(0,r.top),right=Math.min(innerWidth,r.right),bottom=Math.min(innerHeight,r.bottom);
+  for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(s.visibility==='hidden'||s.display==='none'||Number(s.opacity)===0||p.hidden||p.getAttribute('aria-hidden')==='true')return false;
+   if(p!==e&&/(?:hidden|clip|auto|scroll)/.test(s.overflow+s.overflowX+s.overflowY)){const b=p.getBoundingClientRect();left=Math.max(left,b.left);top=Math.max(top,b.top);right=Math.min(right,b.right);bottom=Math.min(bottom,b.bottom);}}
+  return right>left&&bottom>top;
+ };
  const text=e=>norm(e?.innerText||'');
  function number(n){if(typeof n==='number')return Number.isFinite(n)?n:null;if(typeof n==='string'&&/^-?\d+(?:\.\d+)?$/.test(n.trim()))return Number(n);return null;}
  const valid=(lat,lon)=>lat!==null&&lon!==null&&Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;
@@ -35,9 +41,11 @@
  try{
   const all=root(),a=address(all),p=selected(a,ui);
   if(command==='read')return {...ui,...p,state:'ok',location:p.configured?p.label:ui.header,restored:document.documentElement?.dataset.cartwiseLocationRestored==='1'};
-  if(command!=='restore')return {state:'listening'};
-  if(p.configured)return {state:'service-set',changed:false};
-  if(p.invalid_address)return {state:'invalid-address',changed:false};
+  if(command!=='restore'&&command!=='select')return {state:'listening'};
+  // Explicit selection follows a fresh service-range check in the native
+  // picker. Automatic restoration must never replace Jet's own new choice.
+  if(command==='restore'&&p.configured)return {state:'service-set',changed:false};
+  if(command==='restore'&&p.invalid_address)return {state:'invalid-address',changed:false};
   const parts=String(saved.coordinates||'').split('|').map(number);if(parts.length!==2||!valid(parts[0],parts[1])||!clean(saved.location))return {state:'missing-coordinates'};
   // Read an alternate address representation, but never guess its write schema.
   if(all.address!==undefined&&typeof all.address!=='string')return {state:'unreadable-preference'};
@@ -46,6 +54,6 @@
   all.address=JSON.stringify(a);localStorage.setItem(key,JSON.stringify(all));localStorage.removeItem('jet:first-load');sessionStorage.setItem('jet:is-address-selected','1');
   const attrs='; Path=/; Max-Age=31536000; SameSite=Lax; Secure';document.cookie='latitude='+parts[0]+attrs;document.cookie='longitude='+parts[1]+attrs;document.cookie='locationMode=true'+attrs;
   const mark=()=>{if(document.documentElement)document.documentElement.dataset.cartwiseLocationRestored='1';};if(document.documentElement)mark();else document.addEventListener('DOMContentLoaded',mark,{once:true});
-  return {state:'restored',changed:true};
+  return {state:command==='select'?'selected':'restored',changed:true};
  }catch{return {...ui,state:'unreadable-preference',configured:false,coordinates:'',location:ui.header};}
 })
