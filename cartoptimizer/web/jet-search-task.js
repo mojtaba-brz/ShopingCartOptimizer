@@ -3,6 +3,14 @@
  * Adapters are installed by the host from the same bundled, reviewed sources. */
 (function(root){
  'use strict';
+ // Observe completion only: never inspect request headers, credentials or bodies.
+ // Router URL changes precede new catalogue data; an old card must not acquire
+ // the next store's identity while that store's request is still in flight.
+ const network=root.CartwiseSearchNetwork||(root.CartwiseSearchNetwork={pending:0,completed:0});
+ if(!network.installed){
+  network.installed=true;const fetch=root.fetch.bind(root);root.fetch=function(...args){network.pending++;return fetch(...args).finally(()=>{network.pending--;network.completed++;});};
+  const send=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){network.pending++;let ended=false;const finish=()=>{if(!ended){ended=true;network.pending--;network.completed++;}};this.addEventListener('loadend',finish,{once:true});try{return send.apply(this,args);}catch(e){finish();throw e;}};
+ }
  root.CartwiseSearchTask={start(options){
   const state={done:false,products:0,stores:0,detail:'آماده‌سازی صفحه…'};
   root.cartwiseTask=state;
@@ -23,7 +31,19 @@
    state.products=rows.size;state.stores=shops.size;state.detail=options.store_name||'شناسایی کالاها و فروشگاه‌ها';
    return d;
   };
-  const navigate=async url=>{check();if(!a.navigation(url))throw Error('navigation');await sleep(500);};
+  const fingerprint=()=>JSON.stringify((a.reader({}).products||[]).map(p=>[p.title,p.regular_price,p.promo_price]));
+  const navigate=async url=>{
+   check();const oldURL=location.href,prior=fingerprint(),completed=network.completed;
+   if(!a.navigation(url))throw Error('navigation');
+   let previous='',stable=0;
+   for(let n=0;n<60;n++){
+    await sleep(250);check();const current=fingerprint();
+    stable=current===previous?stable+1:0;previous=current;
+    const changed=oldURL===new URL(url).href||prior==='[]'||current!==prior||network.completed>completed;
+    if(network.pending===0&&stable>=2&&changed)return;
+   }
+   throw Error('navigation');
+  };
   async function scan(){
    let quiet=0,prior='',empty=0;
    for(let step=0;step<120;step++){

@@ -225,7 +225,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     sources = {key: (WEB / file).read_text(encoding='utf-8') for key, file in {
         'reader':'jet-dom.js', 'preference':'jet-location.js', 'checkout':'digikala-checkout.js',
         'navigation':'jet-navigation.js', 'expand':'jet-expand.js'}.items()}
-    adapters = 'window.CartwiseSearchAdapters={' + ','.join(key+':'+(('()=>('+value+'))') if key=='checkout' else '('+value+')') for key,value in sources.items()) + '};'
+    adapters = 'window.CartwiseSearchAdapters={' + ','.join(key+':'+(('()=>('+value+')') if key=='checkout' else '('+value+')') for key,value in sources.items()) + '};'
     worker_script = (WEB / 'jet-search-task.js').read_text(encoding='utf-8')
     coordinates = f"{location['latitude']}|{location['longitude']}"
     saved = {'location':'ارسال به '+location['address'], 'coordinates':coordinates}
