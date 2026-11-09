@@ -206,7 +206,11 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
         if browser is None:
             raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
         try:
-            context = browser.new_context()
+            # Supply the user-selected delivery point to this isolated Jet
+            # context, not the computer's physical/GPS location. Jet's guest
+            # flow otherwise discards the preference after a location failure.
+            context = browser.new_context(geolocation={'latitude': location['latitude'], 'longitude': location['longitude']})
+            context.grant_permissions(['geolocation'], origin=HOME)
             saved = {'location': result['location'], 'coordinates': f"{location['latitude']}|{location['longitude']}"}
             context.add_init_script(script=f'({preference})("restore",{json.dumps(saved, ensure_ascii=False)})')
             page = context.new_page()

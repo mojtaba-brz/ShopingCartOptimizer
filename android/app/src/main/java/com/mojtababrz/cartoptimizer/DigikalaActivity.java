@@ -32,7 +32,7 @@ public final class DigikalaActivity extends Activity {
     private WebView shop;
     private TextView status;
     private Button read;
-    private String captureScript, checkoutScript, locationScript, jetScript, preferenceScript;
+    private String captureScript, checkoutScript, locationScript, jetScript, preferenceScript,deliveryPointScript;
     private boolean preparing,restoreReloaded,manualLocationChange,locationRestoreTried,locationCompleted,sawLocationEditor;
     private int locationEpoch;
     private String locationBaseline="",lastLocationPoint="",stableLocationKey="";
@@ -195,6 +195,7 @@ public final class DigikalaActivity extends Activity {
         }catch(Exception ignored){}
         try(java.io.InputStream in=getAssets().open("jet-dom.js")){jetScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         try(java.io.InputStream in=getAssets().open("jet-location.js")){preferenceScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
+        try(java.io.InputStream in=getAssets().open("jet-delivery-point.js")){deliveryPointScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         installLocationRestoration();
         String query=getIntent().getStringExtra("query");
         String url=automated()?HOME+"user/add-address":HOME;
@@ -227,9 +228,14 @@ public final class DigikalaActivity extends Activity {
     private void installLocationRestoration(){
         if(preferenceScript==null)return;
         String init=automated()&&DeliveryChoice.validCoordinates(deliveryChoice.coordinates())?preference("restore"):preference("listen");
+        if(automated())init=withDeliveryPoint(init);
         if(androidx.webkit.WebViewFeature.isFeatureSupported(androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT)){
             locationHandler=androidx.webkit.WebViewCompat.addDocumentStartJavaScript(shop,init,new java.util.HashSet<>(java.util.Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
         }
+    }
+    private String withDeliveryPoint(String init){
+        if(deliveryPointScript==null)return init;
+        return "(()=>{const result="+init+";const p="+preference("read")+";if(p.configured&&!p.account_address)("+deliveryPointScript+")(p.coordinates);return result;})()";
     }
     private String locationSnapshot(){
         return "(()=>{const p="+preference("read")+";return {source:'digikala-live-page',retailer:'jet',captured_at:new Date().toISOString(),location:p.location||'',shipment_type:'on_demand',location_editing:p.editing===true,delivery_preference:p,products:[]};})()";
@@ -274,7 +280,7 @@ public final class DigikalaActivity extends Activity {
             ++locationEpoch;officialLocationEditor=false;closeMap.setVisibility(android.view.View.GONE);sawLocationEditor=true;captureNotice=false;
             addressToApply=new JSONObject().put("location","ارسال به "+address.point.label).put("coordinates",address.point.coordinates);applyingPickedAddress=true;
             if(androidx.webkit.WebViewFeature.isFeatureSupported(androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT)){
-                locationHandler=androidx.webkit.WebViewCompat.addDocumentStartJavaScript(shop,"("+preferenceScript+")('select',"+addressToApply+")",new java.util.HashSet<>(java.util.Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
+                locationHandler=androidx.webkit.WebViewCompat.addDocumentStartJavaScript(shop,withDeliveryPoint("("+preferenceScript+")('select',"+addressToApply+")"),new java.util.HashSet<>(java.util.Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
             }
             final int epoch=locationEpoch;scanHandler.postDelayed(()->{
                 if(epoch==locationEpoch&&applyingPickedAddress&&!isFinishing()){

@@ -65,6 +65,7 @@ public class LocationPickerFlowTest {
             for(int i=0;i<150&&s.getState()!=Lifecycle.State.DESTROYED;i++)Thread.sleep(100);
             assertEquals(Lifecycle.State.DESTROYED,s.getState());assertEquals(Activity.RESULT_OK,s.getResult().getResultCode());
             JSONObject data=new JSONObject(s.getResult().getResultData().getStringExtra("live_data"));assertEquals("ارسال به تهران، میدان ونک",data.getString("location"));assertEquals("35.75|51.4",new DeliveryChoice(ApplicationProvider.getApplicationContext()).coordinates());assertTrue(hydrated.get().contains("میدان ونک"));
+            assertFalse("A delivery-point choice must not approve physical GPS",new DeliveryChoice(ApplicationProvider.getApplicationContext()).locationApproved());
         }
     }
     @Test public void lateSearchCannotReplaceNewResultsAndOutsideRangeDoesNotSave()throws Exception{

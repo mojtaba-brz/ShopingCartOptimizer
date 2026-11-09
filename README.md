@@ -24,7 +24,7 @@ The pricing engine and manually imported snapshots can run without the `live` ex
 ## Automatic shopping
 
 1. Enter goods and required amounts, such as شیر ۱ لیتر or برنج ۲ کیلوگرم.
-2. Choose a delivery point by searching city/street. Jet's coverage is checked before saving it on that device. GPS is optional.
+2. Choose a delivery point by searching city/street. Jet's coverage is checked before saving it on that device. GPS is optional. The isolated automated Jet session receives the delivery point you selected; this does not read the physical device location.
 3. Run **جست‌وجو و مقایسه قیمت**. Progress reports completed list items, products and stores. The retrieval browser stays hidden and does not use your personal browser profile.
 4. Review quantities and change a choice if needed. Options are sorted by comparable kg/litre/item price, with package totals kept separate. Saving/changing a list never requires entering offers for automatic search.
 

@@ -48,6 +48,7 @@ jobs:
           node android/tests/comparison.cjs
           node android/tests/location-state.cjs
           node android/tests/navigation.cjs
+          node android/tests/delivery-point.cjs
           node android/tests/auto-planner.cjs
       - name: Create original store graphics
         run: |
