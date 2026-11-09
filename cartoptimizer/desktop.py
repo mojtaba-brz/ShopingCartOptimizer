@@ -182,7 +182,7 @@ class DesktopService:
 
 
 SCROLL = """() => {let more=false;for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY))){e.scrollTop+=Math.max(400,e.clientHeight*.8);more ||= e.scrollTop+e.clientHeight<e.scrollHeight-20;}return more;}"""
-EXPAND = """name => {for(const p of document.querySelectorAll('p.truncate'))if(p.innerText.trim()===name){let e=p.parentElement;for(let i=0;e&&i<6;i++,e=e.parentElement){const b=[...e.querySelectorAll('button')].find(b=>b.innerText.trim()==='مشاهده همه');if(b){b.click();return true;}}}return false;}"""
+SCROLL_TOP = """() => {for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY)))e.scrollTop=0;}"""
 
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
@@ -192,6 +192,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
     preference = (WEB / 'jet-location.js').read_text(encoding='utf-8')
     checkout = (WEB / 'digikala-checkout.js').read_text(encoding='utf-8')
     navigation = (WEB / 'jet-navigation.js').read_text(encoding='utf-8')
+    expand = (WEB / 'jet-expand.js').read_text(encoding='utf-8')
     stamp = lambda: datetime.now(timezone.utc).isoformat()
     result = {'source': 'digikala-automatic', 'location': 'ارسال به ' + location['address'],
               'shipment_type': 'on_demand', 'captured_at': stamp(), 'items': [], 'checkout_quotes': []}
@@ -234,7 +235,8 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                 deadline = time.monotonic() + item_seconds
                 report(completed=index, detail=f'جست‌وجوی «{item["name"]}»', products=0, stores=0)
                 search_url = HOME + 'search/v2/result?' + urlencode({'q': item['query']})
-                products, seen, shops, expanded, warnings = [], set(), set(), set(), []
+                products, seen, shops, expanded, warnings = [], set(), {}, set(), []
+                replaced = set()
 
                 def collect(store='', shop_id=''):
                     current = urlsplit(page.url)
@@ -247,13 +249,20 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                         if not selected.get('configured') or len(xy) != 2 or tuple(map(float, xy)) != (location['latitude'], location['longitude']):
                             raise ValidationError('موقعیت جت با موقعیت انتخاب‌شده یکسان نیست؛ جست‌وجو متوقف شد.')
                     data = page.evaluate(f'({reader})', {'store_name': store, 'expected_shop_id': shop_id})
+                    if store and shop_id and data.get('products') and store not in replaced:
+                        # Full-store observations supersede its older carousel
+                        # prices, rather than showing both as separate offers.
+                        products[:] = [p for p in products if p.get('store_name') != store or p.get('store_id')]
+                        seen.clear()
+                        seen.update((p['title'], p.get('store_name'), p.get('store_id'), p['regular_price'], p.get('promo_price')) for p in products)
+                        replaced.add(store)
                     for p in data.get('products', []):
                         identity = (p['title'], p.get('store_name'), p.get('store_id'), p['regular_price'], p.get('promo_price'))
                         if identity not in seen and len(products) < 1000:
                             seen.add(identity)
                             products.append(p)
                     for s in data.get('shops', []):
-                        shops.add(s['name'])
+                        shops.setdefault(s['name'], None)
                     quote = page.evaluate(checkout)
                     if quote and quote.get('fields'):
                         key = json.dumps({k: v for k, v in quote.items() if k != 'captured_at'}, sort_keys=True)
@@ -284,21 +293,23 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
 
                 navigate(search_url)
                 scan()
-                while shops - expanded:
+                while any(name not in expanded for name in shops):
                     if len(expanded) >= max_stores or time.monotonic() > deadline or len(products) >= 1000:
                         warnings.append('جست‌وجو به سقف تعداد یا زمان رسید؛ پوشش کامل تأیید نیست.')
                         break
-                    name = sorted(shops - expanded)[0]
+                    name = next(name for name in shops if name not in expanded)
                     expanded.add(name)
                     # Let Jet's own view-all control choose the real store URL.
                     if page.url != search_url:
                         navigate(search_url)
+                    page.evaluate(SCROLL_TOP)
+                    page.wait_for_timeout(500)
                     opened = False
                     for _ in range(120):
                         if time.monotonic() > deadline:
                             break
                         collect()
-                        if page.evaluate(EXPAND, name):
+                        if page.evaluate(f'({expand})', name):
                             opened = True
                             break
                         if not page.evaluate(SCROLL):

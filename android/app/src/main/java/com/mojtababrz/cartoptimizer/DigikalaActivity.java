@@ -32,7 +32,7 @@ public final class DigikalaActivity extends Activity {
     private WebView shop;
     private TextView status;
     private Button read;
-    private String captureScript, checkoutScript, locationScript, jetScript, preferenceScript,deliveryPointScript;
+    private String captureScript, checkoutScript, locationScript, jetScript, preferenceScript,deliveryPointScript,expansionScript;
     private boolean preparing,restoreReloaded,manualLocationChange,locationRestoreTried,locationCompleted,sawLocationEditor;
     private int locationEpoch;
     private String locationBaseline="",lastLocationPoint="",stableLocationKey="";
@@ -196,6 +196,7 @@ public final class DigikalaActivity extends Activity {
         try(java.io.InputStream in=getAssets().open("jet-dom.js")){jetScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         try(java.io.InputStream in=getAssets().open("jet-location.js")){preferenceScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         try(java.io.InputStream in=getAssets().open("jet-delivery-point.js")){deliveryPointScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
+        try(java.io.InputStream in=getAssets().open("jet-expand.js")){expansionScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         installLocationRestoration();
         String query=getIntent().getStringExtra("query");
         String url=automated()?HOME+"user/add-address":HOME;
@@ -582,7 +583,7 @@ public final class DigikalaActivity extends Activity {
         activeStore=name;activeShopId="";expandedStores.add(name);priorFingerprint=fingerprint(snapshot);sameQuery=false;
         for(int i=collectedProducts.length()-1;i>=0;i--)if(name.equals(collectedProducts.optJSONObject(i).optString("store_name")))collectedProducts.remove(i);
         // Only activate the observed public “view all” navigation, never a product/cart button.
-        String script="(()=>{const wanted="+JSONObject.quote(name)+";const matches=[];for(const b of document.querySelectorAll('button'))if(b.innerText.trim()==='مشاهده همه'){let g=b.parentElement;for(let n=0;g&&n<6;n++,g=g.parentElement){const titles=[...g.querySelectorAll('p.truncate')].filter(p=>p.getClientRects().length&&!p.closest('button'));if(titles.length>1)break;if(titles.length===1&&titles[0].innerText.trim()===wanted&&g.querySelector('button[data-cro-id=add-one-more-to-cart]')){matches.push(b);break;}}}if(matches.length===1){matches[0].click();return true;}return false;})()";
+        String script=expansionScript==null?"false":"("+expansionScript+")("+JSONObject.quote(name)+")";
         showProgress("خواندن همه نتایج فروشگاه","باز کردن «"+name+"» برای بررسی کالاهای بعد از ردیف اول…");
         scanStarted=System.currentTimeMillis();lastFingerprint="";stableCount=0;
         shop.evaluateJavascript(script,raw->{if(!scanning||shop==null)return;if(!"true".equals(raw)){returnToGlobal();return;}scanHandler.postDelayed(this::pollSearch,700);});

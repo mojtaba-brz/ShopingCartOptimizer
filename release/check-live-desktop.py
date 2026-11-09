@@ -11,9 +11,11 @@ try:
     result = browse([{'id': 'milk', 'name': 'شیر', 'query': 'شیر', 'quantity': 1}],
                     {'latitude': 35.757535, 'longitude': 51.40994, 'address': 'تهران، میدان ونک'},
                     lambda **data: print(json.dumps(data, ensure_ascii=False), flush=True),
-                    browser_options=options, max_stores=2, page_seconds=15, item_seconds=55)
+                    browser_options=options, max_stores=1, page_seconds=7, item_seconds=70)
     products = result['items'][0]['products']
     record.update(products=len(products), stores=len({p.get('store_name') for p in products if p.get('store_name')}))
+    record['store_pages'] = len({p.get('store_id') for p in products if p.get('store_id')})
+    record['coverage_notice'] = result['items'][0].get('error')
     assert record['products'] > 0 and record['stores'] > 0, 'No public product/store data verified'
     record['status'] = 'success'
 except Exception as exc:

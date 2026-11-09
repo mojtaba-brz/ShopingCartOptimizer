@@ -2,13 +2,13 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const context=await browser.newContext(),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- const reader=fs.readFileSync('cartoptimizer/web/jet-dom.js','utf8'),pref=fs.readFileSync('cartoptimizer/web/jet-location.js','utf8');
+ const reader=fs.readFileSync('cartoptimizer/web/jet-dom.js','utf8'),pref=fs.readFileSync('cartoptimizer/web/jet-location.js','utf8'),expand=fs.readFileSync('cartoptimizer/web/jet-expand.js','utf8');
  let html=fs.readFileSync('android/app/src/androidTest/assets/jet-search.html','utf8');
  await context.route('https://www.digikalajet.com/**',r=>r.request().isNavigationRequest()?r.fulfill({contentType:'text/html; charset=utf-8',body:html}):r.fulfill({status:404,body:''}));
  await context.route('https://dkstatics-public.digikala.com/**',r=>r.fulfill({status:404,body:''}));
  await page.goto('https://www.digikalajet.com/search/v2/result?q=%D8%B4%DB%8C%D8%B1');
  let data=await page.evaluate(`(${reader})({})`);assert.equal(data.products.length,4);assert.deepEqual(data.shops.map(x=>x.name),['فروشگاه الف','فروشگاه ب']);assert.deepEqual(data.products.map(x=>x.store_name),['فروشگاه الف','فروشگاه الف','فروشگاه ب','فروشگاه ب']);
- await page.getByRole('button',{name:'مشاهده همه',exact:true}).nth(1).click();
+ assert.equal(await page.evaluate(`(${expand})`, 'فروشگاه ب'),true);
  assert.match(page.url(),/\/search\/shop\?q=.*&shopId=b/);
  data=await page.evaluate(`(${reader})({store_name:'فروشگاه ب',expected_shop_id:'b'})`);assert.equal(data.products.length,12);assert.equal(data.products[11].regular_price,200);assert.equal(data.products[11].store_name,'فروشگاه ب');assert.equal(data.products[11].store_id,'b');
  assert.ok((await page.evaluate(`(${reader})({store_name:'wrong',expected_shop_id:'a'})`)).products.every(p=>p.store_name===''));
