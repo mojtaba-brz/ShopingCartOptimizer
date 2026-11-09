@@ -10,6 +10,7 @@ import webbrowser
 from .adapters.digikala import fetch_product
 from .models import ValidationError, normalize_snapshot
 from .optimizer import optimize
+from . import __version__
 
 WEB = Path(__file__).parent / 'web'
 EXAMPLE = Path(__file__).parent / 'demo.json'
@@ -49,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.respond(403, {'error': 'Use the localhost application URL'})
         path = urlsplit(self.path).path
         if path == '/api/live/location':
-            return self.respond(200, desktop(self.server).delivery())
+            return self.respond(200, {**desktop(self.server).delivery(), 'app_version': __version__})
         if path == '/api/live/status':
             try:
                 return self.respond(200, desktop(self.server).status(parse_qs(urlsplit(self.path).query).get('id', [''])[0]))

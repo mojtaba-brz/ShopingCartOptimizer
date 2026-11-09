@@ -1,11 +1,11 @@
-const {chromium}=require('playwright'),assert=require('node:assert/strict');
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),release=require('../../cartoptimizer/release.json');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const page=await browser.newPage(),errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));
  let location={};
  const products=Array.from({length:12},(_,i)=>({title:`شیر کم چرب ۱ لیتر شماره ${i}`,regular_price:100000+i*10000,promo_price:null,store_name:'فروشگاه ونک',store_id:'1',image_url:'',amazing:false,regular_verified:true,url:'https://www.digikalajet.com/search/shop?shopId=1',stock:1,promo_limit:0}));
  await page.route('**/api/live/**',route=>{const req=route.request(),path=new URL(req.url()).pathname,body=req.postDataJSON();let data;
-  if(path.endsWith('/location')&&req.method()==='GET')data=location;
+  if(path.endsWith('/location')&&req.method()==='GET')data={...location,app_version:release.version};
   else if(path.endsWith('/addresses'))data=[{title:'ونک',address:'تهران، ونک',latitude:35.75,longitude:51.4}];
   else if(path.endsWith('/location'))data=location={location:'ارسال به تهران، ونک',shipment_type:'on_demand'};
   else if(path.endsWith('/search')){requests.push(body);data={id:'fixture'};}
