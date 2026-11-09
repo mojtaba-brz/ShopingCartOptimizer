@@ -17,7 +17,8 @@ def main():
     result = browse([{'id': 'milk', 'name': 'شیر', 'query': 'شیر', 'quantity': 1}],
                     {'latitude': 35.75, 'longitude': 51.4, 'address': 'تهران، ونک'},
                     lambda **data: progress.append(data), page_setup=setup,
-                    browser_options={'executable_path': os.environ['CHROMIUM_PATH'], 'args': ['--no-sandbox']})
+                    browser_options=({'executable_path': os.environ['CHROMIUM_PATH'], 'args': ['--no-sandbox']}
+                                     if os.environ.get('CHROMIUM_PATH') else {}))
     products = result['items'][0]['products']
     assert len(products) > 4, len(products)
     assert {'فروشگاه الف', 'فروشگاه ب'} <= {p['store_name'] for p in products}
