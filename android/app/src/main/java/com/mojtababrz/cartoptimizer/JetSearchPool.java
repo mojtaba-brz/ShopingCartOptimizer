@@ -32,7 +32,7 @@ final class JetSearchPool {
     private final LinkedHashMap<String,JSONObject> entries=new LinkedHashMap<>();private final LinkedHashMap<String,Integer> pending=new LinkedHashMap<>();
     private final JSONArray quotes=new JSONArray();private final HashSet<String> quoteKeys=new HashSet<>();
     private final JSONArray requested;private final LinkedHashMap<String,String> queries=new LinkedHashMap<>();private final LinkedHashMap<String,Integer> weights=new LinkedHashMap<>();private final LinkedHashMap<String,Long> deadlines=new LinkedHashMap<>();
-    private final JSONObject resources;private final String coordinates,init,adapters,script;private boolean stopped;private int active;
+    private final JSONObject resources;private final String coordinates,init,adapters,script;private boolean stopped,documentStart;private int active;
     JetSearchPool(Activity activity,ViewGroup parent,JSONArray items,String coordinates,String init,Listener listener) throws Exception {
         this(activity,parent,items,coordinates,init,listener,a->new WebView(a));
     }
@@ -48,7 +48,7 @@ final class JetSearchPool {
         }
     }
     private String read(String name)throws Exception{try(java.io.InputStream in=activity.getAssets().open(name)){java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] bytes=new byte[4096];int n;while((n=in.read(bytes))!=-1)out.write(bytes,0,n);return out.toString("UTF-8");}}
-    void start(){if(!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)){listener.failed("برای جست‌وجوی موازی، Android System WebView را به‌روز کنید.");return;}for(int i=0;i<resources.optInt("workers",1);i++){Worker w=new Worker();workers.add(w);w.open();}}
+    void start(){documentStart=WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT);for(int i=0;i<resources.optInt("workers",1);i++){Worker w=new Worker();workers.add(w);w.open();}}
     void stop(){if(stopped)return;stopped=true;handler.removeCallbacksAndMessages(null);for(Worker w:workers)w.close();workers.clear();queue.clear();}
     void conserveMemory(){if(stopped)return;try{resources.put("workers",1).put("max_carts",3).put("state_limit",20000).put("solve_ms",200);}catch(Exception ignored){}boolean kept=false;for(Worker w:workers){if(w.task!=null||!kept&&!w.closed){kept=true;continue;}w.close();}}
     private void fail(String message){if(stopped)return;stop();listener.failed(message);}
@@ -66,20 +66,27 @@ final class JetSearchPool {
     }
     private String identity(JSONObject p){return p.optString("title")+'|'+p.optString("store_name")+'|'+p.optString("store_id")+'|'+p.optLong("regular_price")+'|'+p.optLong("promo_price");}
     private final class Worker {
-        final WebView web=factory.create(activity);JSONObject task;boolean ready,loaded,closed;long started;androidx.webkit.ScriptHandler initHandler;
+        final WebView web=factory.create(activity);JSONObject task;boolean ready,loaded,closed,bootstrapped;long started;androidx.webkit.ScriptHandler initHandler;
         void close(){if(closed)return;closed=true;if(initHandler!=null)initHandler.remove();web.stopLoading();parent.removeView(web);web.destroy();}
         void open(){
             web.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setLoadsImagesAutomatically(false);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(false);web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             // Keep real layout/scroll dimensions underneath the existing opaque progress layer.
             parent.addView(web,0,new android.widget.FrameLayout.LayoutParams(-1,-1));
-            initHandler=WebViewCompat.addDocumentStartJavaScript(web,init,new HashSet<>(Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
+            if(documentStart)initHandler=WebViewCompat.addDocumentStartJavaScript(web,init,new HashSet<>(Arrays.asList("https://www.digikalajet.com","https://digikalajet.com")));
             WebViewClient fixture=web.getWebViewClient();web.setWebViewClient(new WebViewClient(){
                 @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){WebResourceResponse response=fixture==null?null:fixture.shouldInterceptRequest(v,r);if(response!=null)return response;return null;}
                 @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return r.isForMainFrame()&&!DigikalaActivity.retailer(r.getUrl());}
-                @Override public void onPageFinished(WebView v,String u){if(stopped||closed||loaded||!DigikalaActivity.retailer(Uri.parse(u)))return;loaded=true;ready=true;v.evaluateJavascript(adapters+script,ignored->dispatch());}
+                @Override public void onPageFinished(WebView v,String u){
+                    if(stopped||closed||loaded||!DigikalaActivity.retailer(Uri.parse(u)))return;
+                    if(!documentStart&&!bootstrapped){bootstrapped=true;v.evaluateJavascript(init,ignored->{if(!stopped&&!closed)v.loadUrl("https://www.digikalajet.com/user/add-address");});return;}
+                    if(!"/user/add-address".equals(Uri.parse(u).getPath()))return;
+                    loaded=true;v.evaluateJavascript((documentStart?"":init+";")+adapters+script,ignored->{if(!stopped&&!closed){ready=true;dispatch();}});
+                }
                 @Override public boolean onRenderProcessGone(WebView v,android.webkit.RenderProcessGoneDetail d){fail("حافظهٔ مرورگر کافی نبود؛ جست‌وجو را دوباره شروع کنید.");return true;}
             });
-            web.loadUrl("https://www.digikalajet.com/user/add-address");handler.postDelayed(()->{if(!stopped&&!closed&&!ready)fail("صفحهٔ جت برای جست‌وجو آماده نشد.");},30000);
+            if(documentStart)web.loadUrl("https://www.digikalajet.com/user/add-address");
+            else web.loadDataWithBaseURL("https://www.digikalajet.com/","<!doctype html><html><body></body></html>","text/html","UTF-8",null);
+            handler.postDelayed(()->{if(!stopped&&!closed&&!ready)fail("صفحهٔ جت برای جست‌وجو آماده نشد.");},30000);
         }
         void run(JSONObject value){task=value;active++;started=System.currentTimeMillis();try{JSONObject options=new JSONObject(value.toString()).put("coordinates",coordinates).put("seconds",Math.min((deadlines.get(value.optString("id"))-System.currentTimeMillis())/1000.0,value.optString("kind").equals("store")?20:30)).put("max_stores",40);web.evaluateJavascript("CartwiseSearchTask.start("+options+")",ignored->handler.postDelayed(this::poll,350));}catch(Exception e){fail("شروع جست‌وجو ناموفق بود.");}}
         void poll(){if(stopped||task==null)return;if(System.currentTimeMillis()-started>75000){fail("صفحهٔ فروشگاه در مهلت بررسی پاسخ نداد.");return;}web.evaluateJavascript("window.cartwiseTask",raw->{if(stopped)return;try{JSONObject state=new JSONObject(raw);if(state.has("fatal")){fail(state.getString("fatal"));return;}report("جست‌وجوی موازی · "+task.getString("name")+" · "+state.optString("detail"));if(state.optBoolean("done")){merge(task,state.getJSONObject("result"));task=null;active--;dispatch();}else handler.postDelayed(this::poll,350);}catch(Exception e){fail("خواندن نتیجهٔ جست‌وجوی موازی ناموفق بود.");}});}

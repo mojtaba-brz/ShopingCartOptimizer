@@ -10,6 +10,7 @@
   for(const e of results)for(const p of e.products||[])if(p.store_name){const name=norm(p.store_name);if(!aliases.has(name))aliases.set(name,new Set());if(p.store_id)aliases.get(name).add(p.store_id);if(p.store_id)names.set('id:'+p.store_id,p.store_name);else names.set('name:'+name,p.store_name);}
   function merchant(p){if(p.store_id)return 'id:'+p.store_id;const n=norm(p.store_name),ids=aliases.get(n);if(!n||ids?.size>1)return '';return ids?.size===1?'id:'+[...ids][0]:'name:'+n;}
   function rule(key){const relevant=observations.filter(q=>q.page_kind==='store'&&merchant(q)===key);const latest=relevant[relevant.length-1];return latest?.fields||{};}
+  const hasQuotedCart=observations.some(q=>q.page_kind==='cart'&&q.items_complete&&q.fields.total);
   const required=[],unresolved=[];
   for(const item of items){
    const rows=results.find(x=>x.id===item.id)?.products||[],exact=cmp.options(item,rows),review=selection[item.id]?cmp.options(item,rows,true):[];
@@ -28,7 +29,12 @@
    }
    options.sort((x,y)=>x.cost-y.cost||x.total-y.total||x.product.key.localeCompare(y.product.key));
    if(!options.length){unresolved.push(item.id);continue;}
-   required.push({item,options,baseline:base});
+   // With no observed order/free-shipping threshold, a dearer product at the
+   // same merchant cannot improve the cost objective. Keep every offer in the
+   // UI and in the unit-price alternative; prune only this dominated search branch.
+   const costOptions=[],seenStores=new Set();
+   for(const p of options){const fields=rule(p.store_key);if(hasQuotedCart||fields.minimum_order||fields.free_delivery_over||!seenStores.has(p.store_key))costOptions.push(p);seenStores.add(p.store_key);}
+   required.push({item,options:costOptions,unitOptions:options,baseline:base});
   }
   // Return partial proposals explicitly; never present a missing item as fulfilled.
   const ordered=[...required].sort((x,y)=>x.options.length-y.options.length),suffix=Array(ordered.length+1).fill(0);
@@ -56,10 +62,28 @@
   // Seed across the full candidate list before bounded enumeration, including
   // combinations requiring >3 stores when the hardware budget permits them.
   const costSeed=required.map(x=>x.options[0]);remember(evaluate(costSeed,allowed));
-  const unitSeed=required.map(x=>[...x.options].sort((p,q)=>(p.unit_price??Infinity)-(q.unit_price??Infinity)||p.cost-q.cost)[0]);unit=evaluate(unitSeed,allowed);remember(unit);
+  const unitSeed=required.map(x=>[...x.unitOptions].sort((p,q)=>(p.unit_price??Infinity)-(q.unit_price??Infinity)||p.cost-q.cost)[0]);unit=evaluate(unitSeed,allowed);remember(unit);
   const keys=new Set(required.flatMap(x=>x.options.map(p=>p.store_key)));
   for(const key of keys){const picks=required.map(x=>x.options.find(p=>p.store_key===key));if(picks.every(Boolean))remember(evaluate(picks,1));}
-  const hasBasketDiscount=observations.some(q=>q.page_kind==='cart'&&q.items_complete&&q.fields.total);
+  // Find useful shared-store covers before enumerating combinations. Otherwise
+  // many individually cheap merchants can exhaust the budget before a simple
+  // two-store solution is reached. No candidate/store shortlist is imposed.
+  const byStore=new Map([...keys].map(key=>[key,required.map(x=>x.options.find(p=>p.store_key===key))]));
+  let seeds=0;
+  for(const first of [null,...keys]){
+   if(seeds++%8===0)await new Promise(r=>setTimeout(r,0));
+   if(Date.now()-started>limits.ms/2)break;
+   if(cancelled())throw Error('cancelled');
+   const chosen=new Set(first?[first]:[]),covered=new Set();
+   if(first)byStore.get(first).forEach((p,i)=>{if(p)covered.add(i);});
+   while(covered.size<required.length&&chosen.size<allowed){
+    let next=null,coverage=0,price=Infinity;
+    for(const [key,picks] of byStore){if(chosen.has(key))continue;let count=0,cost=0;for(let i=0;i<picks.length;i++)if(picks[i]&&!covered.has(i)){count++;cost+=picks[i].cost;}if(count>coverage||count===coverage&&cost<price){next=key;coverage=count;price=cost;}}
+    if(!next||!coverage)break;chosen.add(next);byStore.get(next).forEach((p,i)=>{if(p)covered.add(i);});
+   }
+   if(covered.size===required.length)remember(evaluate(required.map(x=>x.options.find(p=>chosen.has(p.store_key))),allowed));
+  }
+  const hasBasketDiscount=hasQuotedCart;
   async function visit(index,picks,stores,cost,limit){
    if(cancelled())throw Error('cancelled');
    if(++nodes>limits.states||Date.now()-started>limits.ms){bounded=true;return;}

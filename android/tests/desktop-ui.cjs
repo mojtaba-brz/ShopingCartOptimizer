@@ -27,5 +27,5 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),rele
  await page.waitForFunction(()=>document.querySelectorAll('.store-basket').length===2);
  assert.match(await page.locator('.store-basket').first().innerText(),/نامعلوم/);
  assert.equal(await page.locator('[data-proposal-mode=single]').isDisabled(),true);
- assert.deepEqual(errors,[]);await browser.close();console.log('Desktop list + location starts automatic search without reviewed offers; shared results include all 12 options');
+ assert.deepEqual(errors,[]);await browser.close();console.log('Desktop list + location starts automatic search without reviewed offers; shared results retain >20 options and group separate merchant baskets');
 })().catch(e=>{console.error(e);process.exit(1)});

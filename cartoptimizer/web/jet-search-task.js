@@ -38,7 +38,7 @@
    let previous='',stable=0;
    for(let n=0;n<60;n++){
     await sleep(250);check();const current=fingerprint();
-    stable=current===previous?stable+1:0;previous=current;
+    stable=network.pending?0:current===previous?stable+1:0;previous=current;
     const changed=oldURL===new URL(url).href||prior==='[]'||current!==prior||network.completed>completed;
     if(network.pending===0&&stable>=2&&changed)return;
    }

@@ -21,6 +21,9 @@ const quote=(store,delivery=200,extra={})=>({source:'digikala-visible-checkout',
   let expected=Infinity;for(let a=0;a<3;a++)for(let b=0;b<3;b++)for(let c=0;c<3;c++){const picks=[a,b,c],stores=new Set(picks);const cost=picks.reduce((sum,k,n)=>sum+rs[n].products[k].regular_price,0)+stores.size*30;expected=Math.min(expected,cost);}
   const got=await basket.solve(is,rs,['a','b','c'].map(s=>quote(s,30)),{},{},{state_limit:80000,solve_ms:800});assert.equal(got.best.total,expected);
  }
+ const large=Array.from({length:15},(_,n)=>item('item'+n,'کالا'+n)),largeRows=large.map((i,n)=>({id:i.id,products:[product(i.name,'unique'+n,1),product(i.name,n<8?'sharedA':'sharedB',2)]}));
+ const cover=await basket.solve(large,largeRows,[],{},{},{state_limit:1000,solve_ms:50});assert.ok(cover.best);assert.ok(cover.best.carts.length<=3,'Shared-store seed prevents a false no-plan result');
+ const free=await basket.solve(items,results,[quote('a',200,{free_delivery_over:{value:1000}}),quote('b',200,{free_delivery_over:{value:200}})]);assert.equal(free.best.carts[0].delivery_fee,0);
  await assert.rejects(basket.solve(items,results,[],{},{},{},()=>true),/cancelled/);
  console.log('Multi-store fees, whole quantities, >20 candidates, minimum orders, hardware expansion and independent assignment oracle passed');
 })().catch(e=>{console.error(e);process.exit(1)});
