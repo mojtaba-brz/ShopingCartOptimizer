@@ -206,7 +206,7 @@ def resource_budget():
 
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
-           max_stores=40, page_seconds=30, item_seconds=60, workers=None):
+           max_stores=40, page_seconds=20, item_seconds=30, workers=None):
     import asyncio
     return asyncio.run(_browse(items, location, report, channel=channel, page_setup=page_setup,
         browser_options=browser_options, max_stores=max_stores, page_seconds=page_seconds,
@@ -232,7 +232,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     result = {'source':'digikala-automatic', 'location':saved['location'], 'shipment_type':'on_demand',
         'items':[], 'checkout_quotes':[], 'resources':budget}
     entries, pending, aliases, queries = {}, {}, {}, {}
-    queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0
+    queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0; deadlines = {}
     for item in items:
         if item['query'] in queries:
             aliases[queries[item['query']]].append(item['id']); continue
@@ -274,7 +274,14 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                 while True:
                     task = await queue.get(); active_tasks += 1
                     try:
-                        options = {**task, 'coordinates':coordinates, 'seconds':page_seconds if task['kind']=='store' else item_seconds, 'max_stores':max_stores}
+                        deadlines.setdefault(task['id'], time.monotonic()+120)
+                        remaining = deadlines[task['id']]-time.monotonic()
+                        if remaining < 1:
+                            entries[task['id']]['error']='بودجهٔ زمانی این قلم تمام شد؛ پوشش کامل تأیید نیست.'
+                            pending[task['id']]-=1
+                            progress('پایان بودجهٔ بررسی · '+task['name'])
+                            continue
+                        options = {**task, 'coordinates':coordinates, 'seconds':min(remaining,page_seconds if task['kind']=='store' else item_seconds), 'max_stores':max_stores}
                         await page.evaluate('(x)=>CartwiseSearchTask.start(x)', options)
                         until = time.monotonic() + options['seconds'] + 10
                         while True:
