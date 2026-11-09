@@ -191,6 +191,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
     reader = (WEB / 'jet-dom.js').read_text(encoding='utf-8')
     preference = (WEB / 'jet-location.js').read_text(encoding='utf-8')
     checkout = (WEB / 'digikala-checkout.js').read_text(encoding='utf-8')
+    navigation = (WEB / 'jet-navigation.js').read_text(encoding='utf-8')
     stamp = lambda: datetime.now(timezone.utc).isoformat()
     result = {'source': 'digikala-automatic', 'location': 'ارسال به ' + location['address'],
               'shipment_type': 'on_demand', 'captured_at': stamp(), 'items': [], 'checkout_quotes': []}
@@ -212,6 +213,18 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
             page.set_default_timeout(10000)
             if page_setup:
                 page_setup(page)
+            # Jet's guest home/search startup can replace a restored point with
+            # its default area. The official address page initializes without
+            # starting that GPS/default flow. Subsequent routes share that state.
+            page.goto(HOME + 'user/add-address', wait_until='domcontentloaded', timeout=30000)
+            page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
+            page.wait_for_timeout(500)
+
+            def navigate(url):
+                if not page.evaluate(f'({navigation})', url):
+                    raise ValidationError('صفحهٔ جت برای جست‌وجو آماده نشد؛ دوباره تلاش کنید.')
+                page.wait_for_timeout(700)
+
             quote_keys = set()
             for index, item in enumerate(items):
                 deadline = time.monotonic() + item_seconds
@@ -265,7 +278,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                     warnings.append('پیمایش به سقف زمانی رسید؛ پوشش کامل تأیید نشده است.')
                     return data
 
-                page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
+                navigate(search_url)
                 scan()
                 while shops - expanded:
                     if len(expanded) >= max_stores or time.monotonic() > deadline or len(products) >= 1000:
@@ -275,7 +288,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                     expanded.add(name)
                     # Let Jet's own view-all control choose the real store URL.
                     if page.url != search_url:
-                        page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
+                        navigate(search_url)
                     opened = False
                     for _ in range(120):
                         if time.monotonic() > deadline:

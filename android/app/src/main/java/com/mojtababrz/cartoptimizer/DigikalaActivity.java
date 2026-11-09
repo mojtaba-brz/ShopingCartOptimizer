@@ -197,7 +197,7 @@ public final class DigikalaActivity extends Activity {
         try(java.io.InputStream in=getAssets().open("jet-location.js")){preferenceScript=new String(readScript(in),StandardCharsets.UTF_8);}catch(Exception ignored){}
         installLocationRestoration();
         String query=getIntent().getStringExtra("query");
-        String url=HOME;
+        String url=automated()?HOME+"user/add-address":HOME;
         if (!locationOnly && query != null && !query.trim().isEmpty()) url=searchURL(query);
         if(cartOnly) {
             String saved=getSharedPreferences("digikala-delivery",MODE_PRIVATE).getString("cart-url","");
@@ -283,7 +283,7 @@ public final class DigikalaActivity extends Activity {
                 }
             },22000);
             status.setText("در حال ثبت و بررسی موقعیت انتخاب‌شده در جت…");showProgress("تأیید موقعیت انتخاب‌شده","جت خدمات این نقطه را تأیید کرده است؛ در حال آماده‌سازی جست‌وجو…");
-            shop.stopLoading();shop.loadUrl(HOME);
+            shop.stopLoading();shop.loadUrl(HOME+"user/add-address");
         }catch(Exception e){status.setText("ثبت موقعیت کامل نشد؛ نشانی را دوباره انتخاب کنید.");beginLocationChange();}
     }
     private void writePickedAddress(){
@@ -294,6 +294,7 @@ public final class DigikalaActivity extends Activity {
             try{Object value=new JSONTokener(raw).nextValue();if(!(value instanceof JSONObject))throw new IllegalStateException();JSONObject applied=(JSONObject)value;
                 if(!applied.optBoolean("changed")&&!applied.optBoolean("already_loaded"))throw new IllegalStateException();
                 addressToApply=null;if(locationHandler!=null){locationHandler.remove();locationHandler=null;}
+                manualLocationChange=false;
                 if(applied.optBoolean("already_loaded")){applyingPickedAddress=false;restartLocationPolling();}else shop.reload();
             }catch(Exception e){addressToApply=null;applyingPickedAddress=false;status.setText("جت موقعیت را ذخیره نکرد؛ دوباره انتخاب کنید.");beginLocationChange();}
         });
@@ -322,7 +323,7 @@ public final class DigikalaActivity extends Activity {
                     boolean pendingManual=manualLocationChange&&!sawLocationEditor&&!changed;
                     // A committed preference can outlive the add-address route. A
                     // visible map/picker remains a barrier; its URL alone is not.
-                    if(configured&&!blocking&&(!editing||changed)&&!pendingManual){
+                    if(configured&&!blocking&&(!editing||changed||!manualLocationChange)&&!pendingManual){
                         if(stableLocation(location,point)){data.put("location_editing",false);completeCapture(data,"on_demand");return;}
                     }else{
                         stableLocationKey="";

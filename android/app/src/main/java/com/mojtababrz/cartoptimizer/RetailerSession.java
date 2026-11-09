@@ -24,7 +24,12 @@ final class RetailerSession {
 
     private static volatile DeliveryChoice savedChoice;
     private static volatile boolean editingLocation;
-    static void initialize(Context app) {savedChoice=new DeliveryChoice(app.getApplicationContext());}
+    private static String navigationScript;
+    static void initialize(Context app) {savedChoice=new DeliveryChoice(app.getApplicationContext());
+        if(navigationScript==null)try(java.io.InputStream in=app.getAssets().open("jet-navigation.js")){
+            java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);navigationScript=out.toString("UTF-8");
+        }catch(Exception ignored){}
+    }
     static void confirmDelivery(String location,String mode) {
         if(!DeliveryChoice.label(location).isEmpty() && mode(mode)) {
             confirmedCoordinates="";confirmedLocation=DeliveryChoice.label(location);confirmedMode=mode;observedMode=mode;editingLocation=false;
@@ -105,9 +110,8 @@ final class RetailerSession {
             view.evaluateJavascript("Boolean(document.getElementById('root'))",ready->{
                 if(requestId!=navigationId) return;
                 if("true".equals(ready)) {
-                    Uri uri=Uri.parse(url);String route=uri.getEncodedPath();
-                    if(uri.getEncodedQuery()!=null) route+="?"+uri.getEncodedQuery();
-                    view.evaluateJavascript("history.pushState(null,'',"+org.json.JSONObject.quote(route)+");window.dispatchEvent(new PopStateEvent('popstate',{state:history.state}));true",null);
+                    if(navigationScript==null){view.loadUrl(url);return;}
+                    view.evaluateJavascript("("+navigationScript+")("+org.json.JSONObject.quote(url)+")",changed->{if(requestId==navigationId&&!"true".equals(changed))view.loadUrl(url);});
                 } else view.loadUrl(url);
             });
         } else view.loadUrl(url);
