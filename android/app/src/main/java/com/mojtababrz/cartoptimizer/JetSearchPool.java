@@ -37,7 +37,10 @@ final class JetSearchPool {
         this(activity,parent,items,coordinates,init,listener,a->new WebView(a));
     }
     JetSearchPool(Activity activity,ViewGroup parent,JSONArray items,String coordinates,String init,Listener listener,Factory factory) throws Exception {
-        this.requested=items;this.activity=activity;this.parent=parent;this.listener=listener;this.factory=factory;this.coordinates=coordinates;this.init=init;resources=SearchBudget.read(activity);
+        this(activity,parent,items,coordinates,init,listener,factory,SearchBudget.read(activity));
+    }
+    JetSearchPool(Activity activity,ViewGroup parent,JSONArray items,String coordinates,String init,Listener listener,Factory factory,JSONObject budget) throws Exception {
+        this.requested=items;this.activity=activity;this.parent=parent;this.listener=listener;this.factory=factory;this.coordinates=coordinates;this.init=init;resources=new JSONObject(budget.toString());resources.put("workers",Math.max(1,Math.min(4,resources.optInt("workers",1))));
         StringBuilder b=new StringBuilder("window.CartwiseSearchAdapters={");String[] keys={"reader","preference","checkout","navigation","expand"},files={"jet-dom.js","jet-location.js","digikala-checkout.js","jet-navigation.js","jet-expand.js"};
         for(int i=0;i<keys.length;i++){if(i>0)b.append(',');b.append(keys[i]).append(i==2?":()=> (":":(").append(read(files[i])).append(')');}adapters=b.append("};").toString();script=read("jet-search-task.js");
         for(int i=0;i<items.length();i++){
@@ -80,7 +83,7 @@ final class JetSearchPool {
                     if(stopped||closed||loaded||!DigikalaActivity.retailer(Uri.parse(u)))return;
                     if(!documentStart&&!bootstrapped){bootstrapped=true;v.evaluateJavascript(init,ignored->{if(!stopped&&!closed)v.loadUrl("https://www.digikalajet.com/user/add-address");});return;}
                     if(!"/user/add-address".equals(Uri.parse(u).getPath()))return;
-                    loaded=true;v.evaluateJavascript((documentStart?"":init+";")+adapters+script,ignored->{if(!stopped&&!closed){ready=true;dispatch();}});
+                    loaded=true;v.evaluateJavascript((documentStart?"":init+";")+adapters+script+";Boolean(window.CartwiseSearchTask)",result->{if(!stopped&&!closed){if(!"true".equals(result)){fail("بارگیری موتور جست‌وجو در مرورگر کامل نشد.");return;}ready=true;dispatch();}});
                 }
                 @Override public boolean onRenderProcessGone(WebView v,android.webkit.RenderProcessGoneDetail d){fail("حافظهٔ مرورگر کافی نبود؛ جست‌وجو را دوباره شروع کنید.");return true;}
             });

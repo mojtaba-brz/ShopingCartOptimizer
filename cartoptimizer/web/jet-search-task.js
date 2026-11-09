@@ -18,7 +18,7 @@
   const deadline=Date.now()+Math.max(1000,Math.min(180000,options.seconds*1000||60000));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const check=()=>{if(state.cancelled)throw Error('cancelled');if(Date.now()>deadline)throw Error('budget');};
-  const scroll=top=>{let more=false;for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY))){e.scrollTop=top?0:e.scrollTop+Math.max(400,e.clientHeight*.8);more||=e.scrollTop+e.clientHeight<e.scrollHeight-20;}return more;};
+  const scroll=top=>{let more=false;for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY))){e.scrollTop=top?0:e.scrollTop+Math.max(400,e.clientHeight*.8);more=more||e.scrollTop+e.clientHeight<e.scrollHeight-20;}return more;};
   const collect=()=>{
    check();
    const pref=a.preference('read',{}),xy=String(pref.coordinates||'').split('|').map(Number),expected=String(options.coordinates||'').split('|').map(Number);
