@@ -32,6 +32,9 @@
  function plan(item,rows,selected='',allowReview=false,override=null){
   const choices=options(item,rows),reviews=allowReview?options(item,rows,true):[];
   const dimension=group(item,choices),p=selected?[...choices,...reviews].find(p=>p.key===selected):choices.find(p=>{if(p.size.unit!==dimension||p.unit_price===null)return false;const required=measure(item.name),n=requiredUnit(item)?Math.ceil(required.value*item.quantity/p.size.value):p.size.unit==='count'?Math.ceil(item.quantity/p.size.value):item.quantity;return n>=1&&n<=50;});
+  return purchase(item,p,override);
+ }
+ function purchase(item,p,override=null){
   if(!p)return null;
   const requested=measure(item.name),explicit=!!a.amount(item.name)||/\d+\s*(?:عددی|تایی|عدد)/u.test(digits(item.name));
   if(explicit&&requested.unit!==p.size.unit)return null;
@@ -45,5 +48,5 @@
    effective_unit_price:total?cost*(p.size.unit==='count'?1:1000)/total:null,
    line:{item_id:item.id,title:p.title,quantity,subtotal:cost,url:p.url,store_name:p.store_name,store_id:p.store_id,image_url:p.image_url}};
  }
- const api={measure,unitPrice,key,query,options,requiredUnit,group,plan};root.CartwiseComparison=api;if(typeof module!=='undefined')module.exports=api;
+ const api={measure,unitPrice,key,query,options,requiredUnit,group,plan,purchase};root.CartwiseComparison=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

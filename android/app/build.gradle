@@ -53,6 +53,7 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
             .replace('src="/fa-ui.js"', 'src="/assets/fa-ui.js"')
             .replace('src="/checkout.js"', 'src="/assets/checkout.js"')
+            .replace('src="/basket-planner.js"', 'src="/assets/basket-planner.js"')
             .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
             .replace('href="/fa.css"', 'href="/assets/fa.css"') }
     }

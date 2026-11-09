@@ -24,7 +24,7 @@ class NoRedirect(HTTPRedirectHandler):
 
 def public_json(path):
     request = Request('https://api.digikalajet.ir' + path,
-                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.10.0'})
+                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.11.0'})
     with build_opener(NoRedirect).open(request, timeout=12) as response:
         raw = response.read(524289)
         if len(raw) > 524288 or response.headers.get_content_type() != 'application/json':
@@ -184,154 +184,143 @@ class DesktopService:
 SCROLL = """() => {let more=false;for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY))){e.scrollTop+=Math.max(400,e.clientHeight*.8);more ||= e.scrollTop+e.clientHeight<e.scrollHeight-20;}return more;}"""
 SCROLL_TOP = """() => {for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY)))e.scrollTop=0;}"""
 
+def resource_budget():
+    """Conservative available-memory budget; never start unlimited browsers."""
+    cpu, mb = os.cpu_count() or 1, 512
+    try:
+        if os.name == 'nt':
+            import ctypes
+            class Memory(ctypes.Structure):
+                _fields_ = [('length', ctypes.c_ulong), ('load', ctypes.c_ulong)] + [(n, ctypes.c_ulonglong) for n in
+                    ['total', 'available', 'page_total', 'page_available', 'virtual_total', 'virtual_available', 'extended']]
+            m = Memory(); m.length = ctypes.sizeof(m)
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m)):
+                mb = m.available // 1048576
+        else:
+            mb = os.sysconf('SC_AVPHYS_PAGES') * os.sysconf('SC_PAGE_SIZE') // 1048576
+    except (AttributeError, ValueError, OSError):
+        pass
+    workers = 4 if cpu >= 12 and mb >= 4096 else 3 if cpu >= 8 and mb >= 2048 else 2 if cpu >= 4 and mb >= 1024 else 1
+    return {'workers': workers, 'base_carts': 3, 'max_carts': 3 + workers - 1,
+            'state_limit': 20000 * workers, 'solve_ms': 200 * workers}
+
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
-           max_stores=40, page_seconds=90, item_seconds=180):
-    from playwright.sync_api import sync_playwright
-    reader = (WEB / 'jet-dom.js').read_text(encoding='utf-8')
-    preference = (WEB / 'jet-location.js').read_text(encoding='utf-8')
-    checkout = (WEB / 'digikala-checkout.js').read_text(encoding='utf-8')
-    navigation = (WEB / 'jet-navigation.js').read_text(encoding='utf-8')
-    expand = (WEB / 'jet-expand.js').read_text(encoding='utf-8')
-    stamp = lambda: datetime.now(timezone.utc).isoformat()
-    result = {'source': 'digikala-automatic', 'location': 'ارسال به ' + location['address'],
-              'shipment_type': 'on_demand', 'captured_at': stamp(), 'items': [], 'checkout_quotes': []}
-    with sync_playwright() as engine:
+           max_stores=40, page_seconds=30, item_seconds=60, workers=None):
+    import asyncio
+    return asyncio.run(_browse(items, location, report, channel=channel, page_setup=page_setup,
+        browser_options=browser_options, max_stores=max_stores, page_seconds=page_seconds,
+        item_seconds=item_seconds, workers=workers))
+
+
+async def _browse(items, location, report, *, channel, page_setup, browser_options,
+                  max_stores, page_seconds, item_seconds, workers):
+    import asyncio
+    import inspect
+    from playwright.async_api import async_playwright
+    from urllib.parse import parse_qs
+    budget = resource_budget()
+    if workers is not None:
+        budget['workers'] = max(1, min(4, int(workers)))
+    sources = {key: (WEB / file).read_text(encoding='utf-8') for key, file in {
+        'reader':'jet-dom.js', 'preference':'jet-location.js', 'checkout':'digikala-checkout.js',
+        'navigation':'jet-navigation.js', 'expand':'jet-expand.js'}.items()}
+    adapters = 'window.CartwiseSearchAdapters={' + ','.join(key+':'+(('()=>('+value+'))') if key=='checkout' else '('+value+')') for key,value in sources.items()) + '};'
+    worker_script = (WEB / 'jet-search-task.js').read_text(encoding='utf-8')
+    coordinates = f"{location['latitude']}|{location['longitude']}"
+    saved = {'location':'ارسال به '+location['address'], 'coordinates':coordinates}
+    result = {'source':'digikala-automatic', 'location':saved['location'], 'shipment_type':'on_demand',
+        'items':[], 'checkout_quotes':[], 'resources':budget}
+    entries, pending, aliases, queries = {}, {}, {}, {}
+    queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0
+    for item in items:
+        if item['query'] in queries:
+            aliases[queries[item['query']]].append(item['id']); continue
+        queries[item['query']] = item['id']; aliases[item['id']] = [item['id']]
+        entries[item['id']] = {'id':item['id'], 'products':[], 'error':None}; pending[item['id']] = 1
+        await queue.put({**item, 'kind':'global', 'url':HOME+'search/v2/result?'+urlencode({'q':item['query']})})
+    def progress(detail):
+        report(completed=sum(len(aliases[k]) for k,n in pending.items() if n==0), products=sum(len(e['products']) for e in entries.values()),
+            stores=len({p.get('store_name') for e in entries.values() for p in e['products'] if p.get('store_name')}),
+            active_workers=active_tasks, detail=detail)
+    async with async_playwright() as engine:
         browser = None
         for candidate in ([channel] if channel else ['chrome', 'msedge', None]):
             try:
-                browser = engine.chromium.launch(headless=True, **({'channel': candidate} if candidate else {}), **(browser_options or {}))
-                break
+                browser = await engine.chromium.launch(headless=True, **({'channel':candidate} if candidate else {}), **(browser_options or {})); break
             except Exception:
                 continue
         if browser is None:
             raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
-        try:
-            # Supply the user-selected delivery point to this isolated Jet
-            # context, not the computer's physical/GPS location. Jet's guest
-            # flow otherwise discards the preference after a location failure.
-            context = browser.new_context(geolocation={'latitude': location['latitude'], 'longitude': location['longitude']})
-            context.grant_permissions(['geolocation'], origin=HOME)
-            saved = {'location': result['location'], 'coordinates': f"{location['latitude']}|{location['longitude']}"}
-            context.add_init_script(script=f'({preference})("restore",{json.dumps(saved, ensure_ascii=False)})')
-            page = context.new_page()
-            page.set_default_timeout(10000)
-            if page_setup:
-                page_setup(page)
-            # Jet's guest home/search startup can replace a restored point with
-            # its default area. The official address page initializes without
-            # starting that GPS/default flow. Subsequent routes share that state.
-            page.goto(HOME + 'user/add-address', wait_until='domcontentloaded', timeout=30000)
-            page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
-            page.wait_for_timeout(500)
-
-            def navigate(url):
-                if not page.evaluate(f'({navigation})', url):
-                    raise ValidationError('صفحهٔ جت برای جست‌وجو آماده نشد؛ دوباره تلاش کنید.')
-                page.wait_for_timeout(700)
-
-            quote_keys = set()
-            for index, item in enumerate(items):
-                deadline = time.monotonic() + item_seconds
-                report(completed=index, detail=f'جست‌وجوی «{item["name"]}»', products=0, stores=0)
-                search_url = HOME + 'search/v2/result?' + urlencode({'q': item['query']})
-                products, seen, shops, expanded, warnings = [], set(), {}, set(), []
-                replaced = set()
-
-                def collect(store='', shop_id=''):
-                    current = urlsplit(page.url)
-                    if current.scheme != 'https' or current.hostname not in ('www.digikalajet.com', 'digikalajet.com'):
-                        raise ValidationError('جت جست‌وجو را به صفحهٔ دیگری هدایت کرد؛ داده‌ای وارد نشد.')
-                    selected = page.evaluate(f'({preference})("read",{{}})')
-                    if not selected.get('configured') or selected.get('coordinates') != f"{float(location['latitude']):g}|{float(location['longitude']):g}":
-                        # Compare numbers rather than rounded coordinate strings.
-                        xy = selected.get('coordinates', '').split('|')
-                        if not selected.get('configured') or len(xy) != 2 or tuple(map(float, xy)) != (location['latitude'], location['longitude']):
-                            raise ValidationError('موقعیت جت با موقعیت انتخاب‌شده یکسان نیست؛ جست‌وجو متوقف شد.')
-                    data = page.evaluate(f'({reader})', {'store_name': store, 'expected_shop_id': shop_id})
-                    if store and shop_id and data.get('products') and store not in replaced:
-                        # Full-store observations supersede its older carousel
-                        # prices, rather than showing both as separate offers.
-                        products[:] = [p for p in products if p.get('store_name') != store or p.get('store_id')]
-                        seen.clear()
-                        seen.update((p['title'], p.get('store_name'), p.get('store_id'), p['regular_price'], p.get('promo_price')) for p in products)
-                        replaced.add(store)
-                    for p in data.get('products', []):
-                        identity = (p['title'], p.get('store_name'), p.get('store_id'), p['regular_price'], p.get('promo_price'))
-                        if identity not in seen and len(products) < 1000:
-                            seen.add(identity)
-                            products.append(p)
-                    for s in data.get('shops', []):
-                        shops.setdefault(s['name'], None)
-                    quote = page.evaluate(checkout)
-                    if quote and quote.get('fields'):
-                        key = json.dumps({k: v for k, v in quote.items() if k != 'captured_at'}, sort_keys=True)
-                        if key not in quote_keys and len(result['checkout_quotes']) < 100:
-                            quote_keys.add(key)
-                            result['checkout_quotes'].append(quote)
-                    report(products=len(products), stores=len(shops), detail=f'«{item["name"]}» · {store or "یافتن فروشگاه‌ها"} · {len(products)} کالا')
-                    if not data.get('products'):
-                        text = page.locator('body').inner_text()[:1500].lower()
-                        if any(t in text for t in ('verify you are human', 'checking your browser', 'unusual traffic', 'captcha')):
-                            raise ValidationError('جت برای این اتصال درخواست تأیید انسانی داده است؛ جست‌وجوی خودکار متوقف شد.')
-                    return data
-
-                def scan(store='', shop_id=''):
-                    quiet, started = 0, time.monotonic()
-                    for step in range(120):
-                        count = len(products)
-                        data = collect(store, shop_id)
-                        more = page.evaluate(SCROLL)
-                        page.wait_for_timeout(700)
-                        quiet = quiet + 1 if count == len(products) and not more else 0
-                        if quiet >= 4 and (products or time.monotonic() - started > 15):
-                            return data
-                        if time.monotonic() - started > page_seconds or time.monotonic() > deadline or len(products) >= 1000:
-                            break
-                    warnings.append('پیمایش به سقف زمانی رسید؛ پوشش کامل تأیید نشده است.')
-                    return data
-
-                navigate(search_url)
-                scan()
-                while any(name not in expanded for name in shops):
-                    if len(expanded) >= max_stores or time.monotonic() > deadline or len(products) >= 1000:
-                        warnings.append('جست‌وجو به سقف تعداد یا زمان رسید؛ پوشش کامل تأیید نیست.')
-                        break
-                    name = next(name for name in shops if name not in expanded)
-                    expanded.add(name)
-                    # Let Jet's own view-all control choose the real store URL.
-                    if page.url != search_url:
-                        navigate(search_url)
-                    page.evaluate(SCROLL_TOP)
-                    page.wait_for_timeout(500)
-                    opened = False
-                    for _ in range(120):
-                        if time.monotonic() > deadline:
-                            break
-                        collect()
-                        if page.evaluate(f'({expand})', name):
-                            opened = True
-                            break
-                        if not page.evaluate(SCROLL):
-                            break
-                        page.wait_for_timeout(500)
-                    if not opened:
-                        warnings.append(f'صفحهٔ کامل فروشگاه {name} باز نشد.')
-                        continue
+        context = await browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')})
+        await context.grant_permissions(['geolocation'], origin=HOME)
+        await context.add_init_script(script=f'({sources["preference"]})("restore",{json.dumps(saved,ensure_ascii=False)})')
+        async def lightweight(route):
+            if route.request.resource_type in ('image','media','font'):
+                await route.abort()
+            else:
+                await route.continue_()
+        await context.route('**/*', lightweight)
+        async def run_worker():
+            nonlocal active_tasks
+            page = await context.new_page(); page.set_default_timeout(10000)
+            try:
+                if page_setup:
+                    value = page_setup(page)
+                    if inspect.isawaitable(value): await value
+                await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
+                await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
+                await page.evaluate(adapters + worker_script)
+                while True:
+                    task = await queue.get(); active_tasks += 1
                     try:
-                        page.wait_for_url('**/search/shop?**', timeout=10000)
-                    except Exception:
-                        warnings.append(f'صفحهٔ کامل فروشگاه {name} پاسخ نداد.')
-                        continue
-                    from urllib.parse import parse_qs
-                    shop_id = parse_qs(urlsplit(page.url).query).get('shopId', [''])[0]
-                    if not shop_id:
-                        warnings.append('شناسهٔ فروشگاه خوانده نشد.')
-                        continue
-                    scan(name, shop_id)
-                result['items'].append({'id': item['id'], 'products': products,
-                                        'error': '؛ '.join(warnings) or (None if products else 'کالای قابل خواندن پیدا نشد؛ دسترسی جت یا عبارت جست‌وجو را بررسی کنید.')})
-            result['captured_at'] = stamp()
+                        options = {**task, 'coordinates':coordinates, 'seconds':page_seconds if task['kind']=='store' else item_seconds, 'max_stores':max_stores}
+                        await page.evaluate('(x)=>CartwiseSearchTask.start(x)', options)
+                        until = time.monotonic() + options['seconds'] + 10
+                        while True:
+                            state = await page.evaluate('()=>window.cartwiseTask')
+                            progress('جست‌وجوی موازی · '+task['name']+' · '+state.get('detail',''))
+                            if state.get('fatal'): raise ValidationError(state['fatal'])
+                            if state.get('done'): break
+                            if time.monotonic()>until: raise ValidationError('صفحهٔ فروشگاه در مهلت بررسی پاسخ نداد.')
+                            await asyncio.sleep(.35)
+                        data = state['result']; entry = entries[task['id']]
+                        products = data.get('products',[])
+                        if task['kind']=='store' and products:
+                            entry['products'] = [p for p in entry['products'] if p.get('store_name')!=task['store_name']]
+                        seen = {json.dumps([p['title'],p.get('store_id'),p.get('store_name'),p['regular_price'],p.get('promo_price')]) for p in entry['products']}
+                        for p in products:
+                            key=json.dumps([p['title'],p.get('store_id'),p.get('store_name'),p['regular_price'],p.get('promo_price')])
+                            if key not in seen and len(entry['products'])<1000: entry['products'].append(p);seen.add(key)
+                        if data.get('error'): entry['error']='؛ '.join(filter(None,[entry['error'],data['error']]))
+                        for q in data.get('checkout_quotes',[]):
+                            key=json.dumps({k:v for k,v in q.items() if k!='captured_at'},sort_keys=True)
+                            if key not in quote_keys and len(result['checkout_quotes'])<100: quote_keys.add(key);result['checkout_quotes'].append(q)
+                        for child in data.get('store_tasks',[]):
+                            u=urlsplit(child['url']); params=parse_qs(u.query)
+                            if u.scheme!='https' or u.hostname!='www.digikalajet.com' or u.path!='/search/shop' or params.get('q')!=[task['query']]: continue
+                            pending[task['id']]+=1
+                            await queue.put({**task,**child})
+                        pending[task['id']]-=1
+                        progress('صفحه بررسی شد · '+task['name'])
+                    finally:
+                        active_tasks -= 1
+                        queue.task_done()
+            finally:
+                await page.close()
+        running=[asyncio.create_task(run_worker()) for _ in range(budget['workers'])]
+        join=asyncio.create_task(queue.join())
+        try:
+            done,_=await asyncio.wait([join,*running],return_when=asyncio.FIRST_COMPLETED)
+            for job in done:
+                if job is not join: await job
+            await join
+            result['items']=[{**entries[queries[i['query']]],'id':i['id']} for i in items]
+            result['captured_at']=datetime.now(timezone.utc).isoformat()
             return result
         finally:
-            browser.close()
+            join.cancel()
+            for job in running: job.cancel()
+            await asyncio.gather(*running,return_exceptions=True)
+            await browser.close()
+

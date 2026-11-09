@@ -23,6 +23,8 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  const products=[offer('شیر کم چرب ۱ لیتر',700000,'سروش'),offer('شیر کم چرب ۱٫۵ لیتر',1200000,'بهار',{promo_price:900000,amazing:true}),offer('شیر کم چرب ۱٫۵ لیتر',990000,'باغ'),...Array.from({length:65},(_,i)=>offer('شیر کم چرب ۱ لیتر',1000000+i*10000,'فروشگاه '+i))];
  const quote={source:'digikala-visible-checkout',captured_at:new Date().toISOString(),page_kind:'cart',page_url:'https://www.digikala.com/supermarket/cart/',fields:{delivery_fee:{value:250000,evidence:'هزینه ارسال ۲۵۰۰۰ تومان'},total:{value:1750000,evidence:'مبلغ قابل پرداخت ۱۷۵۰۰۰ تومان'}},notices:['قیمت کالا تغییر کرده است'],cart_items:[{title:'شیر کم چرب ۱٫۵ لیتر',quantity:1,store_name:'بهار'},{title:'برنج ایرانی ۱ کیلوگرم',quantity:1,store_name:'بهار'}],reported_units:2,items_complete:true};
  await page.evaluate(data=>window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:data})),{source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',checkout_quotes:[quote],items:[{id:'milk',products},{id:'rice',products:[offer('برنج ایرانی ۵۰۰ گرم',400000,'بهار'),offer('برنج ایرانی ۱ کیلوگرم',600000,'بهار')]}]});
+ await page.waitForFunction(()=>document.querySelectorAll('.product-result').length===2);
+ await page.locator('[data-proposal-mode=unit]').click();
  await page.waitForFunction(()=>document.querySelector('#results')?.textContent.includes('مبلغ سبد مطابق'));
  const result=await page.locator('#results').innerText();assert.match(result,/۱۷۵٬۰۰۰/);assert.match(result,/قیمت کالا تغییر/);assert.match(result,/بهار/);assert.match(result,/شگفت‌انگیز/);assert.match(result,/۱۲۰٬۰۰۰/);
  assert.match(await page.locator('[data-selected-product]').first().innerText(),/۱٫۵ لیتر/);
@@ -37,6 +39,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await page.screenshot({path:'/tmp/cartwise-ui/choices.png'});
  await page.click('#more-choices');assert.equal(await page.locator('.offer-option').count(),68);
  await page.locator('.offer-option').nth(2).click();assert.equal(await page.locator('#choice-dialog').evaluate(e=>e.open),false);
+ await page.waitForFunction(()=>document.querySelector('[data-selected-product]')?.textContent.includes('۱ لیتر'));
  assert.match(await page.locator('[data-selected-product]').first().innerText(),/۱ لیتر/);
  assert.match(await page.locator('.product-result .store-name').first().innerText(),/سروش/);
  await page.evaluate(()=>CartwiseLive.rememberAutomatic({location:'ارسال به ونک',shipment_type:'scheduled',captured_at:new Date().toISOString()}));

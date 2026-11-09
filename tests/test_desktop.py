@@ -74,6 +74,14 @@ class DesktopTests(unittest.TestCase):
                 service.cancel(job)
                 release.set()
 
+    def test_hardware_budget_is_bounded_and_preserves_three_cart_baseline(self):
+        from cartoptimizer.desktop import resource_budget
+        with patch('cartoptimizer.desktop.os.cpu_count', return_value=1):
+            self.assertEqual(resource_budget()['workers'], 1)
+            self.assertEqual(resource_budget()['max_carts'], 3)
+        self.assertLessEqual(resource_budget()['workers'], 4)
+        self.assertLessEqual(resource_budget()['max_carts'], 6)
+
     def test_release_is_shared_by_python_android_and_web(self):
         import cartoptimizer
         root = Path(__file__).resolve().parents[1]

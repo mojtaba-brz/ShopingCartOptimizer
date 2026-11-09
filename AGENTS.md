@@ -13,3 +13,11 @@
 - Distinguish platform-specific capabilities and actual live verification from
   fixture tests. Do not claim complete inventory coverage when capped or partial.
 - Do not persist signing keys in the repository, artifacts or workflow caches.
+
+- Use the shared `jet-search-task.js` for independent desktop/Android search pages.
+  Bound concurrency using available hardware. Keep cart-count limits independent
+  of browser concurrency: base three carts, adaptive expansion within the measured
+  budget. Do not restore a top-20 candidate cutoff.
+- Group basket lines by verified merchant identity. Charge each store separately;
+  unknown fees must stay unknown. Keep unit-price option ranking separate from
+  whole-basket payable-cost estimates.

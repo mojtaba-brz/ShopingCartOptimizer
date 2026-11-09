@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.10.0
+# سبدچین — Sabadchin 0.11.0
 
 Desktop web and Android share shopping-list entry, Persian themes, matching, package-size normalization, unit-price comparison, product/store images and review choices. Both search **Digikala Jet**, not Digikala hypermarket. No LLM or model download is required. This independent app does not place orders or make payments.
 
@@ -28,7 +28,9 @@ The pricing engine and manually imported snapshots can run without the `live` ex
 3. Run **جست‌وجو و مقایسه قیمت**. Progress reports completed list items, products and stores. The retrieval browser stays hidden and does not use your personal browser profile.
 4. Review quantities and change a choice if needed. Options are sorted by comparable kg/litre/item price, with package totals kept separate. Saving/changing a list never requires entering offers for automatic search.
 
-The three themes and comparison code are common to both platforms. Unknown package sizes, missing ordinary prices and partial searches are labelled. Maximum scan budgets are 120 scrolls/page, 40 stores, 1,000 products/item and three minutes/item; reaching a cap is reported and never means complete inventory coverage. No fees or stock quotas are invented.
+The three themes and comparison code are common to both platforms. Unknown package sizes, missing ordinary prices and partial searches are labelled. The shared task queue schedules 1–4 independent pages using available RAM and CPU, blocks retailer image/media/font downloads where supported, and checks the same delivery point in every task. Global discovery and full-store tasks share that queue. There is no top-20 filter; the change-selection list paginates all accepted results. Budgets remain 120 scrolls/page, 40 stores/query, 1,000 products/item, 60 seconds/global task and 30 seconds/store task; reaching a cap is reported and never means complete inventory coverage. No fees or stock quotas are invented.
+
+The multi-store planner starts with three carts and can expand to 4–6 when the measured resource budget permits. This cap is independent of search concurrency. It compares whole-package quantities and separately charged store fees, minimum orders and observed free-shipping thresholds. Unknown fees remain unknown; the known amount is a lower bound, not a complete payable total. Alternatives include a single-store plan and a unit-price-first plan. Bounded enumeration yields to the UI and reports its time/state cap. Prices, quotas and availability remain estimates until matched to the retailer basket.
 
 Desktop reads fees/notices visible on scanned store pages. Android additionally supports reading the actual basket in its retailer WebView. The desktop session does not connect to a cart in your personal browser; **به‌روزرسانی قیمت‌ها و هزینه‌های فروشگاه** refreshes public store data. Only a basket whose products, quantities and store match the proposal can supply a verified checkout total. Otherwise totals are estimates.
 

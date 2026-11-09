@@ -78,6 +78,7 @@ class Handler(BaseHTTPRequestHandler):
                   '/version.js': ('version.js', 'text/javascript; charset=utf-8'),
                   '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
                   '/fa-ui.js': ('fa-ui.js', 'text/javascript; charset=utf-8'),
+                  '/basket-planner.js': ('basket-planner.js', 'text/javascript; charset=utf-8'),
                   '/comparison.js': ('comparison.js', 'text/javascript; charset=utf-8'),
                   '/checkout.js': ('checkout.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8')}

@@ -16,7 +16,7 @@ for f in candidates.rglob('*'):
     if 'store-assets' in f.parts and f.suffix=='.png':
         target=root/'store-assets'/f.name;target.parent.mkdir(exist_ok=True);shutil.copy2(f,target)
 for f in pathlib.Path('test-apk').glob('*.apk'):
-    shutil.copy2(f,root/'Sabadchin-Android-0.10.0-test.apk')
+    shutil.copy2(f,root/'Sabadchin-Android-0.11.0-test.apk')
 validation={'desktop_live_smoke':os.environ.get('DESKTOP_LIVE_RESULT','not-run'),'source_commit':os.environ['SOURCE_COMMIT'],'run_url':os.environ['RUN_URL'],'job_results':json.loads(os.environ['JOB_RESULTS']),'android':{},'live_retailer_validation':False,'store_submission_ready':False}
 for api in [30,36]:
     folder=pathlib.Path('qa')/str(api)
@@ -31,7 +31,7 @@ for api in [30,36]:
         assert f.read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
         target=root/'screenshots'/('api-'+str(api))/f.name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,target)
 (root/'VALIDATION.json').write_text(json.dumps(validation,indent=2,ensure_ascii=False)+'\n')
-(root/'README-English.txt').write_text("""Sabadchin 0.10.0 - publication preparation kit
+(root/'README-English.txt').write_text("""Sabadchin 0.11.0 - publication preparation kit
 
 The included test APK is installable. APK/AAB files in android-candidates are UNSIGNED release candidates requiring owner signing. Do not submit the debug-signed test APK to stores.
 
