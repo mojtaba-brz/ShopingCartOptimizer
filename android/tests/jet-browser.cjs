@@ -8,7 +8,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await context.route('https://dkstatics-public.digikala.com/**',r=>r.fulfill({status:404,body:''}));
  await page.goto('https://www.digikalajet.com/search/v2/result?q=%D8%B4%DB%8C%D8%B1');
  let data=await page.evaluate(`(${reader})({})`);assert.equal(data.products.length,4);assert.deepEqual(data.shops.map(x=>x.name),['فروشگاه الف','فروشگاه ب']);assert.deepEqual(data.products.map(x=>x.store_name),['فروشگاه الف','فروشگاه الف','فروشگاه ب','فروشگاه ب']);
- assert.equal(await page.evaluate(`(${expand})`, 'فروشگاه ب'),true);
+ assert.equal(await page.evaluate(`(${expand})(${JSON.stringify('فروشگاه ب')})`),true);
  assert.match(page.url(),/\/search\/shop\?q=.*&shopId=b/);
  data=await page.evaluate(`(${reader})({store_name:'فروشگاه ب',expected_shop_id:'b'})`);assert.equal(data.products.length,12);assert.equal(data.products[11].regular_price,200);assert.equal(data.products[11].store_name,'فروشگاه ب');assert.equal(data.products[11].store_id,'b');
  assert.ok((await page.evaluate(`(${reader})({store_name:'wrong',expected_shop_id:'a'})`)).products.every(p=>p.store_name===''));
