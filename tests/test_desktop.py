@@ -84,6 +84,8 @@ class DesktopTests(unittest.TestCase):
         self.assertIn('cartwiseRelease.android_version_code', gradle)
         self.assertIn('release.json', gradle)
         self.assertIn('/assets/release.json', (root / 'cartoptimizer/web/version.js').read_text(encoding='utf-8'))
+        for file in ['README.md', 'android/README.md', '.github/workflows/android.yml', 'release/prepare-publication-kit.py']:
+            self.assertIn(release['version'], (root / file).read_text(encoding='utf-8'))
         for file in ['auto-ui.js', 'live.js']:
             text = (root / 'cartoptimizer/web' / file).read_text(encoding='utf-8')
             self.assertIn('CartwiseRetailer', text)

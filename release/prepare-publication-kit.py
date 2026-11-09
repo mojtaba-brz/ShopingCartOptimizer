@@ -17,7 +17,7 @@ for f in candidates.rglob('*'):
         target=root/'store-assets'/f.name;target.parent.mkdir(exist_ok=True);shutil.copy2(f,target)
 for f in pathlib.Path('test-apk').glob('*.apk'):
     shutil.copy2(f,root/'Sabadchin-Android-0.10.0-test.apk')
-validation={'source_commit':os.environ['SOURCE_COMMIT'],'run_url':os.environ['RUN_URL'],'job_results':json.loads(os.environ['JOB_RESULTS']),'android':{},'live_retailer_validation':False,'store_submission_ready':False}
+validation={'desktop_live_smoke':os.environ.get('DESKTOP_LIVE_RESULT','not-run'),'source_commit':os.environ['SOURCE_COMMIT'],'run_url':os.environ['RUN_URL'],'job_results':json.loads(os.environ['JOB_RESULTS']),'android':{},'live_retailer_validation':False,'store_submission_ready':False}
 for api in [30,36]:
     folder=pathlib.Path('qa')/str(api)
     logs=list(folder.rglob('instrumentation.txt'))

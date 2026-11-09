@@ -8,7 +8,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     html = (root / 'android/app/src/androidTest/assets/jet-search.html').read_text(encoding='utf-8')
     def setup(page):
-        page.route('**/*', lambda route: route.fulfill(content_type='text/html', body=html)
+        page.route('**/*', lambda route: route.fulfill(content_type='text/html; charset=utf-8', body=html)
                    if route.request.is_navigation_request() else route.fulfill(status=404, body=''))
     progress = []
     result = browse([{'id': 'milk', 'name': 'شیر', 'query': 'شیر', 'quantity': 1}],

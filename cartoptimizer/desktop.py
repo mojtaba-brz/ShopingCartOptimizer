@@ -185,7 +185,8 @@ SCROLL = """() => {let more=false;for(const e of [document.scrollingElement,...d
 EXPAND = """name => {for(const p of document.querySelectorAll('p.truncate'))if(p.innerText.trim()===name){let e=p.parentElement;for(let i=0;e&&i<6;i++,e=e.parentElement){const b=[...e.querySelectorAll('button')].find(b=>b.innerText.trim()==='مشاهده همه');if(b){b.click();return true;}}}return false;}"""
 
 
-def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None):
+def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
+           max_stores=40, page_seconds=90, item_seconds=180):
     from playwright.sync_api import sync_playwright
     reader = (WEB / 'jet-dom.js').read_text(encoding='utf-8')
     preference = (WEB / 'jet-location.js').read_text(encoding='utf-8')
@@ -213,7 +214,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                 page_setup(page)
             quote_keys = set()
             for index, item in enumerate(items):
-                deadline = time.monotonic() + 180
+                deadline = time.monotonic() + item_seconds
                 report(completed=index, detail=f'جست‌وجوی «{item["name"]}»', products=0, stores=0)
                 search_url = HOME + 'search/v2/result?' + urlencode({'q': item['query']})
                 products, seen, shops, expanded, warnings = [], set(), set(), set(), []
@@ -259,7 +260,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                         quiet = quiet + 1 if count == len(products) and not more else 0
                         if quiet >= 4 and (products or time.monotonic() - started > 15):
                             return data
-                        if time.monotonic() - started > 90 or time.monotonic() > deadline or len(products) >= 1000:
+                        if time.monotonic() - started > page_seconds or time.monotonic() > deadline or len(products) >= 1000:
                             break
                     warnings.append('پیمایش به سقف زمانی رسید؛ پوشش کامل تأیید نشده است.')
                     return data
@@ -267,7 +268,7 @@ def browse(items, location, report, *, channel=None, page_setup=None, browser_op
                 page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
                 scan()
                 while shops - expanded:
-                    if len(expanded) >= 40 or time.monotonic() > deadline or len(products) >= 1000:
+                    if len(expanded) >= max_stores or time.monotonic() > deadline or len(products) >= 1000:
                         warnings.append('جست‌وجو به سقف تعداد یا زمان رسید؛ پوشش کامل تأیید نیست.')
                         break
                     name = sorted(shops - expanded)[0]

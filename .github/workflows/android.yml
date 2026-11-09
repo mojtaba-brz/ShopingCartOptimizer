@@ -93,6 +93,8 @@ jobs:
             release/**
           retention-days: 90
   browser-ui:
+    outputs:
+      desktop_live: ${{ steps.desktop_live.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -115,6 +117,17 @@ jobs:
           node android/tests/jet-browser.cjs
           node android/tests/desktop-ui.cjs
           python -m tests.desktop_browser_check
+      - name: Check public desktop catalogue access
+        id: desktop_live
+        continue-on-error: true
+        run: |
+          export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
+          python release/check-live-desktop.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-live-validation
+          path: desktop-live-validation.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -195,6 +208,7 @@ jobs:
           path: qa/36
       - name: Assemble publication preparation kit
         env:
+          DESKTOP_LIVE_RESULT: ${{ needs.browser-ui.outputs.desktop_live }}
           SOURCE_COMMIT: ${{ github.sha }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           JOB_RESULTS: ${{ toJSON(needs) }}
