@@ -1,7 +1,7 @@
 /* Android's official-site browser imports only visible product-card data. */
 (function () {
   'use strict';
-  if (!window.CartwiseAndroid?.openDigikala) return;
+  if (!window.CartwiseRetailer?.openDigikala) return;
   const KEY = 'cartwise.live.v1';
   let meta = {context:'', location:'', shipment_type:'', fees:{}, offers:{}};
   let candidates = [], candidateContext = null;
@@ -11,7 +11,7 @@
   function open(item, locationOnly=false) {
     if (busy) return;
     if (dirty.size) return message('Save or clear the forms you are editing before opening Digikala.',true);
-    window.CartwiseAndroid.openDigikala(item?.id || '',item?.name || '',locationOnly);
+    window.CartwiseRetailer.openDigikala(item?.id || '',item?.name || '',locationOnly);
   }
   const card=document.createElement('section'); card.className='card live-card'; card.id='live-card';
   card.innerHTML='<div class="section-heading"><div><p class="eyebrow">قیمت‌های روز</p><h3>Choose your delivery location.</h3><p id="live-location">آدرس را با جست‌وجو یا نقشه دیجی‌کالاجت انتخاب کنید.</p></div><button class="secondary" id="live-location-button">انتخاب آدرس روی نقشه</button></div><p class="hint">Then tap جست‌وجوی دیجی‌کالاجت beside a list item. Your selected delivery area is reused. Wait for Digikala’s product prices, then tap Read products. Back here, choose the brands and package sizes you accept. Prices fill automatically.</p><p class="hint">The page does not publish stock counts or promotional quotas. Imported products are capped at one unit each across all carts. Delivery fees and coupon terms still need your checkout values.</p><div id="live-candidates" hidden></div>';
@@ -137,7 +137,7 @@
       return '';
     }
   };
-  try {const x=JSON.parse(window.CartwiseAndroid.savedDelivery?.()||'{}');if(x.location&&(!meta.location||Number(x.updated_at||0)>Number(meta.updated_at||0))){meta.location=x.location;meta.shipment_type=x.shipment_type;meta.updated_at=Number(x.updated_at)||0;
+  try {const x=JSON.parse(window.CartwiseRetailer.savedDelivery?.()||'{}');if(x.location&&(!meta.location||Number(x.updated_at||0)>Number(meta.updated_at||0))){meta.location=x.location;meta.shipment_type=x.shipment_type;meta.updated_at=Number(x.updated_at)||0;
     const context=x.location+' | '+x.shipment_type;if(meta.context!==context){meta.context=context;meta.fees={};}persist();}}catch{}
   paint();
 })();

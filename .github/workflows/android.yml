@@ -52,6 +52,13 @@ jobs:
         run: |
           python -m pip install Pillow==13.0.0
           python release/create-store-assets.py
+      - name: Package desktop sources
+        run: python release/package-desktop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sabadchin-Desktop-0.10.0
+          path: desktop-package/**
+          retention-days: 90
       - name: Install Android platform
         run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Build installable APK and test APK
@@ -61,7 +68,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.9.2-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.10.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -96,6 +103,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install -e ".[live]"
       - run: npm install --no-save playwright@1.62.1
       - run: npx playwright install --with-deps chromium
       - name: Check Persian interface and visible checkout reader
@@ -105,6 +113,8 @@ jobs:
           export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
           node android/tests/browser-ui.cjs
           node android/tests/jet-browser.cjs
+          node android/tests/desktop-ui.cjs
+          python -m tests.desktop_browser_check
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -191,6 +201,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.9.2-Publication-Kit
+          name: Sabadchin-0.10.0-Publication-Kit
           path: publication-kit/**
           retention-days: 90

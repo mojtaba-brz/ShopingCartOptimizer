@@ -5,7 +5,7 @@
   let saved='simple';try{saved=localStorage.getItem(key)||saved;}catch{}theme(saved);
   document.querySelectorAll('[name=theme]').forEach(input=>input.addEventListener('change',()=>theme(input.value)));
   document.getElementById('clear-private-data')?.addEventListener('click',()=>{
-    if(window.CartwiseAndroid?.clearPrivateData)window.CartwiseAndroid.clearPrivateData();
+    if(window.CartwiseRetailer?.clearPrivateData)window.CartwiseRetailer.clearPrivateData();
     else if(confirm('لیست و تنظیمات روی این مرورگر پاک شوند؟')){localStorage.clear();location.reload();}
   });
   // Normalize keyboard and pasted Persian numerals before number fields reject them.

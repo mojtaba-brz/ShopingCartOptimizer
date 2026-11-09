@@ -1,5 +1,7 @@
 plugins { id 'com.android.application' }
 
+def cartwiseRelease = new groovy.json.JsonSlurper().parse(file('../../cartoptimizer/release.json'))
+
 android {
     namespace 'com.mojtababrz.cartoptimizer'
     compileSdk 36
@@ -8,8 +10,8 @@ android {
         applicationId 'com.mojtababrz.cartoptimizer'
         minSdk 26
         targetSdk 36
-        versionCode 13
-        versionName '0.9.2'
+        versionCode (cartwiseRelease.android_version_code as int)
+        versionName cartwiseRelease.version.toString()
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
@@ -44,6 +46,8 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/app.js"', 'src="/assets/app.js"')
             .replace('src="/engine.js"', 'src="/assets/engine.js"')
             .replace('src="/mobile.js"', 'src="/assets/mobile.js"')
+            .replace('src="/retailer.js"', 'src="/assets/retailer.js"')
+            .replace('src="/version.js"', 'src="/assets/version.js"')
             .replace('src="/live.js"', 'src="/assets/live.js"')
             .replace('src="/auto-planner.js"', 'src="/assets/auto-planner.js"')
             .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
@@ -52,7 +56,7 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
             .replace('href="/fa.css"', 'href="/assets/fa.css"') }
     }
-    from('../../cartoptimizer') { include 'demo.json' }
+    from('../../cartoptimizer') { include 'demo.json', 'release.json' }
     into(layout.buildDirectory.dir('generated/webAssets'))
 }
 tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }

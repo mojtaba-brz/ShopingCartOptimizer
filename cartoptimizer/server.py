@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 from threading import BoundedSemaphore
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 import webbrowser
 
 from .adapters.digikala import fetch_product
@@ -14,6 +14,15 @@ from .optimizer import optimize
 WEB = Path(__file__).parent / 'web'
 EXAMPLE = Path(__file__).parent / 'demo.json'
 BUSY = BoundedSemaphore(2)
+DESKTOP_LOCK = __import__('threading').Lock()
+
+
+def desktop(server):
+    from .desktop import DesktopService
+    with DESKTOP_LOCK:
+        if not hasattr(server, 'desktop'):
+            server.desktop = DesktopService()
+        return server.desktop
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -39,6 +48,22 @@ class Handler(BaseHTTPRequestHandler):
         if not self.allowed_host():
             return self.respond(403, {'error': 'Use the localhost application URL'})
         path = urlsplit(self.path).path
+        if path == '/api/live/location':
+            return self.respond(200, desktop(self.server).delivery())
+        if path == '/api/live/status':
+            try:
+                return self.respond(200, desktop(self.server).status(parse_qs(urlsplit(self.path).query).get('id', [''])[0]))
+            except ValidationError as exc:
+                return self.respond(400, {'error': str(exc)})
+        if path == '/assets/release.json':
+            return self.respond(200, (Path(__file__).parent / 'release.json').read_bytes())
+        if path == '/assets/product-image':
+            from .images import read_image
+            try:
+                body, mime = read_image(parse_qs(urlsplit(self.path).query).get('u', [''])[0])
+                return self.respond(200, body, mime)
+            except Exception:
+                return self.respond(404, b'', 'text/plain')
         if path == '/api/demo':
             return self.respond(200, EXAMPLE.read_bytes())
         assets = {'/': ('index.html', 'text/html; charset=utf-8'),
@@ -48,6 +73,8 @@ class Handler(BaseHTTPRequestHandler):
                   '/live.js': ('live.js', 'text/javascript; charset=utf-8'),
                   '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
                   '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
+                  '/retailer.js': ('retailer.js', 'text/javascript; charset=utf-8'),
+                  '/version.js': ('version.js', 'text/javascript; charset=utf-8'),
                   '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
                   '/fa-ui.js': ('fa-ui.js', 'text/javascript; charset=utf-8'),
                   '/comparison.js': ('comparison.js', 'text/javascript; charset=utf-8'),
@@ -74,7 +101,22 @@ class Handler(BaseHTTPRequestHandler):
         if not BUSY.acquire(blocking=False):
             return self.respond(429, {'error': 'Optimizer is busy. Try again shortly.'})
         try:
-            if self.path == '/api/optimize':
+            if self.path.startswith('/api/live/'):
+                if not isinstance(data, dict):
+                    raise ValidationError('درخواست معتبر نیست.')
+                service = desktop(self.server)
+                routes = {'/api/live/addresses': lambda: service.addresses(data.get('query')),
+                          '/api/live/location': lambda: service.select(data),
+                          '/api/live/search': lambda: service.start(data.get('items')),
+                          '/api/live/clear': lambda: service.clear(),
+                          '/api/live/cancel': lambda: service.cancel(data.get('id'))}
+                if self.path not in routes:
+                    return self.respond(404, {'error': 'Not found'})
+                try:
+                    self.respond(200, routes[self.path]())
+                except (OSError, ValueError) as exc:
+                    raise ValidationError('ارتباط با سرویس نشانی کامل نشد؛ دوباره تلاش کنید.') from exc
+            elif self.path == '/api/optimize':
                 self.respond(200, optimize(data))
             elif self.path == '/api/validate':
                 self.respond(200, {'valid': True, 'snapshot': normalize_snapshot(data)})

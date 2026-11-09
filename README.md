@@ -1,82 +1,42 @@
-> **Android 0.9.2 — سبدچین:** Automatic Android lookup now uses
-> **Digikala Jet (`https://www.digikalajet.com/`)**, not the Digikala hypermarket.
-> Reads real merchant-group titles, opens each store's public “view all” results,
-> and compares captured offers per kg/litre/item. Native search progress includes
-> an animated spinner and merchant/scroll counters. Startup restores the previously
-> confirmed Jet address preference and coordinates before lookup; first use still
-> needs the user's location choice. No authentication token is embedded or copied.
-> No LLM or model download. See [release preparation](release/README-fa.md).
-> Location recognition in 0.9.2 reads the committed guest/account address rather
-> than relying on a particular confirmation button, visible address header or
-> a fresh coordinate-bearing request. Existing retailer selections are preserved;
-> only missing preferences are restored. Late callbacks and older catalog requests
-> cannot relabel a newly selected point.
+# سبدچین — Sabadchin 0.10.0
 
-> **Import fix in 0.2.2:** Product search pages do not need an address header.
-> The Android reader uses the delivery area confirmed in the current Digikala
-> session and displays it in the app's own banner.
-
-> **Location fix in 0.2.1:** Digikala now reuses one browser tab between searches,
-> and imports reuse a previously confirmed location/mode when they still match
-> the retailer. You can change them using Change location / map.
-
-> **Android 0.2.1:** The Android app now opens Digikala’s current supermarket
-> inside a separate browser screen, including its delivery address/map picker,
-> and imports displayed product prices without typing offers. See
-> [Android instructions](android/README.md) for usage and current limits.
-> Imported products have a conservative one-unit planning cap because the page
-> does not publish stock/promotion counts. Delivery rules still require review.
-
-# Shopping Cart Optimizer
-
-A local **Digikala Supermarket** shopping planner with a browser GUI. Enter your shopping list, review product offers, set coupon and delivery terms, then compare complete checkout plans.
-
-## Android app
-
-An offline Android version is included in [`android/`](android/README.md), with
-the same shopping-list GUI and pricing rules. Install the downloadable
-`Cartwise-Android-0.1.0-debug.apk`; no PC or Python server is needed on the phone.
-Requires Android 8.0+ and an up-to-date Android System WebView. Native document
-pickers handle JSON import/export. The `Android APK` GitHub Actions workflow
-provides a signed APK artifact and an Android emulator smoke test.
-
-**First milestone:** the pricing optimizer and GUI work with reviewed snapshots. Public product-link import is implemented, but live, location-specific Fresh catalog access has **not** been verified. Manual entry and JSON snapshots are supported. The app does not log into Digikala, populate the retailer's cart, or purchase anything.
+Desktop web and Android share shopping-list entry, Persian themes, matching, package-size normalization, unit-price comparison, product/store images and review choices. Both search **Digikala Jet**, not Digikala hypermarket. No LLM or model download is required. This independent app does not place orders or make payments.
 
 ## Start on Windows
 
-Install **Python 3.10 or newer**, download or clone this repository, then open a terminal in the repository folder:
+Extract this version of the project into a folder. Install Python 3.10+ and use your installed Chrome or Edge. Double-click **Start-Sabadchin.cmd**, or open PowerShell in the folder containing `pyproject.toml` and run:
 
 ```powershell
+py -m pip install -e ".[live]"
 py -m cartoptimizer
 ```
 
-The GUI opens at **http://127.0.0.1:8765**. No pip packages, Node.js, API keys or paid services are needed to run from the source folder.
+The GUI opens at **http://127.0.0.1:8765**. Keep the terminal running. The optional `live` dependency installs Playwright; it does not download a language model. Existing Chrome/Edge is used in the background. If neither browser is available, install the bundled browser with `py -m playwright install chromium`.
 
-On Linux/macOS:
+On Linux/macOS use `python3` in the commands above. To choose a port or avoid opening the GUI automatically:
 
-```bash
-python3 -m cartoptimizer
+```powershell
+py -m cartoptimizer --port 8766 --no-browser
 ```
 
-For a different port, or to avoid automatically opening a browser:
+The pricing engine and manually imported snapshots can run without the `live` extra. Automatic desktop retrieval requires it; missing dependencies produce an explicit installation message, never a request for manually reviewed offers.
 
-```bash
-python -m cartoptimizer --port 8766 --no-browser
-```
+## Automatic shopping
 
-Optional installation into your own environment: `python -m pip install .`, then `cartoptimizer`. The application itself has no third-party runtime dependencies; installation uses setuptools as a build tool.
+1. Enter goods and required amounts, such as شیر ۱ لیتر or برنج ۲ کیلوگرم.
+2. Choose a delivery point by searching city/street. Jet's coverage is checked before saving it on that device. GPS is optional.
+3. Run **جست‌وجو و مقایسه قیمت**. Progress reports completed list items, products and stores. The retrieval browser stays hidden and does not use your personal browser profile.
+4. Review quantities and change a choice if needed. Options are sorted by comparable kg/litre/item price, with package totals kept separate. Saving/changing a list never requires entering offers for automatic search.
 
-## Use the GUI
+The three themes and comparison code are common to both platforms. Unknown package sizes, missing ordinary prices and partial searches are labelled. Maximum scan budgets are 120 scrolls/page, 40 stores, 1,000 products/item and three minutes/item; reaching a cap is reported and never means complete inventory coverage. No fees or stock quotas are invented.
 
-1. **Shopping list:** add items and required quantities. Persian item names are supported. All offers attached to an item are treated as acceptable alternatives, so check size, brand and quality yourself.
-2. **Product offers:** enter a product/seller's normal unit price, promotional price, promotional quantity limit and total stock. Optionally read a public Digikala product URL. Imported metadata needs explicit review; stock and promotional limits are never invented.
-3. **Coupons & delivery:** enter the actual delivery/service fee, minimum order, free-delivery threshold and coupon terms shown for your selected location/account. Choose whether thresholds are measured before or after the coupon. Zero is a user input, not a verified free-delivery quote.
-4. Set a location/account context and allow one, two or three total carts.
-5. **Find the best cart:** compare the final totals and follow the cart purchase order shown. Export the plan if needed.
+Desktop reads fees/notices visible on scanned store pages. Android additionally supports reading the actual basket in its retailer WebView. The desktop session does not connect to a cart in your personal browser; **به‌روزرسانی قیمت‌ها و هزینه‌های فروشگاه** refreshes public store data. Only a basket whose products, quantities and store match the proposal can supply a verified checkout total. Otherwise totals are estimates.
 
-**Load demo** uses clearly labelled, invented prices. Its best plan costs **375,000 toman** in two carts, versus **420,000 toman** for the best single-cart plan without a coupon. These are regression-test values, not real product prices.
+The **گزینه‌های کالا** form remains available for manual snapshots. Export JSON before deleting app data, uninstalling, changing port or clearing browser data. Desktop delivery data is held in the current user's local `Sabadchin/delivery.json`, separate from browser list storage; the app's clear-data action removes both.
 
-The browser keeps your workspace in local storage. **Export JSON** creates a reusable snapshot; **Import JSON** restores one, including unfinished drafts. Editing saved inputs invalidates the old cart plan. Save or clear edited forms before optimizing. Export a backup before clearing browser data or changing the application port.
+## Android
+
+See [Android instructions](android/README.md). Requires Android 8+ and an up-to-date System WebView. APK and desktop artifacts are generated from the same commit and the version in `cartoptimizer/release.json`. Debug APKs are test builds; store candidates require owner signing and publisher details. See [release preparation](release/README-fa.md).
 
 ## Pricing behavior
 
@@ -97,19 +57,6 @@ The browser keeps your workspace in local storage. **Export JSON** creates a reu
 
 The no-coupon comparison is the best **single-cart plan found**, not a market-wide savings claim. The displayed result includes fees but only the rules entered in the snapshot. Recheck the retailer's final checkout total.
 
-## Digikala integration status
-
-The adapter reads public `Product` / `Offer` JSON-LD from validated HTTPS Digikala product URLs. It normalizes explicit IRR/IRT prices and rejects aggregate "from" prices, unknown currencies, challenge pages and unsupported schemas. It uses timeouts, response-size limits and restricted redirects.
-
-The Fresh landing page currently exposes a client-rendered shell in this development environment; a trial Fresh search request did not yield a usable product response. No account session, selected delivery location or live checkout quote was available. Consequently:
-
-- Product-link import is **best effort**, not a full supermarket catalog connector.
-- The displayed public-page price may already include a promotion. It is only a draft: verify normal price, promotional price, quota, seller and stock in the form.
-- Live importing is covered by fixture/mocked tests, **not** a successful end-to-end Fresh price verification.
-- The next integration milestone is a location-aware catalog/checkout adapter based on observed, authorized requests and real checkout fixtures.
-
-No browser cookies, login tokens or personal addresses belong in this public repository. The server binds to loopback and rejects unrelated hosts and cross-origin writes.
-
 ## Snapshot contract
 
 See [`cartoptimizer/demo.json`](cartoptimizer/demo.json) for a complete example. Metadata records source, capture timestamp (with timezone) and location/account context. Snapshots over one hour old produce a warning. Imports preserve the snapshot timestamp; editing a price does not silently mark all prices as fresh.
@@ -122,35 +69,14 @@ See [`cartoptimizer/demo.json`](cartoptimizer/demo.json) for a complete example.
 
 Do not duplicate the same inventory or account-wide promotion under different offer/group IDs: that would incorrectly create extra stock/allowance. One snapshot describes one purchase context. Stock and quota inputs must mean **remaining available allowance**, accounting for purchases already made outside the plan.
 
-## Development and tests
+## Development and platform synchronization
 
-```bash
-python -m unittest discover -s tests -v
-node --check cartoptimizer/web/app.js
+```powershell
+py -m unittest discover -s tests -v
 ```
 
-Node is optional and used only for the JavaScript syntax check. Tests exercise pricing rules, account-wide limits, split carts, JSON validation, adapter failure paths and HTTP routes. A deterministic randomized test compares the engine with an independent unit-assignment oracle. GitHub Actions runs the Python suite on Windows and Ubuntu with Python 3.10, 3.12 and 3.13.
+`cartoptimizer/release.json` is the version authority for Python, Gradle and the web version label. Shared `live.js` and `auto-ui.js` consume the `CartwiseRetailer` contract, backed by Android's native bridge or the desktop HTTP worker. Native file/GPS APIs remain platform-specific. The tests require version wiring and common-provider use to remain aligned.
 
-```text
-cartoptimizer/
-  models.py             Validated marketplace-independent snapshot
-  optimizer.py          Pricing and bounded cart search
-  adapters/digikala.py   Read-only public product metadata importer
-  server.py             Local HTTP API and GUI asset server
-  web/                  Responsive HTML, CSS and vanilla JavaScript GUI
-  demo.json             Invented demonstration snapshot
-tests/                  Pricing, adapter and HTTP regression tests
-```
+CI runs Python on Windows/Ubuntu with Python 3.10, 3.12 and 3.13, desktop and Android UI integration checks, and the Python collector against offline HTTPS retailer fixtures. Live service availability and fixture coverage are separate: successful fixture tests are not a claim of live, account-specific checkout validation. Retailer challenges stop collection; there is no challenge bypass.
 
-## Current limits and next work
-
-- Input limits: 15 items, 50 units per item, 80 offers, 8 coupons, 6 fulfilment groups and 3 carts. Large combinations can reach the default five-second / 200,000-state budget. Best-found results are explicitly labelled and may improve with a stronger solver.
-- Model supports a normal price plus one promotional tier and fixed checkout fees. More price tiers, weight-based items, bundle promotions, payment-method offers, expiring coupons, gift credits and account-specific delivery subscriptions need explicit extensions.
-- No automatic product equivalence, retailer-cart creation, login, checkout or payment.
-- Interface text is English; Persian product names use automatic text direction. A complete Persian interface can be added separately.
-- The desktop GUI assets and HTTP endpoints are tested; desktop interactive browser QA was unavailable in the development environment. The Android workflow separately runs an emulator UI smoke test; check its run result for device validation.
-- SnappMarket and Tapsi Market can be added through adapters sharing the same normalized model.
-
-### Location picker recovery in 0.9.2
-
-The native address picker searches Jet's public address service and checks service coverage before selecting a delivery point. It works without GPS or a rendered map. The optional official map starts through Jet's ordinary address-search page, with a native close control. Closed, kept-mounted map panels no longer block location recognition. Selecting a new point preserves account state and is checked again after Jet reloads. No address is created on the account and no basket is submitted.
+No login credentials, signing keys, personal browser profiles or delivery data belong in the repository or release artifacts. The local HTTP server accepts only loopback hosts and rejects cross-origin writes. Public image requests have a fixed host allowlist and do not forward cookies. Source and APK must be released together; see [AGENTS.md](AGENTS.md).

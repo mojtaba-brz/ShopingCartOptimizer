@@ -22,3 +22,5 @@ local.properties
 *.aab
 signing.properties
 release/store-assets/*.png
+
+desktop-package/

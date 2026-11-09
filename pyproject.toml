@@ -4,10 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shopping-cart-optimizer"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Local Digikala Supermarket cart planner with a browser GUI"
 requires-python = ">=3.10"
 dependencies = []
+
+[project.optional-dependencies]
+live = ["playwright==1.62.0"]
+
+[tool.setuptools.dynamic]
+version = {attr = "cartoptimizer.__version__"}
 
 [project.scripts]
 cartoptimizer = "cartoptimizer.server:main"
@@ -16,4 +22,4 @@ cartoptimizer = "cartoptimizer.server:main"
 include = ["cartoptimizer*"]
 
 [tool.setuptools.package-data]
-cartoptimizer = ["web/*.html", "web/*.css", "web/*.js", "demo.json"]
+cartoptimizer = ["web/*.html", "web/*.css", "web/*.js", "demo.json", "release.json"]
