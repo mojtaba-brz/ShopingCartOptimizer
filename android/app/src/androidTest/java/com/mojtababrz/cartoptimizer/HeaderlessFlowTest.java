@@ -81,7 +81,9 @@ public class HeaderlessFlowTest {
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             assertEquals("ارسال به تهران، انقلاب",RetailerSession.deliveryLocation());
             assertEquals("on_demand",RetailerSession.deliveryMode());
-            eval(main,"document.querySelector('[data-live-search]').click();true");
+            // The automatic UI intentionally has no per-item retailer button.
+            // Exercise the retained legacy import bridge directly for this fixture.
+            eval(main,"CartwiseAndroid.openDigikala('milk','شیر',false);true");
             DigikalaActivity second=child();
             page(second,"<div id='root'><div><img alt='شیر یک لیتری'><div><p>135,300</p><img src='/supermarket/i/toman.svg'></div><p class='line-through'>165,000</p><button data-cro-id='add-one-more-to-cart'>+</button></div><span id='fixture-ready'></span></div>");
             assertEquals("false",eval(browser(second),"document.body.innerText.includes('ارسال به')"));
