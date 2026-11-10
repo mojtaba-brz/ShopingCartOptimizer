@@ -133,7 +133,7 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle("پاک‌کردن اطلاعات این گوشی")
                 .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالاجت از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
                 .setPositiveButton("پاک شود",(dialog,which)->{
-                    android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();
+                    android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();webView.clearCache(true);
                     SearchResult.clear(MainActivity.this);getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().clear().apply();
                     RetailerSession.discard();new DeliveryChoice(MainActivity.this).clear();
                     android.webkit.CookieManager.getInstance().removeAllCookies(ok->{android.webkit.WebStorage.getInstance().deleteAllData();webView.evaluateJavascript("localStorage.clear();location.reload()",null);});
