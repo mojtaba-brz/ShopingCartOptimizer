@@ -3,13 +3,15 @@
 (function(root){
  'use strict';
  const cmp=root.CartwiseComparison||(typeof require!=='undefined'?require('./comparison.js'):null),a=root.CartwiseAuto||(typeof require!=='undefined'?require('./auto-planner.js'):null),checkout=root.CartwiseCheckout||(typeof require!=='undefined'?require('./checkout.js'):null);
+ const types=root.CartwiseTypes||(typeof require!=='undefined'?require('./retail-types.js'):null);
  const norm=a.normalize;
  function budget(value={}){const workers=Math.max(1,Math.min(4,Number(value.workers)||1));return {base:3,max:Math.max(3,Math.min(3+workers-1,Number(value.max_carts)||3)),states:Math.max(1000,Math.min(80000,Number(value.state_limit)||20000)),ms:Math.max(50,Math.min(800,Number(value.solve_ms)||200))};}
- async function solve(items,results,quotes=[],selection={},quantities={},resources={},cancelled=()=>false){
+ async function solveGroup(items,results,quotes=[],selection={},quantities={},resources={},cancelled=()=>false){
   const limits=budget(resources),started=Date.now(),observations=checkout.clean(quotes),aliases=new Map(),names=new Map();
-  for(const e of results)for(const p of e.products||[])if(p.store_name){const name=norm(p.store_name);if(!aliases.has(name))aliases.set(name,new Set());if(p.store_id)aliases.get(name).add(p.store_id);if(p.store_id)names.set('id:'+p.store_id,p.store_name);else names.set('name:'+name,p.store_name);}
-  function merchant(p){if(p.store_id)return 'id:'+p.store_id;const n=norm(p.store_name),ids=aliases.get(n);if(!n||ids?.size>1)return '';return ids?.size===1?'id:'+[...ids][0]:'name:'+n;}
-  function rule(key){const relevant=observations.filter(q=>q.page_kind==='store'&&merchant(q)===key);const latest=relevant[relevant.length-1];return latest?.fields||{};}
+  for(const e of results)for(const p of e.products||[])if(p.store_name){const name=types.store(p)+'|'+norm(p.store_name);if(!aliases.has(name))aliases.set(name,new Set());if(p.store_id)aliases.get(name).add(p.store_id);if(p.store_id)names.set(types.store(p)+'|id:'+p.store_id,p.store_name);else names.set('name:'+name,p.store_name);}
+  function merchant(p){const prefix=types.store(p)+'|';if(p.store_id)return prefix+'id:'+p.store_id;const n=norm(p.store_name),ids=aliases.get(prefix+n);if(!n||ids?.size>1)return '';return ids?.size===1?prefix+'id:'+[...ids][0]:prefix+'name:'+n;}
+  const feeCache=new Map();
+  function rule(key){if(feeCache.has(key))return feeCache.get(key);const relevant=observations.filter(q=>q.page_kind==='store'&&merchant(q)===key);const latest=relevant[relevant.length-1];const fields=latest?.fields||{};feeCache.set(key,fields);return fields;}
   const hasQuotedCart=observations.some(q=>q.page_kind==='cart'&&q.items_complete&&q.fields.total);
   const required=[],unresolved=[];
   for(const item of items){
@@ -18,7 +20,7 @@
    if(!base){unresolved.push(item.id);continue;}
    // A vague physical request has no common target. Expose the reference amount
    // chosen by unit price, then compare whole-package costs for that same amount.
-   const inferred=!cmp.requiredUnit(item)&&['g','ml'].includes(base.unit),targetItem=inferred?{...item,name:cmp.query(item.name)+' '+base.product.size.value+' '+(base.unit==='g'?'گرم':'میلی لیتر')}:item;
+   const inferred=false,targetItem=item;
    const options=[];
    for(const p of [...exact,...review]){
     if(selection[item.id]&&p.key!==selection[item.id])continue;
@@ -39,7 +41,7 @@
   // Return partial proposals explicitly; never present a missing item as fulfilled.
   const ordered=[...required].sort((x,y)=>x.options.length-y.options.length),suffix=Array(ordered.length+1).fill(0);
   for(let i=ordered.length-1;i>=0;i--)suffix[i]=suffix[i+1]+ordered[i].options[0].cost;
-  let best=null,single=null,unit=null,nodes=0,bounded=false,exploredLimit=3;
+  let best=null,single=null,two=null,three=null,unit=null,nodes=0,bounded=false,exploredLimit=3;
   function evaluate(picks,limit){
    if(!picks.length)return null;const carts=new Map();
    for(const pick of picks){let c=carts.get(pick.store_key);if(!c){c={id:pick.store_key,name:names.get(pick.store_key)||pick.product.store_name||'فروشگاه',picks:[],lines:[],subtotal:0};carts.set(pick.store_key,c);}c.picks.push(pick);c.lines.push(pick.line);c.subtotal+=pick.cost;}
@@ -49,15 +51,15 @@
     const fields=rule(c.id),minimum=fields.minimum_order?.value;if(minimum!==undefined&&c.subtotal<minimum)return null;
     let delivery=fields.delivery_fee?.value??null;const free=fields.free_delivery_over?.value;
     if(free!==undefined&&c.subtotal>=free)delivery=0;
-    const service=fields.service_fee?.value??null;c.delivery_fee=delivery;c.service_fee=service;c.minimum_order=minimum??null;
+    const service=fields.service_fee?.value??null;c.extra_fees={};for(const key of ['packaging_fee','processing_fee','tax_fee'])if(fields[key])c.extra_fees[key]=fields[key].value;c.delivery_fee=delivery;c.service_fee=service;c.minimum_order=minimum??null;
     const matched=observations.map(q=>checkout.reconcile(q,c.lines)).filter(x=>x.verified).pop();
     c.verified=!!matched;c.unknown_fees=!matched&&(delivery===null||service===null);if(c.unknown_fees)unknown++;
-    c.known_total=matched?matched.total:c.subtotal+(delivery??0)+(service??0);amount+=c.known_total;
+    c.known_total=matched?matched.total:c.subtotal+(delivery??0)+(service??0)+Object.values(c.extra_fees).reduce((n,v)=>n+v,0);amount+=c.known_total;
    }
-   return {picks,carts:[...carts.values()],total:amount,unknown_fees:unknown,complete:unresolved.length===0};
+   return {picks:[...picks],carts:[...carts.values()],total:amount,unknown_fees:unknown,complete:unresolved.length===0};
   }
   function better(x,y){return x&&(!y||x.total<y.total||x.total===y.total&&(x.unknown_fees<y.unknown_fees||x.unknown_fees===y.unknown_fees&&x.carts.length<y.carts.length));}
-  function remember(value){if(better(value,best))best=value;if(value?.carts.length===1&&better(value,single))single=value;}
+  function remember(value){if(better(value,best))best=value;if(value?.carts.length===1&&better(value,single))single=value;if(value?.carts.length<=2&&better(value,two))two=value;if(value?.carts.length<=3&&better(value,three))three=value;}
   const allowed=resources.auto_expand===false?3:limits.max;
   // Seed across the full candidate list before bounded enumeration, including
   // combinations requiring >3 stores when the hardware budget permits them.
@@ -89,12 +91,26 @@
    if(++nodes>limits.states||Date.now()-started>limits.ms){bounded=true;return;}
    if(nodes%128===0)await new Promise(r=>setTimeout(r,0));
    // Basket totals can include retailer discounts beyond observed item prices.
-   if(!hasBasketDiscount&&best&&cost+suffix[index]>best.total)return;
+   if(!hasBasketDiscount&&best&&cost+suffix[index]>Math.max(best.total,single?.total||Infinity,two?.total||Infinity,three?.total||Infinity))return;
    if(index===ordered.length){remember(evaluate(picks,limit));return;}
    for(const p of ordered[index].options){const fresh=!stores.has(p.store_key);if(fresh&&stores.size>=limit)continue;if(fresh)stores.add(p.store_key);picks.push(p);await visit(index+1,picks,stores,cost+p.cost,limit);picks.pop();if(fresh)stores.delete(p.store_key);if(bounded)return;}
   }
   for(let limit=Math.min(3,required.length||1);limit<=Math.min(allowed,required.length,keys.size);limit++){exploredLimit=limit;await visit(0,[],new Set(),0,limit);if(bounded)break;}
-  return {best,single,unit,cannot_cover:required.length>0&&!best,unresolved,nodes,bounded,base_limit:3,hardware_limit:allowed,explored_limit:exploredLimit,elapsed_ms:Date.now()-started,assumptions:['موجودی و سهمیهٔ تخفیف باید در فروشگاه تأیید شوند.','هزینهٔ نامعلوم صفر فرض نشده است؛ مبلغ معلوم جدا نمایش داده می‌شود.']};
+  return {best,single,two,three,unit,cannot_cover:required.length>0&&!best,unresolved,nodes,bounded,base_limit:3,hardware_limit:allowed,explored_limit:exploredLimit,elapsed_ms:Date.now()-started,assumptions:['موجودی و سهمیهٔ تخفیف باید در فروشگاه تأیید شوند.','هزینهٔ نامعلوم صفر فرض نشده است؛ مبلغ معلوم جدا نمایش داده می‌شود.']};
+ }
+ async function solve(items,results,quotes=[],selection={},quantities={},resources={},cancelled=()=>false){
+  const groups=new Map();for(const i of items){const t=types.item(i);if(!groups.has(t))groups.set(t,[]);groups.get(t).push(i);}
+  const sections=[];
+  for(const [department,groupItems] of groups){
+   const scoped=groupItems.map(i=>{const entry=results.find(r=>r.id===i.id);return {...entry,id:i.id,products:(entry?.products||[]).filter(p=>types.eligible(i,p)).map(p=>({...p,store_type:types.store(p,department)}))};});
+   const qs=quotes.filter(q=>!q.store_type||types.department(types.store(q))===department).map(q=>({...q,store_type:types.store(q,department)}));
+   const run=await solveGroup(groupItems,scoped,qs,selection,quantities,resources,cancelled);
+   if(Array.isArray(resources.selected_stores)&&resources.selected_stores.length){const allowed=new Set(resources.selected_stores),filtered=scoped.map(e=>({...e,products:e.products.filter(p=>allowed.has(types.key(p)))}));const chosen=await solveGroup(groupItems,filtered,qs,selection,quantities,resources,cancelled);run.selected=chosen.best;}
+   for(const key of ['best','single','two','three','unit','selected'])for(const c of run[key]?.carts||[]){c.department=department;c.store_type=c.picks[0]?.product.store_type||department;}
+   sections.push({department,label:types.labels[department],...run});
+  }
+  const aggregate=key=>{const values=sections.map(s=>s[key]).filter(Boolean);if(!values.length)return null;return {picks:values.flatMap(v=>v.picks),carts:values.flatMap(v=>v.carts),total:values.reduce((n,v)=>n+v.total,0),unknown_fees:values.reduce((n,v)=>n+v.unknown_fees,0),complete:values.length===sections.length&&values.every(v=>v.complete)};};
+  return {groups:sections,best:aggregate('best'),single:aggregate('single'),two:aggregate('two'),three:aggregate('three'),unit:aggregate('unit'),selected:aggregate('selected'),unresolved:sections.flatMap(s=>s.unresolved),cannot_cover:sections.some(s=>s.cannot_cover),bounded:sections.some(s=>s.bounded),hardware_limit:budget(resources).max,nodes:sections.reduce((n,s)=>n+s.nodes,0)};
  }
  const api={solve,budget};root.CartwiseBasket=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

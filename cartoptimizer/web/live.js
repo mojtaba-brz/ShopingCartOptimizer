@@ -23,13 +23,14 @@
   document.querySelectorAll('a[href="https://www.digikalajet.com/"]').forEach(a=>a.href='https://www.digikalajet.com/');
   function paint() {
     for(const item of state.items) {
+      if(document.body.classList.contains('automatic'))continue;
       const row=Array.from($('items').querySelectorAll('.item-row')).find(r=>r.querySelector('[data-quantity]')?.dataset.quantity===item.id);
       if(row && !row.querySelector('[data-live-search]')) {
         const b=document.createElement('button');b.className='secondary live-search';b.type='button';b.dataset.liveSearch=item.id;b.textContent='جست‌وجوی دیجی‌کالاجت';
         b.onclick=()=>open(item);row.insertBefore(b,row.lastElementChild);
       }
     }
-    $('live-location-button').textContent=meta.location?'تغییر آدرس روی نقشه':'انتخاب آدرس روی نقشه';
+    $('live-location-button').textContent=meta.location?'تغییر نشانی':'انتخاب نشانی';
     $('live-location').textContent=meta.location ? `${meta.location} · ${meta.shipment_type==='scheduled'?'ارسال زمان‌دار':'ارسال فوری'}` : 'آدرس را با جست‌وجو یا نقشه دیجی‌کالاجت انتخاب کنید.';
     for(const node of $('offers').querySelectorAll('.offer-card')) {
       const offerId=node.querySelector('[data-edit-offer]')?.dataset.editOffer;

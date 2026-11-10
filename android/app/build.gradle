@@ -53,6 +53,10 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
             .replace('src="/fa-ui.js"', 'src="/assets/fa-ui.js"')
             .replace('src="/checkout.js"', 'src="/assets/checkout.js"')
+            .replace('src="/retail-types.js"', 'src="/assets/retail-types.js"')
+            .replace('src="/search-session.js"', 'src="/assets/search-session.js"')
+            .replace('src="/map.js"', 'src="/assets/map.js"')
+            .replace('href="/map.css"', 'href="/assets/map.css"')
             .replace('src="/basket-planner.js"', 'src="/assets/basket-planner.js"')
             .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
             .replace('href="/fa.css"', 'href="/assets/fa.css"') }

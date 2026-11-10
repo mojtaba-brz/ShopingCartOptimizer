@@ -74,7 +74,7 @@ public class HeaderlessFlowTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseLive && document.getElementById('live-location-button'))");
-            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر',quantity:1}];dirty.clear();save();document.getElementById('live-location-button').click();true");
+            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر',quantity:1}];dirty.clear();save();CartwiseAndroid.openDigikala('','',true);true");
             DigikalaActivity first=child();
             page(first,"<div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button><span id='fixture-ready'></span></div>");
             read(first);continueChoice();
@@ -118,7 +118,7 @@ public class HeaderlessFlowTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             AtomicReference<WebView> ref=new AtomicReference<>();scenario.onActivity(a->ref.set(planner(a)));WebView main=ref.get();
             waitFor(main,"Boolean(window.CartwiseAuto && document.getElementById('live-location-button'))");
-            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر 2 لیتر',quantity:1}];dirty.clear();save();document.getElementById('live-location-button').click();true");
+            eval(main,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر 2 لیتر',quantity:1}];dirty.clear();save();CartwiseAndroid.openDigikala('','',true);true");
             DigikalaActivity first=child();
             // The real address bootstrap has no products. Keep that route separate
             // from search so the stale-response guard remains exercised correctly.

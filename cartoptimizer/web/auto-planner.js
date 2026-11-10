@@ -41,7 +41,7 @@
     if(p.promo_price!==null && (!Number.isSafeInteger(p.promo_price) || p.promo_price<0 || p.promo_price>=p.regular_price)) return null;
     const url=typeof p.url==='string'&&/^https:\/\/(?:www\.)?(?:digikala|digikalajet)\.com\//.test(p.url)?p.url:'';
     let image='';try{const u=new URL(p.image_url);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname))image=u.href;}catch{}
-    return {title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
+    return {store_type:typeof p.store_type==='string'?p.store_type:'',type_source:p.type_source||'',title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
       image_url:image,store_name:typeof p.store_name==='string'?p.store_name.trim().slice(0,160):'',store_id:typeof p.store_id==='string'?p.store_id.slice(0,200):'',
       regular_verified:p.regular_verified!==false,amazing:p.amazing===true,discounted:p.promo_price!==null};
   }
@@ -49,7 +49,7 @@
     const best=new Map();
     for(const p of (Array.isArray(rows)?rows:[]).map(product)){
       if(!p||!matches(item.name,p.title)||conflicting(item.name,p.title)||!sameCategory(item.name,p.title))continue;
-      const key=normalize(p.title)+'|'+p.store_id+'|'+p.store_name+'|'+p.url, old=best.get(key);
+      const key=(p.store_type||'supermarket')+'|'+normalize(p.title)+'|'+p.store_id+'|'+p.store_name+'|'+p.url, old=best.get(key);
       if(!old||estimated(p,item.quantity)<estimated(old,item.quantity))best.set(key,p);
     }
     return [...best.values()].sort((a,b)=>estimated(a,item.quantity)-estimated(b,item.quantity)).slice(0,limit);
@@ -97,7 +97,7 @@
         if(i<0||++edits>1){valid=false;break;}remaining.splice(i,1);
       }
       if(!valid)continue;
-      const score=edits*2+(q.alias===t.alias?0:1),key=normalize(p.title)+'|'+p.store_id+'|'+p.store_name+'|'+p.url,old=best.get(key);
+      const score=edits*2+(q.alias===t.alias?0:1),key=(p.store_type||'supermarket')+'|'+normalize(p.title)+'|'+p.store_id+'|'+p.store_name+'|'+p.url,old=best.get(key);
       if(!old||estimated(p,item.quantity)<estimated(old.p,item.quantity))best.set(key,{p,score});
     }
     return [...best.values()].sort((a,b)=>a.score-b.score||estimated(a.p,item.quantity)-estimated(b.p,item.quantity)||a.p.title.localeCompare(b.p.title)).map(x=>x.p);

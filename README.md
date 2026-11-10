@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.11.0
+# سبدچین — Sabadchin 0.12.0
 
 Desktop web and Android share shopping-list entry, Persian themes, matching, package-size normalization, unit-price comparison, product/store images and review choices. Both search **Digikala Jet**, not Digikala hypermarket. No LLM or model download is required. This independent app does not place orders or make payments.
 
@@ -82,3 +82,11 @@ py -m unittest discover -s tests -v
 CI runs Python on Windows/Ubuntu with Python 3.10, 3.12 and 3.13, desktop and Android UI integration checks, and the Python collector against offline HTTPS retailer fixtures. Live service availability and fixture coverage are separate: successful fixture tests are not a claim of live, account-specific checkout validation. Retailer challenges stop collection; there is no challenge bypass.
 
 No login credentials, signing keys, personal browser profiles or delivery data belong in the repository or release artifacts. The local HTTP server accepts only loopback hosts and rejects cross-origin writes. Public image requests have a fixed host allowlist and do not forward cookies. Source and APK must be released together; see [AGENTS.md](AGENTS.md).
+
+## Incremental lists and retailer departments
+
+Use **جست‌وجوی کل لیست** for a fresh scan, or **جست‌وجوی موارد جدید** to reuse successful catalogue results for up to 15 minutes in the same address/coordinates and delivery mode. Quantity edits recalculate locally; removed items are excluded. The cache is in memory only and retains the original observation age. Failed or expired results are retried.
+
+The parallel progress view lists each active item/store task separately. Grocery, pastry/nuts, produce, protein, bakery and pet retailers are planned separately. The editable item department supplies a fallback when public retailer metadata is unavailable; catalogue business metadata takes precedence. One/two/three-store caps apply per department, never across unlike departments. Selected-store mode restricts candidates to the checked stores. Unspecified physical quantities remain the exact requested number of packages; only explicit weight/volume/count targets cause rounding up to whole packages. No quantities are raised to satisfy minimum spend. Shipping, service, packaging, processing and explicitly observed additional fees are charged per scoped merchant. Unknown fees remain unknown.
+
+The app-owned map uses OpenStreetMap tiles and normal browser caching, requests only the visible viewport, includes attribution and requires internet access. It has no Jet/WebGL/GPS dependency; text address search remains available if tiles are inaccessible. The same public Jet service-range check is required before saving a map point. No offline tile downloads or map prefetch are provided.

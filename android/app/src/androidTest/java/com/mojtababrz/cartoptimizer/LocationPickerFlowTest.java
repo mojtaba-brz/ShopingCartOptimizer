@@ -83,10 +83,10 @@ public class LocationPickerFlowTest {
             s.onActivity(a->dialog(a).getButton(AlertDialog.BUTTON_NEGATIVE).performClick());release.countDown();Thread.sleep(250);assertEquals(Activity.RESULT_CANCELED,s.getResult().getResultCode());assertEquals("",new DeliveryChoice(ApplicationProvider.getApplicationContext()).location());
         }finally{release.countDown();}
     }
-    @Test public void nativeCloseEscapesMapAndMapStartsWithoutSyntheticModalRoute()throws Exception{
+    @Test public void appOwnedMapClosesBackToAddressSearch()throws Exception{
         try(ActivityScenario<DigikalaActivity> s=launch()){
-            s.onActivity(a->{a.openAddressPicker(new JetAddressClient(path->rows("ونک")));dialog(a).findViewById(R.id.address_map).performClick();});Thread.sleep(300);
-            s.onActivity(a->{assertFalse(RetailerFixtures.browser(a).getUrl().contains("MID="));assertEquals(View.VISIBLE,a.findViewById(R.id.address_close_map).getVisibility());a.findViewById(R.id.address_close_map).performClick();assertTrue(dialog(a).isShowing());assertTrue(dialog(a).findViewById(R.id.address_query).isEnabled());});assertEquals("",new DeliveryChoice(ApplicationProvider.getApplicationContext()).location());
+            s.onActivity(a->{try{a.openAddressPicker(new JetAddressClient(path->rows("ونک")));dialog(a).findViewById(R.id.address_map).performClick();java.lang.reflect.Field field=DigikalaActivity.class.getDeclaredField("addressPicker");field.setAccessible(true);Object picker=field.get(a);field=JetAddressPicker.class.getDeclaredField("mapDialog");field.setAccessible(true);Object map=field.get(picker);field=DeliveryMap.class.getDeclaredField("web");field.setAccessible(true);WebView web=(WebView)field.get(map);web.getSettings().setBlockNetworkLoads(true);assertTrue(web.getUrl().startsWith("https://appassets.androidplatform.net/assets/map.html"));field=DeliveryMap.class.getDeclaredField("dialog");field.setAccessible(true);((AlertDialog)field.get(map)).getButton(AlertDialog.BUTTON_NEGATIVE).performClick();assertTrue(dialog(a).isShowing());assertTrue(dialog(a).findViewById(R.id.address_query).isEnabled());}catch(Exception e){throw new AssertionError(e);}});
+            assertEquals("",new DeliveryChoice(ApplicationProvider.getApplicationContext()).location());
         }
     }
 }

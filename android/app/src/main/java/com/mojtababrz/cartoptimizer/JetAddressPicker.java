@@ -25,7 +25,7 @@ final class JetAddressPicker {
     private final Activity activity;private final JetAddressClient client;private final Listener listener;
     private final Handler main=new Handler(Looper.getMainLooper());private final ExecutorService io=Executors.newFixedThreadPool(2);
     private final AlertDialog dialog;private final EditText query;private final Button search;private Button confirm;private final TextView message;private final LinearLayout results;private final ProgressBar progress;
-    private JetAddressClient.Point selected;private int generation;private boolean closed,verifying;
+    private DeliveryMap mapDialog;private JetAddressClient.Point selected;private int generation;private boolean closed,verifying;
     private final Runnable delayedSearch=this::search;
     JetAddressPicker(Activity activity,JetAddressClient client,Listener listener){
         this.activity=activity;this.client=client;this.listener=listener;
@@ -37,7 +37,7 @@ final class JetAddressPicker {
         message=new TextView(activity);message.setId(R.id.address_message);message.setPadding(0,12,0,12);message.setText("یک نشانی را از نتایج انتخاب کنید.");body.addView(message);
         ScrollView scroll=new ScrollView(activity);results=new LinearLayout(activity);results.setOrientation(LinearLayout.VERTICAL);results.setId(R.id.address_results);scroll.addView(results);body.addView(scroll,new LinearLayout.LayoutParams(-1,(int)(220*activity.getResources().getDisplayMetrics().density)));
         confirm=button("تأیید این موقعیت",R.id.address_confirm);confirm.setEnabled(false);
-        Button map=button("انتخاب از نقشهٔ جت",R.id.address_map);body.addView(map);map.setOnClickListener(v->{dismiss();listener.map();});
+        Button map=button("انتخاب روی نقشهٔ برنامه",R.id.address_map);body.addView(map);map.setOnClickListener(v->{String point=selected==null?new DeliveryChoice(activity).coordinates():selected.coordinates;mapDialog=new DeliveryMap(activity,point,p->{if(closed)return;selected=p;confirm.setEnabled(true);message.setText("در حال بررسی نشانی مرکز نقشه…");verify();});mapDialog.show();});
         ScrollView content=new ScrollView(activity);content.addView(body);
         dialog=new AlertDialog.Builder(activity).setTitle("موقعیت تحویل").setView(content).setPositiveButton("تأیید این موقعیت",null).setNegativeButton("انصراف",(d,w)->listener.cancelled()).create();
         dialog.setOnCancelListener(d->listener.cancelled());dialog.setOnDismissListener(d->close());
@@ -52,7 +52,7 @@ final class JetAddressPicker {
     boolean isShowing(){return !closed&&dialog.isShowing();}
     void dismiss(){dialog.dismiss();close();}
     private boolean current(int ticket){return !closed&&ticket==generation&&!activity.isFinishing()&&!activity.isDestroyed();}
-    private void close(){if(closed)return;closed=true;generation++;main.removeCallbacksAndMessages(null);io.shutdownNow();}
+    private void close(){if(closed)return;closed=true;if(mapDialog!=null)mapDialog.dismiss();generation++;main.removeCallbacksAndMessages(null);io.shutdownNow();}
     private void search(){
         if(closed||verifying)return;main.removeCallbacks(delayedSearch);String text=DeliveryChoice.label(query.getText().toString());
         if(text.length()<2||text.length()>200){message.setText("نام شهر و خیابان را وارد کنید.");return;}

@@ -21,7 +21,7 @@
   for(let d=0;group&&d<6;d++,group=group.parentElement){
    const names=[...group.querySelectorAll('p.truncate')].filter(e=>visible(e)&&!e.closest('button')&&text(e)&&text(e).length<=160&&!Array.from(cards.keys()).some(c=>c.contains(e)));
    if(names.length>1)break;
-   if(names.length===1&&Array.from(cards.keys()).some(c=>group.contains(c))){const name=text(names[0]);groups.push({node:group,name,button});shops.push({name,expandable:true});break;}
+   if(names.length===1&&Array.from(cards.keys()).some(c=>group.contains(c))){const name=text(names[0]),meta=window.CartwiseCatalog?.find('',name)||{};groups.push({node:group,name,button,...meta});shops.push({name,expandable:true,...meta});break;}
   }
  }
  const params=new URLSearchParams(location.search),shopId=params.get('shopId')||'',expected=context.expected_shop_id||'';
@@ -37,15 +37,16 @@
   const store_name=group?.name||(trustedContext?context.store_name:'');
   const direct=card.closest('[data-store-name],[data-seller-name]');
   const name=store_name||direct?.getAttribute('data-store-name')||direct?.getAttribute('data-seller-name')||'';
-  const store_id=trustedContext?shopId:direct?.getAttribute('data-store-id')||'';
+  const store_id=trustedContext?shopId:direct?.getAttribute('data-store-id')||group?.store_id||'';
+  const meta=window.CartwiseCatalog?.find(store_id,name)||{};const store_type=window.CartwiseTypes?.type(direct?.getAttribute('data-business')||meta.store_type||group?.store_type||context.store_type)||'unknown';
   let image_url='';for(const value of [image.currentSrc,image.getAttribute('src'),image.getAttribute('data-src')])try{const u=new URL(value,location.origin);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname)){image_url=u.href;break;}}catch{}
   const amazing=!!card.querySelector('img[src*="amazing"],[data-testid="amazing-badge"]')||/شگفت[\s‌]*انگیز/.test(text(card));
   const regular=original||current,title=image.alt.trim(),url=location.origin+location.pathname+(shopId?'?shopId='+encodeURIComponent(shopId):''),identity=[title,name,store_id,regular,current].join('|');
   if(seen.has(identity))continue;seen.add(identity);
-  products.push({title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!original||!amazing,amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
+  products.push({store_type,type_source:meta.type_source||(store_type==='unknown'?'unknown':'page'),title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!original||!amazing,amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
   if(products.length>=1000)break;
  }
  const headers=[...document.querySelectorAll('header *,#root p,#root span,#root div')].filter(e=>visible(e)&&e.children.length<4&&/^ارسال به/.test(text(e))&&text(e).length>8&&text(e).length<=300).map(text).sort((a,b)=>a.length-b.length);
  const editing=location.pathname.includes('/user/add-address')||/[?&]MID=[^&]*(?:address|location)/i.test(location.search)||[...document.querySelectorAll('#modal-root p,#modal-root-v2 p')].some(e=>visible(e)&&/^(?:انتخاب آدرس تحویل|انتخاب از روی نقشه)$/.test(text(e)));
- return {source:'digikala-live-page',retailer:'jet',captured_at:new Date().toISOString(),location:(headers[0]||'').replace(/^ارسال به\s*/,'ارسال به '),location_editing:editing,shipment_type:'on_demand',delivery_modes:[],page_url:location.origin+location.pathname,shop_id:shopId,shops,products,error:products.length?null:'هنوز کالای قابل خواندن در جت پیدا نشده است.'};
+ return {source:'digikala-live-page',retailer:'jet',captured_at:new Date().toISOString(),location:(headers[0]||'').replace(/^ارسال به\s*/,'ارسال به '),location_editing:editing,shipment_type:'on_demand',delivery_modes:[],page_url:location.origin+location.pathname,shop_id:shopId,checkout_quotes:groups.map(g=>({source:'digikala-visible-checkout',page_kind:'store',page_url:location.origin+location.pathname,captured_at:new Date().toISOString(),store_name:g.name,store_id:g.store_id||'',store_type:g.store_type||context.department||'unknown',fields:window.CartwiseSearchAdapters?.fees?.(g.node)||{},notices:[]})).filter(q=>Object.keys(q.fields).length),shops,products,error:products.length?null:'هنوز کالای قابل خواندن در جت پیدا نشده است.'};
 })

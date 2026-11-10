@@ -6,7 +6,7 @@
   const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
   const text=e=>(e?.innerText||'').trim().replace(/[\u200c\s]+/g,' ');
   const digits=s=>String(s).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));
-  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,service_fee:/^(?:هزینه\s*(?:خدمات|بسته بندی)|کارمزد)(?:\s|:|\(|$)/,
+  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,packaging_fee:/^(?:هزینه\s*)?بسته بندی(?:\s|:|$)/,processing_fee:/^هزینه پردازش(?:\s|:|$)/,tax_fee:/^مالیات(?:\s|:|$)/,service_fee:/^(?:هزینه\s*خدمات|کارمزد)(?:\s|:|\(|$)/,
     minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/,
     subtotal:/^(?:قیمت کالاها|جمع کالاها|مبلغ کالاها)(?:\s|:|\(|$)/,total:/^(?:مبلغ قابل پرداخت|جمع کل|جمع سبد خرید)(?:\s|:|\(|$)/};
   function pricedText(node,s){

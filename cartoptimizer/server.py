@@ -41,7 +41,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('X-Frame-Options', 'DENY')
-        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
         self.end_headers()
         self.wfile.write(body)
 
@@ -78,6 +78,10 @@ class Handler(BaseHTTPRequestHandler):
                   '/version.js': ('version.js', 'text/javascript; charset=utf-8'),
                   '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
                   '/fa-ui.js': ('fa-ui.js', 'text/javascript; charset=utf-8'),
+                  '/retail-types.js': ('retail-types.js', 'text/javascript; charset=utf-8'),
+                  '/search-session.js': ('search-session.js', 'text/javascript; charset=utf-8'),
+                  '/map.js': ('map.js', 'text/javascript; charset=utf-8'),
+                  '/map.css': ('map.css', 'text/css; charset=utf-8'),
                   '/basket-planner.js': ('basket-planner.js', 'text/javascript; charset=utf-8'),
                   '/comparison.js': ('comparison.js', 'text/javascript; charset=utf-8'),
                   '/checkout.js': ('checkout.js', 'text/javascript; charset=utf-8'),

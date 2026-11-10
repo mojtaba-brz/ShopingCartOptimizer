@@ -14,7 +14,7 @@
   if(packs.length>1)return {unit:'unknown',value:null};
   return {unit:'count',value:1};
  }
- function key(p){return encodeURIComponent([a.normalize(p.title),p.store_id||a.normalize(p.store_name||''),p.url||''].join('|'));}
+ function key(p){return encodeURIComponent([p.store_type||'supermarket',a.normalize(p.title),p.store_id||a.normalize(p.store_name||''),p.url||''].join('|'));}
  function unitPrice(p,regular=false){if(regular&&p.regular_verified===false)return null;const size=measure(p.title);if(!size.value)return null;return (regular?p.regular_price:(p.promo_price??p.regular_price))*(size.unit==='count'?1:1000)/size.value;}
  function query(name){return a.searchTerm(name).replace(/(?:بسته|پک)?\s*[۰-۹٠-٩0-9]+\s*(?:عددی|تایی|عدد)/gu,' ').replace(/\s+/g,' ').trim();}
  function options(item,rows,review=false){
@@ -46,7 +46,7 @@
   const cost=a.estimated(p,quantity),total=p.size.value?quantity*p.size.value:null;
   return {product:p,quantity,target,total,unit:p.size.unit,cost,unit_price:p.unit_price,
    effective_unit_price:total?cost*(p.size.unit==='count'?1:1000)/total:null,
-   line:{item_id:item.id,title:p.title,quantity,subtotal:cost,url:p.url,store_name:p.store_name,store_id:p.store_id,image_url:p.image_url}};
+   line:{item_id:item.id,title:p.title,quantity,subtotal:cost,url:p.url,store_name:p.store_name,store_id:p.store_id,store_type:p.store_type||'supermarket',image_url:p.image_url}};
  }
  const api={measure,unitPrice,key,query,options,requiredUnit,group,plan,purchase};root.CartwiseComparison=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

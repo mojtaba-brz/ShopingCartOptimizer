@@ -24,7 +24,7 @@ class NoRedirect(HTTPRedirectHandler):
 
 def public_json(path):
     request = Request('https://api.digikalajet.ir' + path,
-                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.11.0'})
+                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.12.0'})
     with build_opener(NoRedirect).open(request, timeout=12) as response:
         raw = response.read(524289)
         if len(raw) > 524288 or response.headers.get_content_type() != 'application/json':
@@ -60,6 +60,7 @@ def validate_items(items):
     for item in items:
         if not isinstance(item, dict):
             raise ValidationError('قلم خرید معتبر نیست.')
+        if item.get('department','supermarket') not in ('supermarket','pastry','produce','meat_shop','bakery','pet_shop','all_mart'): raise ValidationError('نوع فروشگاه معتبر نیست.')
         identity, name, qty = item.get('id'), item.get('name'), item.get('quantity')
         query = item.get('query', name)
         if (not isinstance(identity, str) or not 1 <= len(identity) <= 100 or identity in seen
@@ -68,7 +69,7 @@ def validate_items(items):
                 or type(qty) is not int or not 1 <= qty <= 50):
             raise ValidationError('نام، تعداد یا شناسهٔ قلم خرید معتبر نیست.')
         seen.add(identity)
-        result.append({'id': identity, 'name': name, 'quantity': qty, 'query': query})
+        result.append({'id': identity, 'name': name, 'quantity': qty, 'query': query, 'department': item.get('department','supermarket')})
     return result
 
 
@@ -106,6 +107,8 @@ class DesktopService:
             'latitude': selected['latitude'], 'longitude': selected['longitude']}))
         if not isinstance(reply, dict) or reply.get('is_in_service_range') is not True:
             raise ValidationError('جت پوشش خدمات در این نقطه را تأیید نکرد؛ نشانی دیگری انتخاب کنید.')
+        label=reply.get('approximate_address') or reply.get('address')
+        if isinstance(label,str) and 1<=len(label.strip())<=300:selected['address']=label.strip()
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()):
                 raise ValidationError('ابتدا جست‌وجوی جاری را متوقف کنید.')
@@ -122,7 +125,7 @@ class DesktopService:
 
     def delivery(self):
         with self.lock:
-            return {'location': 'ارسال به ' + self.location['address'], 'shipment_type': 'on_demand'} if self.location else {}
+            return {'location': 'ارسال به ' + self.location['address'], 'shipment_type': 'on_demand','coordinates':f"{self.location['latitude']}|{self.location['longitude']}"} if self.location else {}
 
     def start(self, items):
         items = validate_items(items)
@@ -224,25 +227,27 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
         budget['workers'] = max(1, min(4, int(workers)))
     sources = {key: (WEB / file).read_text(encoding='utf-8') for key, file in {
         'reader':'jet-dom.js', 'preference':'jet-location.js', 'checkout':'digikala-checkout.js',
-        'navigation':'jet-navigation.js', 'expand':'jet-expand.js'}.items()}
+        'navigation':'jet-navigation.js', 'expand':'jet-expand.js', 'fees':'jet-fees.js'}.items()}
     adapters = 'window.CartwiseSearchAdapters={' + ','.join(key+':'+(('()=>('+value+')') if key=='checkout' else '('+value+')') for key,value in sources.items()) + '};'
+    metadata_script=(WEB/'retail-types.js').read_text(encoding='utf-8')+(WEB/'jet-catalog.js').read_text(encoding='utf-8')
     worker_script = (WEB / 'jet-search-task.js').read_text(encoding='utf-8')
     coordinates = f"{location['latitude']}|{location['longitude']}"
     saved = {'location':'ارسال به '+location['address'], 'coordinates':coordinates}
-    result = {'source':'digikala-automatic', 'location':saved['location'], 'shipment_type':'on_demand',
+    result = {'source':'digikala-automatic', 'location':saved['location'], 'shipment_type':'on_demand','coordinates':coordinates,
         'items':[], 'checkout_quotes':[], 'resources':budget}
     entries, pending, aliases, queries = {}, {}, {}, {}
-    queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0; deadlines = {}
+    queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0; deadlines = {}; task_states = {}
     for item in items:
-        if item['query'] in queries:
-            aliases[queries[item['query']]].append(item['id']); continue
-        queries[item['query']] = item['id']; aliases[item['id']] = [item['id']]
+        query_key=(item['query'],item.get('department','supermarket'))
+        if query_key in queries:
+            aliases[queries[query_key]].append(item['id']); continue
+        queries[query_key] = item['id']; aliases[item['id']] = [item['id']]
         entries[item['id']] = {'id':item['id'], 'products':[], 'error':None}; pending[item['id']] = 1
         await queue.put({**item, 'kind':'global', 'url':HOME+'search/v2/result?'+urlencode({'q':item['query']})})
     def progress(detail):
         report(completed=sum(len(aliases[k]) for k,n in pending.items() if n==0), products=sum(len(e['products']) for e in entries.values()),
             stores=len({p.get('store_name') for e in entries.values() for p in e['products'] if p.get('store_name')}),
-            active_workers=active_tasks, detail=detail)
+            active_workers=active_tasks,tasks=list(task_states.values()), detail=detail)
     async with async_playwright() as engine:
         browser = None
         for candidate in ([channel] if channel else ['chrome', 'msedge', None]):
@@ -254,7 +259,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
             raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
         context = await browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')})
         await context.grant_permissions(['geolocation'], origin=HOME)
-        await context.add_init_script(script=f'({sources["preference"]})("restore",{json.dumps(saved,ensure_ascii=False)})')
+        await context.add_init_script(script=metadata_script+f'({sources["preference"]})("restore",{json.dumps(saved,ensure_ascii=False)})')
         async def lightweight(route):
             if route.request.resource_type in ('image','media','font'):
                 await route.abort()
@@ -273,6 +278,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                 await page.evaluate(adapters + worker_script)
                 while True:
                     task = await queue.get(); active_tasks += 1
+                    slot=str(id(page)); task_states[slot]={'id':slot,'name':task['name'],'store':task.get('store_name',''),'kind':task['kind'],'products':0,'detail':'در حال دریافت'}
                     try:
                         deadlines.setdefault(task['id'], time.monotonic()+120)
                         remaining = deadlines[task['id']]-time.monotonic()
@@ -286,6 +292,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                         until = time.monotonic() + options['seconds'] + 10
                         while True:
                             state = await page.evaluate('()=>window.cartwiseTask')
+                            task_states[slot].update(products=state.get('products',0),detail=state.get('detail',''))
                             progress('جست‌وجوی موازی · '+task['name']+' · '+state.get('detail',''))
                             if state.get('fatal'): raise ValidationError(state['fatal'])
                             if state.get('done'): break
@@ -312,6 +319,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                         progress('صفحه بررسی شد · '+task['name'])
                     finally:
                         active_tasks -= 1
+                        task_states.pop(slot,None)
                         queue.task_done()
             finally:
                 await page.close()
@@ -322,7 +330,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
             for job in done:
                 if job is not join: await job
             await join
-            result['items']=[{**entries[queries[i['query']]],'id':i['id']} for i in items]
+            result['items']=[{**entries[queries[(i['query'],i.get('department','supermarket'))]],'id':i['id']} for i in items]
             result['captured_at']=datetime.now(timezone.utc).isoformat()
             return result
         finally:

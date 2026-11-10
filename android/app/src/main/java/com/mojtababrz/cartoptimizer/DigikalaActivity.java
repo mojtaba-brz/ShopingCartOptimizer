@@ -36,7 +36,7 @@ public final class DigikalaActivity extends Activity {
     private TextView status;
     private Button read;
     private String captureScript, checkoutScript, locationScript, jetScript, preferenceScript,deliveryPointScript,expansionScript;
-    private boolean preparing,restoreReloaded,manualLocationChange,locationRestoreTried,locationCompleted,sawLocationEditor;
+    private boolean appPicker;private boolean preparing,restoreReloaded,manualLocationChange,locationRestoreTried,locationCompleted,sawLocationEditor;
     private int locationEpoch;
     private String locationBaseline="",lastLocationPoint="",stableLocationKey="";
     private long stableLocationSince;
@@ -50,9 +50,9 @@ public final class DigikalaActivity extends Activity {
     private ProgressBar scrollSpinner;
     private static final String HOME="https://www.digikalajet.com/";
     private static String searchURL(String query){return HOME+"search/v2/result?q="+Uri.encode(query);}
-    private boolean automated(){return autoItems!=null||preparing;}
+    private boolean automated(){return autoItems!=null||preparing||appPicker;}
     private LinearLayout progressLayer;
-    private TextView progressTitle,progressDetail,progressCount;
+    private TextView progressTitle,progressDetail,progressCount,progressTasks;
     private ProgressBar progressBar;
     private Button addressFallback;
 
@@ -89,6 +89,7 @@ public final class DigikalaActivity extends Activity {
         super.onCreate(savedInstanceState);
         if(android.os.Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::handleBack);
         deliveryChoice=new DeliveryChoice(this);
+        appPicker=getIntent().getBooleanExtra("app_picker",false);
         cartOnly=getIntent().getBooleanExtra("checkout_only",false);preparing=getIntent().getBooleanExtra("prepare_location",false);
         itemId = getIntent().getStringExtra("item_id");
         String automatic=getIntent().getStringExtra("automatic_items");
@@ -218,7 +219,7 @@ public final class DigikalaActivity extends Activity {
                 addressFallback.setVisibility(android.view.View.VISIBLE);
             }
         }
-        if(locationOnly)restartLocationPolling();
+        if(appPicker)beginLocationChange();else if(locationOnly)restartLocationPolling();
     }
     private String preference(String command){
         try{JSONObject saved=new JSONObject().put("location",deliveryChoice.location()).put("coordinates",deliveryChoice.coordinates());return "("+preferenceScript+")("+JSONObject.quote(command)+","+saved+")";}catch(Exception e){return "({state:'unavailable'})";}
@@ -450,6 +451,7 @@ public final class DigikalaActivity extends Activity {
         scrollSpinner=new ProgressBar(this);scrollSpinner.setIndeterminate(true);progressLayer.addView(scrollSpinner,new LinearLayout.LayoutParams(72,72));
         progressBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progressBar.setMax(autoItems==null?1:autoItems.length());progressBar.setIndeterminate(autoItems==null);progressLayer.addView(progressBar,new LinearLayout.LayoutParams(-1,24));
         progressCount=new TextView(this);progressCount.setTextSize(14);progressCount.setPadding(0,20,0,20);progressCount.setGravity(android.view.Gravity.CENTER);progressLayer.addView(progressCount);
+        progressTasks=new TextView(this);progressTasks.setTextSize(14);android.widget.ScrollView taskScroll=new android.widget.ScrollView(this);taskScroll.addView(progressTasks);progressLayer.addView(taskScroll,new LinearLayout.LayoutParams(-1,(int)(180*getResources().getDisplayMetrics().density)));
         addressFallback=new Button(this);addressFallback.setText("انتخاب نشانی بدون GPS");addressFallback.setVisibility(android.view.View.GONE);addressFallback.setOnClickListener(v->beginLocationChange());progressLayer.addView(addressFallback);
         progressLayer.setVisibility(android.view.View.GONE);parent.addView(progressLayer,new FrameLayout.LayoutParams(-1,-1));
     }
@@ -474,8 +476,9 @@ public final class DigikalaActivity extends Activity {
             if(DeliveryChoice.validCoordinates(point)){
                 final String fixedPoint=point;addressFallback.setVisibility(android.view.View.GONE);
                 try{searchPool=new JetSearchPool(this,(ViewGroup)shop.getParent(),autoItems,fixedPoint,withDeliveryPoint(preference("restore")),new JetSearchPool.Listener(){
-                    public void progress(int done,int products,int stores,int active,String detail){autoIndex=done;showProgress("جست‌وجوی موازی دیجی‌کالاجت",detail);progressCount.setText(fa(done)+" از "+fa(autoItems.length())+" قلم · "+fa(products)+" کالا · "+fa(stores)+" فروشگاه · "+fa(active)+" صفحهٔ هم‌زمان");}
+                    public void progress(int done,int products,int stores,int active,String detail){autoIndex=done;showProgress("جست‌وجوی موازی","کارهای فعال در فهرست زیر نمایش داده می‌شوند.");progressCount.setText(fa(done)+" از "+fa(autoItems.length())+" قلم · "+fa(products)+" کالا · "+fa(stores)+" فروشگاه · "+fa(active)+" صفحهٔ هم‌زمان");}
                     public void complete(JSONArray items,JSONArray quotes,JSONObject resources){if(!scanLocation.equals(RetailerSession.deliveryLocation())||!scanMode.equals(RetailerSession.deliveryMode())){finishAutoError("موقعیت تغییر کرد؛ دوباره جست‌وجو کنید.");return;}autoResults=items;searchResources=resources;for(int n=0;n<quotes.length();n++)checkoutQuotes.put(quotes.optJSONObject(n));finishAuto();}
+                    public void tasks(JSONArray tasks){StringBuilder text=new StringBuilder();for(int i=0;i<tasks.length();i++){JSONObject t=tasks.optJSONObject(i);text.append("● ").append(t.optString("name")).append(" · ").append(t.optString("store").isEmpty()?"شناسایی فروشگاه‌ها":t.optString("store")).append(" · ").append(fa(t.optInt("products"))).append(" کالا\n");}progressTasks.setText(text.toString());}
                     public void failed(String error){finishAutoError(error);}
                 });searchPool.start();}catch(Exception e){finishAutoError("آماده‌سازی جست‌وجوی موازی ناموفق بود.");}
             }else scanHandler.postDelayed(this::nextSearch,500);return;
@@ -647,7 +650,7 @@ public final class DigikalaActivity extends Activity {
             cartReadStarted=true;showProgress("بررسی هزینه‌ها و اصلاحات سبد","جست‌وجوی اقلام تمام شد؛ اکنون مبلغ و پیام‌های سبد بررسی می‌شوند.");status.setText("در حال بررسی هزینه ارسال و پیام‌های سبد دیجی‌کالاجت…");
             RetailerSession.navigate(shop,checkoutUrl);scanHandler.postDelayed(()->readAutomaticCart(0),900);return;
         }
-        try {JSONObject result=new JSONObject();result.put("source","digikala-automatic");result.put("location",scanLocation);result.put("shipment_type",scanMode);result.put("captured_at",new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX",java.util.Locale.US).format(new java.util.Date()));result.put("items",autoResults);result.put("resources",searchResources==null?SearchBudget.read(this):searchResources);result.put("checkout_quotes",checkoutQuotes);returnAuto(result);}
+        try {JSONObject result=new JSONObject();result.put("source","digikala-automatic");result.put("location",scanLocation);result.put("coordinates",RetailerSession.deliveryCoordinates());result.put("shipment_type",scanMode);result.put("captured_at",new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX",java.util.Locale.US).format(new java.util.Date()));result.put("items",autoResults);result.put("resources",searchResources==null?SearchBudget.read(this):searchResources);result.put("checkout_quotes",checkoutQuotes);returnAuto(result);}
         catch(Exception e){finishAutoError("آماده‌سازی نتیجه ناموفق بود.");}
     }
     private void returnAuto(JSONObject result) {

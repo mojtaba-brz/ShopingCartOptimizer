@@ -123,8 +123,9 @@ public final class MainActivity extends Activity {
             if("simple".equals(theme)||"modern".equals(theme)||"traditional".equals(theme))getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("theme",theme).apply();
         }
         @JavascriptInterface public String savedDelivery() {
-            try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}
+            try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("coordinates",c.coordinates()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}
         }
+        @JavascriptInterface public void chooseDelivery(){runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("app_picker",true),LIVE_DIGIKALA));}
         @JavascriptInterface public void readCheckout() {
             runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("checkout_only",true),CHECKOUT_DIGIKALA));
         }
