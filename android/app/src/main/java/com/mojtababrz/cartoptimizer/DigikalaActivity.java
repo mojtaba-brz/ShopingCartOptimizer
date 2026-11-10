@@ -219,7 +219,7 @@ public final class DigikalaActivity extends Activity {
                 addressFallback.setVisibility(android.view.View.VISIBLE);
             }
         }
-        if(appPicker||automated()&&deliveryChoice.location().isEmpty())beginLocationChange();else if(locationOnly)restartLocationPolling();
+        if(appPicker)beginLocationChange();else if(locationOnly)restartLocationPolling();
     }
     private String preference(String command){
         try{JSONObject saved=new JSONObject().put("location",deliveryChoice.location()).put("coordinates",deliveryChoice.coordinates());return "("+preferenceScript+")("+JSONObject.quote(command)+","+saved+")";}catch(Exception e){return "({state:'unavailable'})";}
@@ -355,6 +355,7 @@ public final class DigikalaActivity extends Activity {
                     }
                     if(manualLocationChange){status.setText(configured?"موقعیت ثبت‌شده پیدا شد؛ در حال تأیید…":editing?"پس از ثبت موقعیت در جت، برنامه آن را خودکار می‌خواند.":"در حال بررسی موقعیت ثبت‌شده در جت…");}
                     else if(automated()){
+                        if(!configured&&attempts>=5&&deliveryChoice.location().isEmpty()){beginLocationChange();return;}
                         boolean invalid=p.optBoolean("invalid_address");
                         showProgress(invalid?"موقعیت نیاز به اصلاح دارد":configured?"تأیید موقعیت ثبت‌شده":"بررسی موقعیت جت",invalid?"جت مختصات این آدرس را معتبر نمی‌داند؛ از «تغییر موقعیت» آن را اصلاح کنید.":configured?"اطلاعات موقعیت دریافت شد؛ در حال تأیید پایداری انتخاب…":"منتظر اطلاعات آدرس انتخاب‌شده در جت…");
                         if(invalid||attempts>=12||deliveryChoice.location().isEmpty())addressFallback.setVisibility(android.view.View.VISIBLE);
