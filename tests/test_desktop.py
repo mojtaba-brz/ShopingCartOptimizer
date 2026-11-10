@@ -82,6 +82,14 @@ class DesktopTests(unittest.TestCase):
         self.assertLessEqual(resource_budget()['workers'], 4)
         self.assertLessEqual(resource_budget()['max_carts'], 6)
 
+    def test_department_survives_normalization_and_rejects_invalid_values(self):
+        from cartoptimizer.models import normalize_snapshot, ValidationError
+        from tests.test_optimizer import sample
+        data=sample();data['items'][0]['department']='produce'
+        self.assertEqual(normalize_snapshot(data)['items'][0]['department'],'produce')
+        data['items'][0]['department']='invalid'
+        with self.assertRaises(ValidationError):normalize_snapshot(data)
+
     def test_release_is_shared_by_python_android_and_web(self):
         import cartoptimizer
         root = Path(__file__).resolve().parents[1]

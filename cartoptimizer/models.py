@@ -173,8 +173,12 @@ def parse_snapshot(data, *, allow_draft=False):
 def normalize_snapshot(data):
     """Return a validated draft with all optional model defaults made explicit."""
     parsed = parse_snapshot(data, allow_draft=True)
+    departments = ('supermarket','pastry','produce','meat_shop','bakery','pet_shop','all_mart')
+    for row in data.get('items', []):
+        if 'department' in row and row['department'] not in departments:
+            raise ValidationError('نوع فروشگاه معتبر نیست.')
     return {**data, 'stores': [asdict(s) for s in parsed.stores],
             'offers': [{**raw, **asdict(o)} for raw, o in zip(data.get('offers', []), parsed.offers)],
             'coupons': [asdict(c) for c in parsed.coupons],
-            'items': [{'id': i, 'name': n, 'quantity': q} for i, n, q in parsed.items],
+            'items': [{'id': i, 'name': n, 'quantity': q, **({'department': row['department']} if 'department' in row else {})} for (i,n,q),row in zip(parsed.items,data.get('items', []))],
             'max_carts': parsed.max_carts}

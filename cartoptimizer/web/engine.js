@@ -30,7 +30,7 @@
       minimum_order:integer(s.minimum_order ?? 0, 'minimum_order'),
       free_delivery_over:s.free_delivery_over == null ? null : integer(s.free_delivery_over, 'free_delivery_over'),
       threshold_basis:oneOf(s.threshold_basis ?? 'before_coupon', ['before_coupon','after_coupon'], 'threshold_basis')}));
-    const items = records(data, 'items', 15, !draft).map((i) => ({id:i.id, name:label(i.name, 'items.name'), quantity:integer(i.quantity, 'items.quantity', 1, 50)}));
+    const items = records(data, 'items', 15, !draft).map((i) => ({id:i.id, name:label(i.name, 'items.name'), quantity:integer(i.quantity, 'items.quantity', 1, 50),...(i.department===undefined?{}:{department:oneOf(i.department,['supermarket','pastry','produce','meat_shop','bakery','pet_shop','all_mart'],'department')})}));
     const storeIds = new Set(stores.map((s) => s.id)), itemIds = new Set(items.map((i) => i.id));
     const offers = records(data, 'offers', 80, !draft).map((o) => {
       if (!storeIds.has(o.store_id) || !itemIds.has(o.item_id)) throw Error('Each offer must reference an existing store and shopping-list item');
