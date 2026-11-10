@@ -9,7 +9,9 @@
   },
   {
     "name": "codex/digikala-supermarket-gui",
-    "sha": "1876d81551a65572e7a1cbf73184816c85b86f05"
+    "sha": "1876d81551a65572e7a1cbf73184816c85b86f05",
+    "archive": true,
+    "merged_pr": 1
   },
   {
     "name": "codex/iranian-release",

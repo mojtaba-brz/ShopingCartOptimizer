@@ -43,7 +43,7 @@
   const amazing=!!card.querySelector('img[src*="amazing"],[data-testid="amazing-badge"]')||/شگفت[\s‌]*انگیز/.test(text(card));
   const regular=original||current,title=image.alt.trim(),url=location.origin+location.pathname+(shopId?'?shopId='+encodeURIComponent(shopId):''),identity=[title,name,store_id,regular,current].join('|');
   if(seen.has(identity))continue;seen.add(identity);
-  products.push({store_type,type_source:meta.type_source||(store_type==='unknown'?'unknown':'page'),title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!original||!amazing,amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
+  products.push({store_type,type_source:meta.type_source||(direct?.getAttribute('data-business')?'page':context.type_source||'inferred'),title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!original||!amazing,amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
   if(products.length>=1000)break;
  }
  const headers=[...document.querySelectorAll('header *,#root p,#root span,#root div')].filter(e=>visible(e)&&e.children.length<4&&/^ارسال به/.test(text(e))&&text(e).length>8&&text(e).length<=300).map(text).sort((a,b)=>a.length-b.length);
