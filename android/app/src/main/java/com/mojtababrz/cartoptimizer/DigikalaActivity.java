@@ -172,7 +172,7 @@ public final class DigikalaActivity extends Activity {
         });
         shop.setWebChromeClient(new WebChromeClient() {
             @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                if (!retailer(Uri.parse(origin))) { callback.invoke(origin,false,false); return; }
+                if (!retailer(Uri.parse(origin))||automated()) { callback.invoke(origin,false,false); return; }
                 if(deliveryChoice.locationApproved() && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
                     callback.invoke(origin,true,true);return;
                 }
@@ -219,7 +219,7 @@ public final class DigikalaActivity extends Activity {
                 addressFallback.setVisibility(android.view.View.VISIBLE);
             }
         }
-        if(appPicker)beginLocationChange();else if(locationOnly)restartLocationPolling();
+        if(appPicker||automated()&&deliveryChoice.location().isEmpty())beginLocationChange();else if(locationOnly)restartLocationPolling();
     }
     private String preference(String command){
         try{JSONObject saved=new JSONObject().put("location",deliveryChoice.location()).put("coordinates",deliveryChoice.coordinates());return "("+preferenceScript+")("+JSONObject.quote(command)+","+saved+")";}catch(Exception e){return "({state:'unavailable'})";}
