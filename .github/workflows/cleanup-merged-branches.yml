@@ -1,0 +1,31 @@
+name: Clean merged branches
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: read
+concurrency:
+  group: merged-branch-cleanup
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check branch cleanup safeguards
+        run: python -m unittest tests.test_branch_cleanup -v
+      - name: Remove unchanged inactive heads contained in main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/cleanup-merged-branches.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: branch-cleanup-report-${{ github.run_attempt }}
+          path: branch-cleanup.json

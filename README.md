@@ -1,5 +1,11 @@
 # سبدچین — Sabadchin 0.13.0
 
+**Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
+
+- [Download the current project from main](https://github.com/mojtaba-brz/ShopingCartOptimizer/archive/refs/heads/main.zip)
+- [Android APK and desktop builds from main](https://github.com/mojtaba-brz/ShopingCartOptimizer/actions?query=branch%3Amain)
+
+
 Desktop web and Android share shopping-list entry, Persian themes, matching, package-size normalization, unit-price comparison, product/store images and review choices. Both search **Digikala Jet**, not Digikala hypermarket. No LLM or model download is required. This independent app does not place orders or make payments.
 
 ## Start on Windows

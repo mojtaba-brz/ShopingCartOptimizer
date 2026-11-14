@@ -41,7 +41,7 @@ Publication still requires public publisher/support details, a public HTTPS priv
 
 VALIDATION.json reports actual completed checks, including incomplete coverage; it is not a claim that a failing or unfinished check passed. The policy and publisher fields remain drafts until the owner completes them. See README-fa.md for build/signing instructions and official store references.
 
-Source: https://github.com/mojtaba-brz/ShopingCartOptimizer/tree/codex/cross-platform-live
+Source: https://github.com/mojtaba-brz/ShopingCartOptimizer/tree/main
 """)
 manifest=[]
 for f in sorted(root.rglob('*')):

@@ -28,3 +28,11 @@
 - Use package-size.js for multipack contents and two-ply-equivalent tissue sheets. Never multiply explicit total weights again; keep ambiguous labels unknown.
 - Ordinary discounts repeat for every unit. Amazing quotas are shared across all goods in each typed merchant basket (supermarket two packages, other types one); allocate them with fees and thresholds, not independently per product. Never call a struck ordinary price the verified post-amazing price without evidence.
 - Automatic search commits valid shopping drafts and ignores unrelated hidden legacy drafts. Reverted inputs must clear stale dirty flags; invalid shopping input must remain editable without refresh.
+
+## Branch policy — owner preference
+
+- `main` is the only long-lived branch and the canonical source/download branch.
+- The owner authorizes merging completed, validated updates into `main` and removing their fully merged work branches. Do not deliver a finished update only on a feature branch or leave a completed PR unmerged merely to ask for permission again.
+- Use a temporary branch/PR when useful during work, then merge it before reporting completion. Prefer merge commits so branch containment and history remain verifiable. Never force-push or rewrite `main`.
+- Respect repository protections and fix actual app regressions before merging. Report incomplete checks honestly; never relabel infrastructure failures as passing tests.
+- Automatic cleanup may delete only inactive, unprotected heads whose commits are contained in `main`, using an expected-SHA deletion lease. Preserve open-PR branches and any unmerged work.
