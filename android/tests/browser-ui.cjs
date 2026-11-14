@@ -1,0 +1,66 @@
+// Deterministic visible-DOM and application integration checks; no live price claims.
+const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
+ const context=await browser.newContext({viewport:{width:412,height:915},deviceScaleFactor:1});
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD1sAAAAASUVORK5CYII=','base64');
+ await context.route('**/assets/product-image?**',r=>r.fulfill({contentType:'image/png',body:png}));
+ await page.addInitScript(()=>{window.CartwiseAndroid={findAutomatically:()=>{},readCheckout:()=>{},savedDelivery:()=>JSON.stringify({location:'ارسال به تهران، انقلاب',shipment_type:'scheduled'}),openDigikala:()=>{},saveJSON:()=>{},setAppearance:()=>{}};});
+ await page.goto('http://127.0.0.1:8765');await page.waitForFunction(()=>window.CartwiseAppearance&&document.querySelector('#live-card'));
+ assert.equal(await page.locator('html').getAttribute('dir'),'rtl');assert.match(await page.locator('#live-location').innerText(),/انقلاب/);
+ await page.evaluate(()=>{localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم چرب ۱ لیتر',quantity:1},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];save();});
+ fs.mkdirSync('/tmp/cartwise-ui',{recursive:true});
+ for(const theme of ['simple','modern','traditional']){
+  await page.evaluate(t=>CartwiseAppearance.setTheme(t),theme);await page.screenshot({path:'/tmp/cartwise-ui/'+theme+'.png'});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile horizontal overflow');
+ }
+ await page.reload();await page.waitForFunction(()=>window.CartwiseAppearance&&document.querySelectorAll('.item-row').length===2);assert.equal(await page.locator('html').getAttribute('data-theme'),'traditional');
+ await page.click('[data-tab=settings]');assert.ok(await page.locator('#tab-settings').isVisible());
+ await page.click('[data-tab=list]');await page.click('#optimize');
+ const image_url='https://dkstatics-public.digikala.com/digikala-products/fixture.jpg';
+ const offer=(title,regular_price,store_name,extra={})=>({title,regular_price,promo_price:null,store_name,store_id:store_name,image_url,...extra});
+ const products=[offer('شیر کم چرب ۱ لیتر',700000,'سروش'),offer('شیر کم چرب ۱٫۵ لیتر',1200000,'بهار',{promo_price:900000,amazing:true}),offer('شیر کم چرب ۱٫۵ لیتر',990000,'باغ'),...Array.from({length:65},(_,i)=>offer('شیر کم چرب ۱ لیتر',1000000+i*10000,'فروشگاه '+i))];
+ const quote={source:'digikala-visible-checkout',captured_at:new Date().toISOString(),page_kind:'cart',page_url:'https://www.digikala.com/supermarket/cart/',fields:{delivery_fee:{value:250000,evidence:'هزینه ارسال ۲۵۰۰۰ تومان'},total:{value:1750000,evidence:'مبلغ قابل پرداخت ۱۷۵۰۰۰ تومان'}},notices:['قیمت کالا تغییر کرده است'],cart_items:[{title:'شیر کم چرب ۱٫۵ لیتر',quantity:1,store_name:'بهار'},{title:'برنج ایرانی ۱ کیلوگرم',quantity:1,store_name:'بهار'}],reported_units:2,items_complete:true};
+ await page.evaluate(data=>window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:data})),{source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',checkout_quotes:[quote],items:[{id:'milk',products},{id:'rice',products:[offer('برنج ایرانی ۵۰۰ گرم',400000,'بهار'),offer('برنج ایرانی ۱ کیلوگرم',600000,'بهار')]}]});
+ await page.waitForFunction(()=>document.querySelectorAll('.product-result').length===2);
+ await page.locator('[data-proposal-mode=unit]').click();
+ await page.waitForFunction(()=>document.querySelector('#results')?.textContent.includes('مبلغ سبد مطابق'));
+ const result=await page.locator('#results').innerText();assert.match(result,/۱۷۵٬۰۰۰/);assert.match(result,/قیمت کالا تغییر/);assert.match(result,/بهار/);assert.match(result,/شگفت‌انگیز/);assert.match(result,/۱۲۰٬۰۰۰/);
+ assert.match(await page.locator('[data-selected-product]').first().innerText(),/۱٫۵ لیتر/);
+ assert.match(await page.locator('.product-result .unit-price').first().innerText(),/۶۰٬۰۰۰/);
+ await page.waitForFunction(()=>[...document.querySelectorAll('.product-result img')].every(i=>i.complete&&i.naturalWidth>0));
+ await page.screenshot({path:'/tmp/cartwise-ui/results.png',fullPage:true});
+ await page.locator('[data-change-item]').first().click();
+ assert.equal(await page.locator('.offer-option').count(),60);
+ assert.deepEqual((await page.locator('.offer-option .unit-price').allInnerTexts()).slice(0,3).map(t=>t.split(' تومان')[0]),['۶۰٬۰۰۰','۶۶٬۰۰۰','۷۰٬۰۰۰']);
+ assert.match(await page.locator('.offer-option .store-name').nth(1).innerText(),/باغ/);
+ assert.match(await page.locator('.offer-option img').first().getAttribute('src'),/^\/assets\/product-image/);
+ await page.screenshot({path:'/tmp/cartwise-ui/choices.png'});
+ await page.click('#more-choices');assert.equal(await page.locator('.offer-option').count(),68);
+ await page.locator('.offer-option').nth(2).click();assert.equal(await page.locator('#choice-dialog').evaluate(e=>e.open),false);
+ await page.waitForFunction(()=>document.querySelector('[data-selected-product]')?.textContent.includes('۱ لیتر'));
+ assert.match(await page.locator('[data-selected-product]').first().innerText(),/۱ لیتر/);
+ assert.match(await page.locator('.product-result .store-name').first().innerText(),/سروش/);
+ await page.evaluate(()=>CartwiseLive.rememberAutomatic({location:'ارسال به ونک',shipment_type:'scheduled',captured_at:new Date().toISOString()}));
+ await page.reload();await page.waitForFunction(()=>document.querySelector('#live-location')?.textContent.includes('ونک'));
+ // Actual retailer readers against visible cards, price icons and cart data.
+ let html=`<p>تعداد کالاها ۲</p><div><p>هزینه ارسال</p><span>۲۵٬۰۰۰</span><img src="/toman.svg" alt="" width="16" height="16"></div><p>مبلغ قابل پرداخت ۱۳۶٬۰۰۰ تومان</p><p>قیمت کالا تغییر کرده است</p><div data-store-name="بهار"><img alt="شیر کم چرب"><span data-testid="cart-item-quantity">2</span></div>`;
+ await context.route('https://www.digikala.com/**',route=>route.fulfill({contentType:'text/html; charset=utf-8',body:html}));
+ const retailer=await context.newPage();await retailer.goto('https://www.digikala.com/supermarket/cart/');
+ const capture=await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-checkout.js','utf8'));
+ assert.equal(capture.fields.delivery_fee?.value,250000,JSON.stringify(capture));assert.equal(capture.cart_items[0].quantity,2);assert.equal(capture.cart_items[0].store_name,'بهار');assert.equal(capture.items_complete,true);
+ html=`<div id="root"><div data-store-name="بهار" data-store-id="s1"><img src="${image_url}" alt="شیر کم چرب ۱ لیتر" width="60" height="60"><p>شگفت‌انگیز</p><div><p>۹۰٬۰۰۰</p><img src="/supermarket/i/toman.svg"></div><p class="line-through">۱۲۰٬۰۰۰</p><button data-cro-id="add-one-more-to-cart">+</button></div></div>`;
+ await retailer.goto('https://www.digikala.com/supermarket/search/shop?q=milk');
+ const p=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products[0];
+ assert.ok(p,'Visible product not captured');assert.equal(p.store_name,'بهار');assert.equal(p.image_url,image_url);assert.equal(p.amazing,true);assert.equal(p.regular_price,1200000);assert.equal(p.promo_price,900000);
+ html='<div id="root">'+['', 'بهار'].map(name=>`<div ${name?'data-store-name="'+name+'"':''}><img alt="نان تست" width="60" height="60"><div><p>100</p><img src="/supermarket/i/toman.svg"></div><button data-cro-id="add-one-more-to-cart">+</button></div>`).join('')+'</div>';
+ await retailer.reload();const names=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products.map(p=>p.store_name);assert.deepEqual(names,['','بهار']);
+ const replay=fs.readFileSync('cartoptimizer/web/digikala-location.js','utf8');
+ html=`<div role="dialog"><button onclick="document.body.dataset.clicked='other'">آزادی</button><button onclick="document.body.dataset.clicked='saved'">ونک</button></div>`;
+ await retailer.goto('https://www.digikala.com/supermarket/?MID=main-change-address');
+ let status=await retailer.evaluate(`(${replay})({location:'ارسال به ونک',shipment_type:'scheduled'})`);assert.equal(status.state,'selecting-address');assert.equal(await retailer.locator('body').getAttribute('data-clicked'),'saved');
+ html=`<div role="dialog"><button onclick="document.body.dataset.clicked='one'">ونک</button><button onclick="document.body.dataset.clicked='two'">ونک</button></div>`;
+ await retailer.reload();status=await retailer.evaluate(`(${replay})({location:'ارسال به ونک',shipment_type:'scheduled'})`);assert.equal(status.state,'ambiguous');assert.equal(await retailer.locator('body').getAttribute('data-clicked'),null);
+ assert.deepEqual(errors,[]);await browser.close();console.log('Persian themes, unit-price ranking/pagination, merchant/photo/deal UI, saved picker replay and checkout matching passed');
+})().catch(e=>{console.error(e);process.exit(1)});

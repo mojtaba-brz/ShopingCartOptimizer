@@ -28,7 +28,7 @@ class ServerTests(unittest.TestCase):
     def test_static_gui_and_headers(self):
         status, body, headers = self.request('GET', '/')
         self.assertEqual(status, 200)
-        self.assertIn(b'Make every toman count', body)
+        self.assertIn('هر تومان، به‌جا خرج شود'.encode('utf-8'), body)
         self.assertEqual(headers['X-Frame-Options'], 'DENY')
         self.assertIn("script-src 'self'", headers['Content-Security-Policy'])
 
@@ -50,6 +50,33 @@ class ServerTests(unittest.TestCase):
     def test_path_traversal_and_wrong_mime(self):
         self.assertEqual(self.request('GET', '/../models.py')[0], 404)
         self.assertEqual(self.request('POST', '/api/optimize', '{}', {'Content-Type':'text/plain'})[0], 415)
+
+    def test_desktop_search_accepts_list_without_reviewed_offers(self):
+        import tempfile
+        import time
+        from unittest.mock import patch
+        from cartoptimizer.desktop import DesktopService
+        with tempfile.TemporaryDirectory() as folder:
+            service = DesktopService(folder, runner=lambda items, location, report: {'items': items})
+            service.location = {'address': 'ونک', 'latitude': 35.75, 'longitude': 51.4}
+            self.server.desktop = service
+            try:
+                request = {'items': [{'id': 'milk', 'name': 'شیر', 'quantity': 1}]}
+                status, body, _ = self.request('POST', '/api/live/search', json.dumps(request), {'Content-Type': 'application/json'})
+                self.assertEqual(status, 200)
+                key = json.loads(body)['id']
+                for _ in range(50):
+                    status, body, _ = self.request('GET', '/api/live/status?id=' + key)
+                    if json.loads(body)['state'] != 'running':
+                        break
+                    time.sleep(.01)
+                self.assertEqual(status, 200)
+                self.assertEqual(json.loads(body)['state'], 'done')
+                self.assertEqual(len(json.loads(body)['result']['items']), 1)
+                status, _, _ = self.request('POST', '/api/live/cancel', '{"id":[]}', {'Content-Type': 'application/json'})
+                self.assertEqual(status, 400)
+            finally:
+                del self.server.desktop
 
 
 if __name__ == '__main__':

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "codex/android-apk",
+    "sha": "bc702657e7feda84a149bdf88f27e1b66949d88e"
+  },
+  {
+    "name": "codex/digikala-live",
+    "sha": "7f645fd0602eebaa5b8b2475a081f104029ca735"
+  },
+  {
+    "name": "codex/digikala-supermarket-gui",
+    "sha": "1876d81551a65572e7a1cbf73184816c85b86f05",
+    "archive": true,
+    "merged_pr": 1
+  },
+  {
+    "name": "codex/iranian-release",
+    "sha": "f70466b048d26e503914894909903d569f305cc6"
+  },
+  {
+    "name": "codex/jet-startup-location",
+    "sha": "16bf6d51dc10005039894cc188e9787916b67d38"
+  },
+  {
+    "name": "codex/lightweight-matching",
+    "sha": "3194bf70a78dd32df075c82eaaf42ccda5ef75db"
+  },
+  {
+    "name": "codex/location-picker-recovery",
+    "sha": "a8292a91527c8d28fa006de1c5ae630340747675"
+  },
+  {
+    "name": "codex/location-recognition",
+    "sha": "e242195c5c9bc8b75b62c5967c416a0ff9dc8d85"
+  },
+  {
+    "name": "codex/offline-model",
+    "sha": "4d86d276ee8aafba8b9dfe9dc5b7cb3434b21ecc"
+  },
+  {
+    "name": "codex/unit-price-review",
+    "sha": "01c84f5e285066af328ff7c4a0d1383e819230db"
+  }
+]

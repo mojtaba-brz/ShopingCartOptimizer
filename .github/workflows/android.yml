@@ -1,0 +1,227 @@
+name: Android APK
+on:
+  push:
+    branches: ['main', 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '11076708'
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
+      - name: Check shared pricing engine
+        run: python -m unittest discover -v
+      - name: Check browser scripts
+        run: |
+          node --check cartoptimizer/web/checkout.js
+          node --check cartoptimizer/web/fa-ui.js
+          node android/tests/checkout.cjs
+          node --check cartoptimizer/web/auto-ui.js
+          node --check cartoptimizer/web/jet-dom.js
+          node --check cartoptimizer/web/jet-location.js
+          node --check cartoptimizer/web/live.js
+          node --check cartoptimizer/web/digikala-capture.js
+          node android/tests/live-reader.cjs
+          node android/tests/comparison.cjs
+          node android/tests/baskets.cjs
+          node android/tests/shopping012.cjs
+          node android/tests/shopping013.cjs
+          node android/tests/location-state.cjs
+          node android/tests/navigation.cjs
+          node android/tests/delivery-point.cjs
+          node android/tests/auto-planner.cjs
+      - name: Create original store graphics
+        run: |
+          python -m pip install Pillow==13.0.0
+          python release/create-store-assets.py
+      - name: Package desktop sources
+        run: python release/package-desktop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sabadchin-Desktop-0.13.0
+          path: desktop-package/**
+          retention-days: 90
+      - name: Install Android platform
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Build installable APK and test APK
+        working-directory: android
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest assembleRelease bundleRelease lintRelease
+      - name: Verify APK signature and label output
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p apk-download
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.13.0-debug.apk
+          sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cartwise-Android-APK
+          path: apk-download/*
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-smoke-inputs
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cartwise-Store-Candidates-UNSIGNED
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/mapping/release/mapping.txt
+            android/app/build/reports/lint-results-release.html
+            release/**
+          retention-days: 90
+  browser-ui:
+    outputs:
+      desktop_live: ${{ steps.desktop_live.outcome }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e ".[live]"
+      - run: npm install --no-save playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - name: Check Persian interface and visible checkout reader
+        run: |
+          python -m cartoptimizer --port 8765 --no-browser &
+          curl --fail --silent --retry 20 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:8765/
+          export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
+          node android/tests/browser-ui.cjs
+          node android/tests/jet-browser.cjs
+          node android/tests/desktop-ui.cjs
+          node android/tests/workflow012.cjs
+          node android/tests/workflow013.cjs
+          python -m tests.desktop_browser_check
+      - name: Check public desktop catalogue access
+        id: desktop_live
+        continue-on-error: true
+        run: |
+          export CHROMIUM_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
+          python release/check-live-desktop.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-live-validation
+          path: desktop-live-validation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-ui-previews
+          path: /tmp/cartwise-ui/*.png
+  emulator-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [30, 36]
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-smoke-inputs
+          path: apks
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -feature -Vulkan -memory 3072 -cores 2
+          script: |
+            adb install apks/debug/app-debug.apk
+            adb install apks/androidTest/debug/app-debug-androidTest.apk
+            adb shell am instrument -w -e class com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-appearance.txt
+            adb shell am force-stop com.mojtababrz.cartoptimizer
+            adb shell am force-stop com.mojtababrz.cartoptimizer.test
+            adb shell am instrument -w -e notClass com.mojtababrz.cartoptimizer.PersianAppearanceTest com.mojtababrz.cartoptimizer.test/androidx.test.runner.AndroidJUnitRunner | tee instrumentation-core.txt
+            cat instrumentation-core.txt instrumentation-appearance.txt > instrumentation.txt
+            mkdir -p screenshots
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/simple.png > screenshots/simple.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/modern.png > screenshots/modern.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/store-screenshots/traditional.png > screenshots/traditional.png; fi
+            if [ "${{ matrix.api }}" = "30" ]; then adb exec-out run-as com.mojtababrz.cartoptimizer cat files/qa/location-picker.png > screenshots/location-picker.png; fi
+            grep -Eq 'OK \([0-9]+ tests?\)' instrumentation-core.txt
+            grep -Eq 'OK \(1 test\)' instrumentation-appearance.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke-log-${{ matrix.api }}
+          path: |
+            instrumentation.txt
+            screenshots/*.png
+
+  publication-kit:
+    needs: [build, browser-ui, emulator-smoke]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Cartwise-Store-Candidates-UNSIGNED
+          path: candidates
+      - uses: actions/download-artifact@v4
+        with:
+          name: Cartwise-Android-APK
+          path: test-apk
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: android-smoke-log-30
+          path: qa/30
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: android-smoke-log-36
+          path: qa/36
+      - name: Assemble publication preparation kit
+        env:
+          DESKTOP_LIVE_RESULT: ${{ needs.browser-ui.outputs.desktop_live }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: python3 release/prepare-publication-kit.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sabadchin-0.13.0-Publication-Kit
+          path: publication-kit/**
+          retention-days: 90

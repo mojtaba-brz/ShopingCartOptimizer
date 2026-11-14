@@ -1,0 +1,1 @@
+(function(){fetch('/assets/release.json').then(r=>r.json()).then(x=>{const e=document.getElementById('app-version');if(e)e.textContent='نسخهٔ '+x.version+' آزمایشی · بدون مدل زبانی، تبلیغات یا حساب جداگانه';}).catch(()=>{const e=document.getElementById('app-version');if(e)e.textContent='شمارهٔ نسخه در دسترس نیست';});})();

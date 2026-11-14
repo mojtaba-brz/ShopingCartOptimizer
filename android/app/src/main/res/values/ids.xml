@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources><item name="delivery_instant" type="id"/><item name="delivery_scheduled" type="id"/>
+<item name="address_query" type="id"/><item name="address_search" type="id"/><item name="address_message" type="id"/><item name="address_results" type="id"/><item name="address_confirm" type="id"/><item name="address_map" type="id"/><item name="address_close_map" type="id"/>
+</resources>

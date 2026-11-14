@@ -1,0 +1,76 @@
+plugins { id 'com.android.application' }
+
+def cartwiseRelease = new groovy.json.JsonSlurper().parse(file('../../cartoptimizer/release.json'))
+
+android {
+    namespace 'com.mojtababrz.cartoptimizer'
+    compileSdk 36
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId 'com.mojtababrz.cartoptimizer'
+        minSdk 26
+        targetSdk 36
+        versionCode (cartwiseRelease.android_version_code as int)
+        versionName cartwiseRelease.version.toString()
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        if (System.getenv('CARTWISE_KEYSTORE_PATH')) {
+            ownerRelease {
+                storeFile file(System.getenv('CARTWISE_KEYSTORE_PATH'))
+                storePassword System.getenv('CARTWISE_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('CARTWISE_KEY_ALIAS')
+                keyPassword System.getenv('CARTWISE_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv('CARTWISE_KEYSTORE_PATH')) signingConfig signingConfigs.ownerRelease
+        }
+    }
+    sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('generated/webAssets')]
+}
+
+tasks.register('syncWebAssets', Copy) {
+    from('../../cartoptimizer/web') {
+        include '*.html', '*.css', '*.js'
+        filter { line -> line.replace('href="/style.css"', 'href="/assets/style.css"')
+            .replace('src="/app.js"', 'src="/assets/app.js"')
+            .replace('src="/engine.js"', 'src="/assets/engine.js"')
+            .replace('src="/mobile.js"', 'src="/assets/mobile.js"')
+            .replace('src="/retailer.js"', 'src="/assets/retailer.js"')
+            .replace('src="/version.js"', 'src="/assets/version.js"')
+            .replace('src="/live.js"', 'src="/assets/live.js"')
+            .replace('src="/package-size.js"', 'src="/assets/package-size.js"')
+            .replace('src="/offer-pricing.js"', 'src="/assets/offer-pricing.js"')
+            .replace('src="/auto-planner.js"', 'src="/assets/auto-planner.js"')
+            .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
+            .replace('src="/fa-ui.js"', 'src="/assets/fa-ui.js"')
+            .replace('src="/checkout.js"', 'src="/assets/checkout.js"')
+            .replace('src="/retail-types.js"', 'src="/assets/retail-types.js"')
+            .replace('src="/search-session.js"', 'src="/assets/search-session.js"')
+            .replace('src="/map.js"', 'src="/assets/map.js"')
+            .replace('href="/map.css"', 'href="/assets/map.css"')
+            .replace('src="/basket-planner.js"', 'src="/assets/basket-planner.js"')
+            .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
+            .replace('href="/fa.css"', 'href="/assets/fa.css"') }
+    }
+    from('../../cartoptimizer') { include 'demo.json', 'release.json' }
+    into(layout.buildDirectory.dir('generated/webAssets'))
+}
+tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+}
