@@ -4,6 +4,7 @@ const item=(id,name=id,quantity=1,department='supermarket')=>({id,name,quantity,
 const p=(title,store,base,special=null,type='supermarket')=>({title,store_id:store,store_name:store,store_type:type,regular_price:base+20,promo_price:special??base,amazing:special!==null,post_amazing_price:base,post_amazing_verified:true});
 const quote=(id,type='supermarket',fields={})=>({source:'digikala-visible-checkout',page_kind:'store',page_url:'https://www.digikalajet.com/search/shop',store_id:id,store_name:id,store_type:type,captured_at:new Date().toISOString(),fields:{delivery_fee:{value:0},service_fee:{value:0},...fields},notices:[]});
 (async()=>{
+ assert.equal(types.item({name:'تن ماهی'}),'supermarket');assert.equal(types.item({name:'تخم مرغ'}),'supermarket');
  for(const [title,value] of [['دستمال کاغذی ۲۰۰ برگ دولا بسته ۱۰ عددی',2000],['دستمال کاغذی 200 برگ بسته 10 عددی',2000],['دستمال کاغذی 100 برگ 4 لا بسته 3 عددی',600],['دستمال کاغذی 200 برگ دو لا 10 جعبه',2000]])assert.deepEqual(c.measure(title),{unit:'sheet',value});
  for(const [title,value] of [['تن ماهی ۱۸۰ گرمی بسته ۳ عددی',540],['تن ماهی مجموعه 3 عددی 180 گرم',540],['تن ماهی 3×180 گرم',540],['تن ماهی 180 گرم ×3',540],['ماست ۶ عددی هر عدد ۲۰۰ گرم',1200],['نوشیدنی 6 بطری 1.5 لیتر',9000],['تن ماهی وزن کل 540 گرم بسته 3 عددی',540],['تن ماهی 3 عددی مجموع وزن 540 گرم',540]])assert.equal(packs.amount(title).value,value,title);
  assert.equal(packs.measure('محصول 200 گرم و 300 گرم').unit,'unknown');assert.equal(packs.measure('دستمال کاغذی 100 برگ و 200 برگ').unit,'unknown');
@@ -19,6 +20,8 @@ const quote=(id,type='supermarket',fields={})=>({source:'digikala-visible-checko
  // merchant-wide quota is occupied by other lines. No same-store pruning loss.
  rs[2].products.push(p('کالا2 جایگزین','a',30));run=await basket.solve(is,rs,[quote('a')]);assert.equal(run.best.total,51);assert.match(run.best.picks.find(x=>x.item_id==='کالا2').product.title,/جایگزین/);
  const unknown=p('کالا','a',100,10);delete unknown.post_amazing_price;unknown.post_amazing_verified=false;run=await basket.solve([item('کالا','کالا',3)],[{id:'کالا',products:[unknown]}],[quote('a')]);assert.equal(run.best.price_unknown,1);assert.equal(run.best.total,140);
+ const noOriginal={title:'کالا',store_id:'a',store_name:'a',store_type:'supermarket',regular_price:10,promo_price:null,amazing:true,regular_verified:false};
+ const knownOne=await basket.solve([item('کالا')],[{id:'کالا',products:[noOriginal]}],[quote('a')]);assert.equal(knownOne.best.price_unknown,0);assert.equal(knownOne.best.carts[0].amazing_used,1);
  // Independent exhaustive assignment and quota allocation, including fee/minimum
  // thresholds that can make voluntarily using fewer amazing units cheaper.
  for(let seed=1;seed<=16;seed++){

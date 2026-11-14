@@ -12,7 +12,7 @@
  function estimated(p,q){const t=tiers(p),n=t.amazing===null?0:Math.min(q,limit(p.store_type||'supermarket'));return q*t.base-n*Math.max(0,t.base-t.amazing);}
  function variants(picks,type,thresholds=false){
   const cap=limit(type),base=picks.map(x=>tiers(x.product)),units=[];
-  base.forEach((t,i)=>{if(t.amazing!==null&&t.base>t.amazing)for(let n=0;n<Math.min(cap,picks[i].quantity);n++)units.push({i,n,saving:t.base-t.amazing});});
+  base.forEach((t,i)=>{if(t.amazing!==null)for(let n=0;n<Math.min(cap,picks[i].quantity);n++)units.push({i,n,saving:t.base-t.amazing});});
   units.sort((a,b)=>b.saving-a.saving||a.i-b.i||a.n-b.n);
   const combos=thresholds?[[],...units.map(x=>[x])]:[units.slice(0,cap)];
   if(thresholds&&cap===2)for(let i=0;i<units.length;i++)for(let j=i+1;j<units.length;j++)combos.push([units[i],units[j]]);
