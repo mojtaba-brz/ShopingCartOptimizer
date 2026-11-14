@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.13.0
+# سبدچین — Sabadchin 0.13.1
 
 **Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
 
@@ -101,7 +101,7 @@ No login credentials, signing keys, personal browser profiles or delivery data b
 
 ## Incremental lists and retailer departments
 
-Use **جست‌وجوی کل لیست** for a fresh scan, or **جست‌وجوی موارد جدید** to reuse successful catalogue results for up to 15 minutes in the same address/coordinates and delivery mode. Quantity edits recalculate locally; removed items are excluded. The cache is in memory only and retains the original observation age. Failed or expired results are retried.
+Use **جست‌وجوی کل لیست** for a fresh scan, or **جست‌وجوی موارد جدید** to reuse successful catalogue results for up to 15 minutes in the same address/coordinates and delivery mode. Quantity edits recalculate locally; removed items are excluded. The cache is in memory only and retains the original observation age. Only failed queries without products and expired results are retried. A coverage/time-limit notice attached to usable products does not make that query fail. When coordinates exist, changing only the address label does not invalidate those results.
 
 The parallel progress view lists each active item/store task separately. Grocery, pastry/nuts, produce, protein, bakery and pet retailers are planned separately. The editable item department supplies a fallback when public retailer metadata is unavailable; catalogue business metadata takes precedence. One/two/three-store caps apply per department, never across unlike departments. Selected-store mode restricts candidates to the checked stores. Unspecified physical quantities remain the exact requested number of packages; only explicit weight/volume/count targets cause rounding up to whole packages. No quantities are raised to satisfy minimum spend. Shipping, service, packaging, processing and explicitly observed additional fees are charged per scoped merchant. Unknown fees remain unknown.
 

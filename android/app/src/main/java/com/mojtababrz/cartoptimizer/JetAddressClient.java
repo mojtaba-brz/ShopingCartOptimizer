@@ -63,7 +63,7 @@ final class JetAddressClient {
     private static String download(String path)throws Exception{
         if(!(path.startsWith("/map/search/?q=")||path.startsWith("/map/reverse/no-modal/?latitude=")))throw new IOException("Unsupported address request");
         HttpURLConnection c=(HttpURLConnection)new URL("https://api.digikalajet.ir"+path).openConnection();
-        c.setInstanceFollowRedirects(false);c.setConnectTimeout(8000);c.setReadTimeout(8000);c.setRequestProperty("Accept","application/json");c.setRequestProperty("User-Agent","Sabadchin/0.13.0");
+        c.setInstanceFollowRedirects(false);c.setConnectTimeout(8000);c.setReadTimeout(8000);c.setRequestProperty("Accept","application/json");c.setRequestProperty("User-Agent","Sabadchin/0.13.1");
         try{
             String mime=c.getContentType();if(c.getResponseCode()!=200||mime==null||!mime.toLowerCase(java.util.Locale.ROOT).startsWith("application/json")||c.getContentLengthLong()>524288)throw new IOException("Address service unavailable");
             ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){

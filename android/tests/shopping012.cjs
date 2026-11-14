@@ -8,6 +8,11 @@ const p=(title,store_type,store_id,regular_price)=>({title,store_type,store_id,s
  const one=await basket.solve([items[0]],[results[0]],[]);assert.equal(one.single.picks[0].quantity,1);assert.equal(one.unit.picks[0].quantity,1);
  const selected=await basket.solve([items[0]],[results[0]],[],{},{},{selected_stores:['supermarket|id:s']});assert.equal(selected.selected.picks[0].product.store_id,'s');
  const s=new Session(),context='point:1';assert.equal(s.pending(items,context).length,3);s.merge(items,{items:results},context);assert.equal(s.pending(items.map(i=>({...i,quantity:3})),context).length,0);const remaining=s.result(items.slice(1),{location:'test'});assert.equal(remaining.items.length,2);assert.ok(!remaining.items.some(i=>i.id==='m'));assert.equal(s.pending(items,context).length,1);assert.equal(s.pending(items,'point:2').length,3);
+ const partial=new Session(),prior=items.slice(0,1),added={id:'new',name:'نان',query:'نان',department:'supermarket'};
+ partial.pending(prior,context);partial.merge(prior,{items:[{...results[0],error:'بودجهٔ زمانی جست‌وجو تمام شد؛ نتایج بررسی‌شده نمایش داده می‌شوند.'}]},context);
+ assert.deepEqual(partial.pending([...prior,added],context).map(i=>i.id),['new'],'Coverage notices with products must not restart old queries');
+ partial.merge([added],{items:[{id:'new',products:[],error:'ارتباط قطع شد'}]},context);assert.deepEqual(partial.pending([...prior,added],context).map(i=>i.id),['new'],'A failed empty query is retried');
+ const time=Date.now;try{Date.now=()=>time()+900001;assert.equal(partial.pending(prior,context).length,1,'Expired prices are refreshed');}finally{Date.now=time;}
  const snapshot=require('../../cartoptimizer/demo.json');snapshot.items[0].department='produce';assert.equal(require('../../cartoptimizer/web/engine.js').normalize(snapshot).items[0].department,'produce');
  const a=map.project(35.75,51.4,14),b=map.unproject(a.x,a.y,14);assert.ok(Math.abs(b.latitude-35.75)<1e-9);assert.ok(Math.abs(b.longitude-51.4)<1e-9);
  console.log('Mixed retailer types, same-ID isolation, stable quantities, packaging, selected stores, incremental/deleted/address cache and map projection passed');
