@@ -48,6 +48,7 @@ jobs:
           node android/tests/comparison.cjs
           node android/tests/baskets.cjs
           node android/tests/shopping012.cjs
+          node android/tests/shopping013.cjs
           node android/tests/location-state.cjs
           node android/tests/navigation.cjs
           node android/tests/delivery-point.cjs
@@ -60,7 +61,7 @@ jobs:
         run: python release/package-desktop.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-Desktop-0.12.0
+          name: Sabadchin-Desktop-0.13.0
           path: desktop-package/**
           retention-days: 90
       - name: Install Android platform
@@ -72,7 +73,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.12.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.13.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -121,6 +122,7 @@ jobs:
           node android/tests/jet-browser.cjs
           node android/tests/desktop-ui.cjs
           node android/tests/workflow012.cjs
+          node android/tests/workflow013.cjs
           python -m tests.desktop_browser_check
       - name: Check public desktop catalogue access
         id: desktop_live
@@ -220,6 +222,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.12.0-Publication-Kit
+          name: Sabadchin-0.13.0-Publication-Kit
           path: publication-kit/**
           retention-days: 90

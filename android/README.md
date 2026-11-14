@@ -1,4 +1,4 @@
-# Cartwise for Android 0.12.0
+# Cartwise for Android 0.13.0
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
@@ -35,9 +35,7 @@ An expired/missing/ambiguous address needs the separate address/map step. No new
 address is created automatically. Product photos are fetched from approved public
 retailer image CDNs without login cookies, authorization or referrer headers.
 Unknown store, image, normal price and package size are stated explicitly.
-Stock, promotion quotas and final fees are not inferred. For multiple promotional
-packages the estimate assumes one discounted package and the rest at the normal
-price; the observed checkout is reported separately.
+Stock and final fees remain unverified until observed. Ordinary discounts apply to all purchased packages. Amazing offers share a two-package quota per supermarket basket and one per other typed merchant basket; remaining packages use the observed post-amazing discounted/ordinary price. A missing next price is labelled unverified. Tissue sheets and mass/volume multipacks use the same contents parser as desktop; explicit total weights are not multiplied again.
 
 Matching runs locally using Persian/Arabic character and digit normalization,
 known spelling variants, a small grocery category dictionary and conservative

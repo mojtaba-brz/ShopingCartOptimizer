@@ -49,6 +49,8 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/retailer.js"', 'src="/assets/retailer.js"')
             .replace('src="/version.js"', 'src="/assets/version.js"')
             .replace('src="/live.js"', 'src="/assets/live.js"')
+            .replace('src="/package-size.js"', 'src="/assets/package-size.js"')
+            .replace('src="/offer-pricing.js"', 'src="/assets/offer-pricing.js"')
             .replace('src="/auto-planner.js"', 'src="/assets/auto-planner.js"')
             .replace('src="/auto-ui.js"', 'src="/assets/auto-ui.js"')
             .replace('src="/fa-ui.js"', 'src="/assets/fa-ui.js"')

@@ -1,6 +1,7 @@
 /* Pure automatic matching/planning helpers. Values remain integer rials. */
 (function(root){
   'use strict';
+  const packages=root.CartwisePackages||(typeof require!=='undefined'?require('./package-size.js'):null),pricing=root.CartwisePricing||(typeof require!=='undefined'?require('./offer-pricing.js'):null);
   function normalize(text){
     return String(text||'').normalize('NFKC').toLowerCase()
       .replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))
@@ -13,24 +14,10 @@
   const amountPattern=/(\d+(?:\.\d+)?)\s*(کیلوگرم|کیلو|گرم|میلی\s*لیتر|لیتر|kg|g|ml|l)(?:ی)?(?![\p{L}])/gu;
   function digits(text){return String(text||'').normalize('NFKC').toLowerCase().replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/٫/g,'.').replace(/سی[\s‌]*سی|\bcc\b/giu,' میلی لیتر ').replace(/ك/g,'ک').replace(/ي/g,'ی')
     .replace(/(?:^|\s)(یک و نیم|یک|دو|سه|چهار|نیم)\s*(?=کیلوگرم|کیلو|گرم|میلی\s*لیتر|لیتر)/g,(_,word)=>' '+({'یک و نیم':'1.5','یک':'1','دو':'2','سه':'3','چهار':'4','نیم':'0.5'}[word])+' ');}
-  function searchTerm(text){return digits(text).replace(amountPattern,' ').replace(/\s+/g,' ').trim();}
+  function searchTerm(text){return packages.query(text);}
   // Return the amount per package in grams or millilitres when the label is clear.
-  function amount(title){
-    const s=digits(title);
-    const matches=[...s.matchAll(amountPattern)];
-    if(matches.length!==1)return null;
-    const n=Number(matches[0][1]), unit=matches[0][2].replace(/\s/g,'');
-    if(!Number.isFinite(n)||n<=0)return null;
-    const mass=['کیلوگرم','کیلو','گرم','kg','g'].includes(unit);
-    const scale=['کیلوگرم','کیلو','kg','لیتر','l'].includes(unit)?1000:1;
-    const pack=s.match(/(?:بسته|پک)?\s*(\d+)\s*(?:عددی|عدد)/);
-    if(/\d+\s*[x×*]\s*\d+/i.test(s))return null;
-    // Multi-packs often state the total package weight; do not guess whether
-    // an unqualified amount applies to one unit or the entire pack.
-    if(pack&&!/(?:هر\s*عدد|هر\s*بسته|each)/.test(s))return null;
-    if(pack&&/هر\s*بسته/.test(s))return {value:n*scale,unit:mass?'g':'ml'};
-    return {value:n*scale*(pack?Number(pack[1]):1),unit:mass?'g':'ml'};
-  }
+  function amount(title){return packages.amount(title);}
+
   function matches(query,title){
     const terms=tokens(query), product=new Set(tokens(title));
     return terms.length>0 && terms.every(t=>product.has(t));
@@ -43,7 +30,8 @@
     let image='';try{const u=new URL(p.image_url);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname))image=u.href;}catch{}
     return {store_type:typeof p.store_type==='string'?p.store_type:'',type_source:p.type_source||'',title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
       image_url:image,store_name:typeof p.store_name==='string'?p.store_name.trim().slice(0,160):'',store_id:typeof p.store_id==='string'?p.store_id.slice(0,200):'',
-      regular_verified:p.regular_verified!==false,amazing:p.amazing===true,discounted:p.promo_price!==null};
+      regular_verified:p.regular_verified!==false,amazing:p.amazing===true,discounted:p.promo_price!==null,
+      product_id:typeof p.product_id==='string'?p.product_id:'',post_amazing_price:Number.isSafeInteger(p.post_amazing_price)&&p.post_amazing_price>=0&&p.post_amazing_price<=p.regular_price?p.post_amazing_price:null,post_amazing_verified:p.post_amazing_verified===true};
   }
   function rank(item,rows,limit=5){
     const best=new Map();
@@ -102,10 +90,11 @@
     }
     return [...best.values()].sort((a,b)=>a.score-b.score||estimated(a.p,item.quantity)-estimated(b.p,item.quantity)||a.p.title.localeCompare(b.p.title)).map(x=>x.p);
   }
-  // Unknown stock and quota are assumptions: one discounted unit, remaining at the displayed regular price.
-  function estimated(p,quantity){return p.regular_price*quantity-(p.promo_price===null?0:p.regular_price-p.promo_price);}
+  // Ordinary discounts repeat; standalone amazing estimates use the typed quota.
+  // The basket planner reallocates that quota jointly across merchant lines.
+  function estimated(p,quantity){return pricing.estimated(p,quantity);}
   // Minimise estimated merchandise cost for a target amount, with bounded search.
-  // Each distinct product may have one discounted package; inventory is unknown.
+  // Inventory remains unknown; this legacy amount helper is not the basket solver.
   function amountPlans(item,rows,approvedTitle=''){
     const targetUnit=amount(item.name);if(!targetUnit)return null;
     const target=targetUnit.value*item.quantity;
@@ -143,13 +132,13 @@
     return {target,unit:targetUnit.unit,plans,complete,candidates:candidates.length};
   }
   // Exact unit-count optimum across all readable matching rows under the stated
-  // one-promotional-unit assumption. Marginal costs are nondecreasing per product.
+  // ordinary-discount prices. Automatic amazing selection uses basket-planner.js.
   function countPlan(item,rows,selection=''){
     const all=rank(item,rows,1000),review=selection.startsWith('review:')?selection.slice(7):'';
     const choices=review?suggestions(item,rows).filter(p=>p.title===review):selection?all.filter(p=>p.title===selection):all;
     if(!choices.length||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>50)return null;
     const units=[];let order=0;
-    for(const p of choices)for(let n=0;n<item.quantity;n++)units.push({p,cost:n===0?(p.promo_price??p.regular_price):p.regular_price,order:order++});
+    for(const p of choices)for(let n=0;n<item.quantity;n++)units.push({p,cost:estimated(p,n+1)-estimated(p,n),order:order++});
     units.sort((a,b)=>a.cost-b.cost||a.order-b.order);
     const lines=new Map();let cost=0;
     for(const u of units.slice(0,item.quantity)){
@@ -166,7 +155,7 @@
       const choices=reviewTitle?suggestions(item,entry?.products).filter(p=>p.title===reviewTitle):chosen?all.filter(p=>p.title===chosen):all.slice(0,5);
       if(!choices.length){missing.push(item.name);continue;}
       for(const p of choices)offers.push({id:'auto-'+(++counter),item_id:item.id,store_id:'digikala-auto',title:p.title,
-        regular_price:p.regular_price,promo_price:p.promo_price,promo_limit:p.promo_price===null?0:1,
+        regular_price:p.regular_price,promo_price:p.promo_price,promo_limit:p.promo_price===null?0:item.quantity,
         promo_scope:'account',stock:item.quantity,confirmed:true,url:p.url});
     }
     return {missing, snapshot:{schema_version:1,currency:'IRR',source:'digikala-automatic-estimate',captured_at:new Date().toISOString(),

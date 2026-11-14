@@ -40,10 +40,11 @@
   const store_id=trustedContext?shopId:direct?.getAttribute('data-store-id')||group?.store_id||'';
   const meta=window.CartwiseCatalog?.find(store_id,name)||{};const store_type=window.CartwiseTypes?.type(direct?.getAttribute('data-business')||meta.store_type||group?.store_type||context.store_type)||'unknown';
   let image_url='';for(const value of [image.currentSrc,image.getAttribute('src'),image.getAttribute('data-src')])try{const u=new URL(value,location.origin);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname)){image_url=u.href;break;}}catch{}
-  const amazing=!!card.querySelector('img[src*="amazing"],[data-testid="amazing-badge"]')||/شگفت[\s‌]*انگیز/.test(text(card));
-  const regular=original||current,title=image.alt.trim(),url=location.origin+location.pathname+(shopId?'?shopId='+encodeURIComponent(shopId):''),identity=[title,name,store_id,regular,current].join('|');
+  const catalog=window.CartwiseCatalog?.findProduct(store_id,name,image.alt.trim(),current)||{};
+  const amazing=catalog.amazing===true||!!card.querySelector('img[src*="amazing"],[data-testid="amazing-badge"]')||/شگفت[\s‌]*انگیز/.test(text(card));
+  const regular=catalog.regular_price||original||current,title=image.alt.trim(),url=location.origin+location.pathname+(shopId?'?shopId='+encodeURIComponent(shopId):''),identity=[title,name,store_id,regular,current].join('|');
   if(seen.has(identity))continue;seen.add(identity);
-  products.push({store_type,type_source:meta.type_source||(direct?.getAttribute('data-business')?'page':context.type_source||'inferred'),title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!original||!amazing,amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
+  products.push({store_type,type_source:meta.type_source||(direct?.getAttribute('data-business')?'page':context.type_source||'inferred'),title,regular_price:regular,promo_price:current<regular?current:null,regular_verified:!!catalog.regular_price||!!original||!amazing,amazing,product_id:catalog.product_id||'',post_amazing_price:catalog.post_amazing_verified?catalog.post_amazing_price:amazing?null:current,post_amazing_verified:catalog.post_amazing_verified===true||!amazing,store_name:name.slice(0,160),store_id,image_url,url,promo_limit:current<regular?1:0,stock:1});
   if(products.length>=1000)break;
  }
  const headers=[...document.querySelectorAll('header *,#root p,#root span,#root div')].filter(e=>visible(e)&&e.children.length<4&&/^ارسال به/.test(text(e))&&text(e).length>8&&text(e).length<=300).map(text).sort((a,b)=>a.length-b.length);

@@ -6,6 +6,9 @@ const money = (rials) => moneyFormat.format(rials / 10);
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id = () => typeof crypto.randomUUID==='function'?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
 const dirty = new Set();
+const formBaselines = new Map();
+function formSignature(form) { return JSON.stringify(Array.from(form.elements).filter(e=>e.name).map(e=>[e.name,e.type==='checkbox'?e.checked:e.value])); }
+function rememberForm(formId) { const form=$(formId); if(form)formBaselines.set(formId,formSignature(form)); }
 let plan = null;
 let busy = false;
 let importedMetadata = null;
@@ -84,6 +87,7 @@ function render() {
     return `<article class="card offer-card"><div class="offer-meta"><span>${escapeHTML(item?.name)} · ${escapeHTML(store?.name)}</span><span class="badge ${offer.confirmed ? '' : 'demo'}">${offer.confirmed ? 'بررسی‌شده' : 'نیازمند بررسی'}</span></div><h3 dir="auto">${escapeHTML(offer.title)}</h3><p class="price">${money(promotional ? offer.promo_price : offer.regular_price)} <small>تومان</small>${promotional ? `<del>${money(offer.regular_price)}</del>` : ''}</p><p>${promotional ? `${offer.promo_limit} promotional unit(s) ${offer.promo_scope === 'account' ? 'across all carts' : 'per cart'}` : 'قیمت عادی'} · ${offer.stock} units available</p><div class="offer-actions"><button class="secondary" data-edit-offer="${escapeHTML(offer.id)}">ویرایش</button><button class="quiet danger" data-remove-offer="${escapeHTML(offer.id)}">حذف</button>${link ? `<a href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">صفحه کالا</a>` : ''}</div></article>`;
   }).join('');
   $('coupons').innerHTML = state.coupons.map((coupon) => `<article class="card offer-card"><span class="badge">${escapeHTML(state.stores.find((s) => s.id === coupon.store_id)?.name)}</span><h3>${escapeHTML(coupon.code)}</h3><p class="price">${coupon.kind === 'percent' ? `${coupon.value / 100}%` : `${money(coupon.value)} تومان`}</p><p>From ${money(coupon.minimum_spend)} تومان · ${coupon.max_uses} total use(s)${coupon.maximum_discount !== null ? ` · cap ${money(coupon.maximum_discount)} تومان` : ''}</p><p>${coupon.removes_promotions ? 'جایگزین تخفیف کالاها می‌شود' : 'همراه تخفیف کالاها اعمال می‌شود'}</p><div class="offer-actions"><button class="secondary" data-edit-coupon="${escapeHTML(coupon.id)}">ویرایش</button><button class="quiet danger" data-remove-coupon="${escapeHTML(coupon.id)}">حذف</button></div></article>`).join('');
+  for(const key of ['item-form','offer-form','store-form','coupon-form','settings-form'])if(!dirty.has(key))rememberForm(key);
 }
 function fillStore() {
   const form = $('store-form');
@@ -95,7 +99,7 @@ function fillStore() {
 function clearForm(formId) {
   $(formId).reset();
   if ($(formId).elements.id && formId !== 'store-form') $(formId).elements.id.value = '';
-  dirty.delete(formId);
+  dirty.delete(formId);rememberForm(formId);
   if (formId === 'offer-form') { importedMetadata = null; $('offer-form-title').textContent = 'افزودن گزینه'; }
   if (formId === 'coupon-form') $('coupon-form-title').textContent = 'افزودن کد تخفیف';
 }
@@ -164,7 +168,7 @@ document.addEventListener('change', (event) => {
   }
 });
 for (const formId of ['item-form','offer-form','store-form','coupon-form','settings-form']) {
-  $(formId).addEventListener('input', () => dirty.add(formId));
+  $(formId).addEventListener('input', () => {if(formSignature($(formId))===formBaselines.get(formId))dirty.delete(formId);else dirty.add(formId);});
 }
 function submit(formId, handler) {
   $(formId).addEventListener('submit', async (event) => {
@@ -174,13 +178,25 @@ function submit(formId, handler) {
     catch (error) { message(error.message, true); }
   });
 }
-submit('item-form', (form) => {
+function addShoppingItem(form) {
   if (state.items.length >= 15) throw new Error('در این نسخه می‌توانید حداکثر ۱۵ قلم کالا اضافه کنید.');
-  const name = form.get('name').trim();
-  if (!name) throw new Error('نام کالا را وارد کنید.');
-  state.items.push({id: id(), name, quantity: number(form.get('quantity'))});
-  clearForm('item-form'); save();
-});
+  const name = String(form.get('name')||'').trim(),quantity=number(form.get('quantity'));
+  if (!name||name.length>300) throw new Error('نام کالا را وارد کنید.');
+  if(!Number.isInteger(quantity)||quantity<1||quantity>50)throw new Error('تعداد باید بین ۱ و ۵۰ باشد.');
+  state.items.push({id:id(),name,quantity});clearForm('item-form');
+}
+submit('item-form', form=>{addShoppingItem(form);save();});
+// Automatic search uses the actual shopping inputs. Unrelated hidden legacy
+// drafts never block it, and valid unsubmitted goods are included without refresh.
+function commitShoppingDraft() {
+  const edits=Array.from($('items').querySelectorAll('[data-quantity]')).map(input=>({input,item:state.items.find(i=>i.id===input.dataset.quantity),value:Number(input.value)}));
+  const invalid=edits.find(x=>!Number.isInteger(x.value)||x.value<1||x.value>50);
+  if(invalid){showTab('list');invalid.input.focus();throw Error('تعداد باید بین ۱ و ۵۰ باشد.');}
+  const form=$('item-form'),pending=form.elements.name.value.trim();
+  if(pending){if(!form.checkValidity()){showTab('list');form.reportValidity();throw Error('نام و تعداد کالای جدید را کامل کنید.');}addShoppingItem(new FormData(form));}
+  let changed=!!pending;for(const x of edits)if(x.item&&x.item.quantity!==x.value){x.item.quantity=x.value;changed=true;}
+  if(changed)save();
+}
 submit('offer-form', async (form) => {
   if (!form.get('item_id')) throw new Error('ابتدا کالا را به لیست اضافه کنید.');
   const offer = {id: form.get('id') || id(), item_id: form.get('item_id'), store_id: form.get('store_id'), title: form.get('title').trim(),

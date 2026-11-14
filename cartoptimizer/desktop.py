@@ -24,7 +24,7 @@ class NoRedirect(HTTPRedirectHandler):
 
 def public_json(path):
     request = Request('https://api.digikalajet.ir' + path,
-                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.12.0'})
+                      headers={'Accept': 'application/json', 'User-Agent': 'Sabadchin/0.13.0'})
     with build_opener(NoRedirect).open(request, timeout=12) as response:
         raw = response.read(524289)
         if len(raw) > 524288 or response.headers.get_content_type() != 'application/json':

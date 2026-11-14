@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.12.0
+# سبدچین — Sabadchin 0.13.0
 
 Desktop web and Android share shopping-list entry, Persian themes, matching, package-size normalization, unit-price comparison, product/store images and review choices. Both search **Digikala Jet**, not Digikala hypermarket. No LLM or model download is required. This independent app does not place orders or make payments.
 
@@ -25,7 +25,7 @@ The pricing engine and manually imported snapshots can run without the `live` ex
 
 1. Enter goods and required amounts, such as شیر ۱ لیتر or برنج ۲ کیلوگرم.
 2. Choose a delivery point by searching city/street. Jet's coverage is checked before saving it on that device. GPS is optional. The isolated automated Jet session receives the delivery point you selected; this does not read the physical device location.
-3. Run **جست‌وجو و مقایسه قیمت**. Progress reports completed list items, products and stores. The retrieval browser stays hidden and does not use your personal browser profile.
+3. Run **جست‌وجوی کل لیست**. Progress reports completed list items, products and stores. The retrieval browser stays hidden and does not use your personal browser profile.
 4. Review quantities and change a choice if needed. Options are sorted by comparable kg/litre/item price, with package totals kept separate. Saving/changing a list never requires entering offers for automatic search.
 
 The three themes and comparison code are common to both platforms. Unknown package sizes, missing ordinary prices and partial searches are labelled. The shared task queue schedules 1–4 independent pages using available RAM and CPU, blocks retailer image/media/font downloads where supported, and checks the same delivery point in every task. Global discovery and full-store tasks share that queue. There is no top-20 filter; the change-selection list paginates all accepted results. Budgets remain 120 scrolls/page, 40 stores/query, 1,000 products/item, 30 seconds/global task, 20 seconds/store task and two minutes/query including queued store work; reaching a cap is reported and never means complete inventory coverage. No fees or stock quotas are invented.
@@ -40,7 +40,17 @@ The **گزینه‌های کالا** form remains available for manual snapshots
 
 See [Android instructions](android/README.md). Requires Android 8+ and an up-to-date System WebView. APK and desktop artifacts are generated from the same commit and the version in `cartoptimizer/release.json`. Debug APKs are test builds; store candidates require owner signing and publisher details. See [release preparation](release/README-fa.md).
 
-## Pricing behavior
+## Automatic package contents and three price tiers
+
+The same package parser is used by desktop and Android. Tissue prices compare the total two-ply-equivalent sheets (boxes × sheets per box; unspecified ply defaults to two). Mass/volume multipacks multiply their per-item amount by the item count, e.g. three 180 g tuna cans = 540 g. Explicit total weights are not multiplied again. Inconsistent or ambiguous labels remain unknown instead of inventing an amount.
+
+Ordinary discounted prices apply to every purchased package. Amazing prices share a merchant-basket quota: two packages for supermarket merchants and one for other merchant types, across all goods in that basket. The planner allocates the quota together with store assignments, actual package quantities, delivery/free-shipping and minimum-order thresholds. Other packages use the separately observed post-amazing discounted/ordinary price. Public catalogue fields are accepted only when merchant, title and visible current price agree. If that next price is unavailable, the estimate is explicitly marked unverified; the struck ordinary price is not claimed to be the actual next price. Final account stock and offers still require checkout verification.
+
+Valid unfinished item entries are committed by either search button. Cleared/reverted drafts and unrelated hidden manual forms do not block automatic searches. Invalid quantities are reported in place, without requiring a page refresh.
+
+## Manual-snapshot pricing behavior
+
+The explicit snapshot contract below is retained for manually reviewed offers; its quota/coupon inputs are independent of the automatic catalogue rules above.
 
 | Rule | Behavior |
 | --- | --- |

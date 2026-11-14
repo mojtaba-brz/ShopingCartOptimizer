@@ -72,6 +72,8 @@ class Handler(BaseHTTPRequestHandler):
                   '/engine.js': ('engine.js', 'text/javascript; charset=utf-8'),
                   '/mobile.js': ('mobile.js', 'text/javascript; charset=utf-8'),
                   '/live.js': ('live.js', 'text/javascript; charset=utf-8'),
+                  '/package-size.js': ('package-size.js', 'text/javascript; charset=utf-8'),
+                  '/offer-pricing.js': ('offer-pricing.js', 'text/javascript; charset=utf-8'),
                   '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
                   '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
                   '/retailer.js': ('retailer.js', 'text/javascript; charset=utf-8'),

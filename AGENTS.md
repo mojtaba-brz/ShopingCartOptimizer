@@ -24,3 +24,7 @@
 
 - Keep merchant business type in identities and fee observations. Optimize each department independently, including single/two/three-store and selected-store modes. Never infer a bigger physical request from a cheaper package size.
 - Reuse only address/mode-bound fresh catalogue data; always prune deleted items and recompute quantities. Map points require the same range verification as text addresses.
+
+- Use package-size.js for multipack contents and two-ply-equivalent tissue sheets. Never multiply explicit total weights again; keep ambiguous labels unknown.
+- Ordinary discounts repeat for every unit. Amazing quotas are shared across all goods in each typed merchant basket (supermarket two packages, other types one); allocate them with fees and thresholds, not independently per product. Never call a struck ordinary price the verified post-amazing price without evidence.
+- Automatic search commits valid shopping drafts and ignores unrelated hidden legacy drafts. Reverted inputs must clear stale dirty flags; invalid shopping input must remain editable without refresh.

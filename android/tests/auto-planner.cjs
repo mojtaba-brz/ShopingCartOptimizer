@@ -8,9 +8,9 @@ assert.deepEqual(a.amount('شیر ۱.۵ لیتری'),{value:1500,unit:'ml'});
 assert.deepEqual(a.amount('شیر یک و نیم لیتر'),{value:1500,unit:'ml'});
 assert.deepEqual(a.amount('برنج ۲ کیلوگرم'),{value:2000,unit:'g'});
 assert.deepEqual(a.amount('ماست بسته ۶ عددی هر عدد 200 گرم'),{value:1200,unit:'g'});
-assert.equal(a.amount('ماست بسته ۶ عددی 200 گرم'),null);
-assert.equal(a.amount('ماست 6 عددی 200 گرم'),null);
-assert.equal(a.amount('ماست 6×200 گرم'),null);
+assert.deepEqual(a.amount('ماست بسته ۶ عددی 200 گرم'),{value:1200,unit:'g'});
+assert.deepEqual(a.amount('ماست 6 عددی 200 گرم'),{value:1200,unit:'g'});
+assert.deepEqual(a.amount('ماست 6×200 گرم'),{value:1200,unit:'g'});
 assert.equal(a.amount('محصول 200 گرم و 300 گرم'),null);
 assert.equal(a.searchTerm('شیر کم چرب ۲ لیتر'),'شیر کم چرب');
 const sizePlans=a.amountPlans({id:'m',name:'شیر ۲ لیتر',quantity:1},[
@@ -48,17 +48,17 @@ assert.equal(a.rank(item,[p('شیر پرچرب')]).length,0);
 assert.equal(a.rank(item,[p('شیر کمچرب')]).length,1);
 assert.deepEqual(a.suggestions(pasta,[p('پاستا',200),p('پاستا',100)]).map(x=>x.regular_price),[100]);
 assert.equal(a.rank(item,[{title:'شیر کم چرب کاکائو',regular_price:100,promo_price:null}]).length,0);
-const ranked=a.rank(item,rows);assert.equal(ranked.length,2);assert.equal(a.estimated(ranked[0],3),2500);
+const ranked=a.rank(item,rows);assert.equal(ranked.length,2);assert.equal(a.estimated(ranked[0],3),1500);
 const built=a.build([item],[{id:'milk',products:rows}],'تهران','scheduled');
-assert.deepEqual(built.missing,[]);assert.equal(built.snapshot.offers[0].stock,3);assert.equal(built.snapshot.offers[0].promo_limit,1);
+assert.deepEqual(built.missing,[]);assert.equal(built.snapshot.offers[0].stock,3);assert.equal(built.snapshot.offers[0].promo_limit,3);
 assert.deepEqual(a.build([item],[{id:'milk',products:[]}],'تهران','scheduled').missing,['شیر کم چرب']);
 console.log('Automatic matching and estimated pricing tests passed');
 
 // Later results and combinations must participate, rather than a five-offer shortlist.
-const seven=Array.from({length:7},(_,i)=>p('شیر '+i,1000));seven.forEach(x=>x.promo_price=0);
+const seven=Array.from({length:7},(_,i)=>p('شیر '+i,1000));seven[6].promo_price=0;
 assert.equal(a.countPlan({id:'m',name:'شیر',quantity:7},seven).cost,0);
-assert.equal(a.countPlan({id:'m',name:'شیر',quantity:7},seven).lines.length,7);
-assert.equal(a.countPlan({id:'m',name:'شیر',quantity:2},[{...p('شیر الف',100),promo_price:80},{...p('شیر ب',200),promo_price:0}]).cost,80);
+assert.equal(a.countPlan({id:'m',name:'شیر',quantity:7},seven).lines.length,1);
+assert.equal(a.countPlan({id:'m',name:'شیر',quantity:2},[{...p('شیر الف',100),promo_price:80},{...p('شیر ب',200),promo_price:0}]).cost,0);
 assert.equal(a.countPlan(pasta,aliases,'review:پنیر آزمون'),null);
 assert.equal(a.countPlan(pasta,aliases,'review:پاستا زر 500 گرم').lines[0].title,'پاستا زر 500 گرم');
 // Independent enumeration of purchase quantities for small price cases.
@@ -67,7 +67,7 @@ for(let seed=1;seed<=20;seed++)for(let wanted=1;wanted<=4;wanted++){
  let best=Infinity;
  for(let x=0;x<=wanted;x++)for(let y=0;y<=wanted-x;y++){
   const quantities=[x,y,wanted-x-y];let cost=0;
-  for(let i=0;i<3;i++)if(quantities[i])cost+=rows[i].regular_price*(quantities[i]-1)+(rows[i].promo_price??rows[i].regular_price);
+  for(let i=0;i<3;i++)if(quantities[i])cost+=quantities[i]*(rows[i].promo_price??rows[i].regular_price);
   best=Math.min(best,cost);
  }
  assert.equal(a.countPlan({id:'m',name:'شیر',quantity:wanted},rows).cost,best);
