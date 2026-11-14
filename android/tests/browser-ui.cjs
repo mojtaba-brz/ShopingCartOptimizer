@@ -31,8 +31,10 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  assert.match(await page.locator('.product-result .unit-price').first().innerText(),/۶۰٬۰۰۰/);
  await page.waitForFunction(()=>[...document.querySelectorAll('.product-result img')].every(i=>i.complete&&i.naturalWidth>0));
  await page.screenshot({path:'/tmp/cartwise-ui/results.png',fullPage:true});
+ await page.evaluate(()=>{const original=CartwiseComparison.options;window.optionCalls=0;CartwiseComparison.options=(...args)=>{optionCalls++;return original(...args);};});
  await page.locator('[data-change-item]').first().click();
- assert.equal(await page.locator('.offer-option').count(),60);
+ assert.equal(await page.locator('.offer-option').count(),60);assert.equal(await page.evaluate(()=>optionCalls),2);await page.locator('#choice-query').fill('سروش');assert.equal(await page.locator('.offer-option').count(),1);await page.locator('#choice-query').fill('');assert.equal(await page.locator('.offer-option').count(),60);assert.equal(await page.evaluate(()=>optionCalls),2,'Filtering must reuse prepared options');
+
  assert.deepEqual((await page.locator('.offer-option .unit-price').allInnerTexts()).slice(0,3).map(t=>t.split(' تومان')[0]),['۶۰٬۰۰۰','۶۶٬۰۰۰','۷۰٬۰۰۰']);
  assert.match(await page.locator('.offer-option .store-name').nth(1).innerText(),/باغ/);
  assert.match(await page.locator('.offer-option img').first().getAttribute('src'),/^\/assets\/product-image/);

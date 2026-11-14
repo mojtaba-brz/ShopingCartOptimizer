@@ -36,3 +36,5 @@
 - Use a temporary branch/PR when useful during work, then merge it before reporting completion. Prefer merge commits so branch containment and history remain verifiable. Never force-push or rewrite `main`.
 - Respect repository protections and fix actual app regressions before merging. Report incomplete checks honestly; never relabel infrastructure failures as passing tests.
 - Automatic cleanup may delete only inactive, unprotected heads whose commits are contained in `main`, using an expected-SHA deletion lease. Preserve open-PR branches and any unmerged work.
+
+- Never over-engineer (no over-programming). Use the simplest implementation that fully meets the current requirements; remove unused code and repeated work, and avoid speculative features, unnecessary abstractions, dependencies, or architecture. Keep essential correctness checks.

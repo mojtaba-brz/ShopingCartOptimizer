@@ -14,7 +14,7 @@ final class DeliveryMap {
     interface Listener {void selected(JetAddressClient.Point point);}
     private final WebView web;private final AlertDialog dialog;private boolean closed;
     DeliveryMap(Activity activity,String coordinates,Listener listener){
-        web=new WebView(activity);web.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1,(int)(activity.getResources().getDisplayMetrics().heightPixels*.65)));web.getSettings().setJavaScriptEnabled(true);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(false);web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);web.getSettings().setUserAgentString(web.getSettings().getUserAgentString()+" Sabadchin/0.13.0 (+https://github.com/mojtaba-brz/ShopingCartOptimizer)");
+        web=new WebView(activity);web.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1,(int)(activity.getResources().getDisplayMetrics().heightPixels*.65)));web.getSettings().setJavaScriptEnabled(true);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(false);web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);web.getSettings().setUserAgentString(web.getSettings().getUserAgentString()+" Sabadchin/0.13.1 (+https://github.com/mojtaba-brz/ShopingCartOptimizer)");
         WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(activity)).build();
         web.setWebViewClient(new WebViewClient(){
             @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assets.shouldInterceptRequest(r.getUrl());}
