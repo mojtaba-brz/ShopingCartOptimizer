@@ -19,6 +19,7 @@
     const total=/(?:مجموع|جمع|در کل|کل بسته|total)\s*(?:تعداد|برگ|:)?\s*\d/.test(s)?unique[0]:unique[0]*count;
     return valid(total*ply/2)?{unit:'sheet',value:total*ply/2,boxes:count,sheets:unique[0],ply}:unknown();
    }
+   return unknown(); // A box count alone is not a tissue-sheet count.
   }
   if(weights.length){
    if(weights.length!==1)return unknown();

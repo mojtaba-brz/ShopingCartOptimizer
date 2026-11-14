@@ -15,8 +15,13 @@
     // Jet's public formatter uses price.price - price.discount as the ordinary
     // payable price and product_first.aggregated_price for its special selection.
     const base=x.price.price-x.price.discount,first=x.product_first?.aggregated_price,hasFirst=money(first)&&first<=base,amazing=hasFirst||x.badges?.is_amazing===true||x.badges?.is_dynamic_amazing===true;
-    const current=hasFirst?first:base,post=hasFirst?base:amazing?null:base;
-    const p={...shop,product_id:String(x.id),title:x.title.slice(0,300),regular_price:x.price.price,current_price:current,amazing,post_amazing_price:post,post_amazing_verified:post!==null};
+    const current=hasFirst?first:base;let post=hasFirst?base:amazing?null:base,price_source=hasFirst?'catalogue-product-first':'catalogue-ordinary';
+    // The live public price splits ordinary vendor/brand discounts from Jet's
+    // amazing contribution. Accept this derivation only when the components
+    // are complete, nonnegative and reconcile exactly with the displayed total.
+    const components=[x.price.vendor_discount,x.price.brand_discount,x.price.jet_discount];
+    if(amazing&&!hasFirst&&components.every(money)&&components[2]>0&&components.reduce((n,v)=>n+v,0)===x.price.discount){post=x.price.price-components[0]-components[1];price_source='catalogue-components';}
+    const p={...shop,product_id:String(x.id),title:x.title.slice(0,300),regular_price:x.price.price,current_price:current,amazing,post_amazing_price:post,post_amazing_verified:post!==null,post_amazing_source:post!==null?price_source:''};
     const key=shop.store_type+'|'+shop.store_id+'|'+p.product_id;products.set(key,p);
    }
   }
