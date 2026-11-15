@@ -70,6 +70,10 @@ public class OfflineSmokeTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(RetailerFixtures.plannerIntent())) {
             waitFor(scenario,"Boolean(window.CartwisePackages && window.CartwisePricing && window.CartwiseBasket)");
             assertTrue(eval(scenario,"CartwisePackages.measure('دستمال کاغذی 200 برگ دولا بسته 10 عددی').value===2000 && CartwisePackages.amount('تن ماهی 180 گرمی بسته 3 عددی').value===540").equals("true"));
+            assertTrue(eval(scenario,"(()=>{const i={id:'t',name:'دستمال کاغذی',quantity:3},rows=[{title:'دستمال کاغذی 200 برگ بسته 10 عددی',regular_price:100,promo_price:null},{title:'دستمال کاغذی 200 برگ بسته 3 عددی',regular_price:500,promo_price:null}];return CartwiseComparison.plan(i,rows).consumer_total===3 && CartwiseComparison.plan(i,[rows[0]])===null && CartwiseComparison.plan(i,rows,CartwiseComparison.key(rows[0])).consumer_total===10;})()").equals("true"));
+            eval(scenario,"window.unitResult=null;CartwiseBasket.solve([{id:'r',name:'برنج 1 کیلوگرم',quantity:1}],[{id:'r',products:[{title:'برنج 1 کیلوگرم',store_name:'الف',store_id:'a',regular_price:100,promo_price:null},{title:'برنج 2 کیلوگرم',store_name:'الف',store_id:'a',regular_price:150,promo_price:null}]}]).then(r=>window.unitResult=r);true");
+            waitFor(scenario,"window.unitResult!==null");
+            assertTrue(eval(scenario,"['single','two','three'].every(k=>unitResult[k].picks[0].total===2000 && unitResult[k].total===150)").equals("true"));
             assertTrue(eval(scenario,"CartwiseAuto.estimated({regular_price:100,promo_price:80},3)===240").equals("true"));
             eval(scenario,"window.quotaResult=null;CartwiseBasket.solve([{id:'x',name:'کالا',quantity:3}],[{id:'x',products:[{title:'کالا',store_name:'الف',store_id:'a',store_type:'supermarket',regular_price:150,promo_price:10,amazing:true,post_amazing_price:100,post_amazing_verified:true}]}]).then(r=>window.quotaResult=r.best);true");
             waitFor(scenario,"window.quotaResult!==null");

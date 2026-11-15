@@ -6,7 +6,7 @@ let plan=c.plan(item,rows);assert.equal(plan.product.title,'برنج ۲ کیلو
 assert.deepEqual(c.options(item,rows).map(p=>p.unit_price),[800000,1000000]);
 assert.equal(c.measure('تخم مرغ بسته ۶ عددی').value,6);assert.deepEqual(c.measure('ماست بسته ۶ عددی 200 گرم'),{unit:'g',value:1200});
 assert.deepEqual(c.measure('نوشیدنی ۶×۲۰۰ میلی لیتر'),{unit:'ml',value:1200});
-assert.equal(c.plan({id:'e',name:'تخم مرغ',quantity:5},[p('تخم مرغ ۶ عددی',120000)]).quantity,1);
+assert.equal(c.plan({id:'e',name:'تخم مرغ',quantity:5},[p('تخم مرغ ۶ عددی',120000)]),null,'Excess pieces require a manual choice');
 assert.equal(c.unitPrice(p('برنج ۵۰۰ گرم',1000000,{promo_price:600000})),1200000);
 assert.equal(c.unitPrice(p('برنج ۵۰۰ گرم',1000000,{promo_price:600000}),true),2000000);
 assert.equal(c.unitPrice(p('برنج ۵۰۰ گرم',1000000,{regular_verified:false}),true),null);
@@ -20,3 +20,13 @@ assert.equal(c.plan({...item,name:'برنج ۱۰۰ کیلوگرم'},[p('برنج
 assert.deepEqual(c.measure('شیر ۹۴۵ سی سی'),{unit:'ml',value:945});
 assert.equal(c.query('شیر 945 cc'),'شیر');
 console.log('Normalized kg/litre/item ordering, larger-package preference, merchant identity and size guards passed');
+// A cheap retail pack must not multiply the user's requested consumer pieces.
+for(const name of ['دستمال کاغذی','دستمال کاغذی 200 برگ']){
+ const request={id:'tissue',name,quantity:3},offers=[p('دستمال کاغذی 200 برگ بسته 10 عددی',1000),p('دستمال کاغذی 200 برگ',200),p('دستمال کاغذی 200 برگ بسته 3 عددی',500)];
+ const chosen=c.plan(request,offers);assert.match(chosen.product.title,/3 عددی/);assert.equal(chosen.quantity,1);assert.equal(chosen.consumer_total,3);
+ assert.equal(c.plan({...request,quantity:2},[offers[0]]),null);
+ const manual=c.plan(request,offers,c.key(offers[0]));assert.equal(manual.consumer_total,10);assert.equal(manual.quantity,1);
+}
+let tuna=c.plan({id:'tuna',name:'تن ماهی',quantity:3},[p('تن ماهی 180 گرم بسته 10 عددی',1000),p('تن ماهی 180 گرم بسته 3 عددی',500)]);assert.equal(tuna.quantity,1);assert.equal(tuna.total,540);
+assert.equal(c.plan({id:'tuna',name:'تن ماهی',quantity:3},[p('تن ماهی 180 گرم بسته 2 عددی',200)]),null,'No silent rounding to four cans');
+assert.equal(c.plan({id:'t',name:'دستمال کاغذی 3 جعبه',quantity:1},[p('دستمال کاغذی 200 برگ',200)]).quantity,3);

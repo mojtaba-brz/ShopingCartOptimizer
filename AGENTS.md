@@ -38,3 +38,6 @@
 - Automatic cleanup may delete only inactive, unprotected heads whose commits are contained in `main`, using an expected-SHA deletion lease. Preserve open-PR branches and any unmerged work.
 
 - Never over-engineer (no over-programming). Use the simplest implementation that fully meets the current requirements; remove unused code and repeated work, and avoid speculative features, unnecessary abstractions, dependencies, or architecture. Keep essential correctness checks.
+
+- Automatic count requests are consumer pieces, including boxes/cans inside multipacks; never auto-buy excess pieces for a cheaper unit price. Explicit weight/volume demand may round to whole packages. Keep manual excess choices visible.
+- Automatic single/two/three/selected-store proposals use normalized per-line effective unit-price ratios (equal line weights), with known payable total as a tie-breaker. Keep fees visible and enforce thresholds/merchant-wide quotas. Ask before resetting manual product/package-count choices on mode changes; remember policy only when requested and expose it in settings.
