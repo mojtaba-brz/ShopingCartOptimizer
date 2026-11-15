@@ -66,13 +66,9 @@ def main():
     assert adaptive_progress[-1]['completed'] == 4
     print('Python desktop collector: four parallel searches step down to one without losing store tasks/results')
     # One failed auxiliary startup must not cancel a healthy worker or its queue.
-    created = 0
     async def flaky_setup(page):
-        nonlocal created
-        created += 1
-        ordinal = created
         await setup(page)
-        if ordinal == 2:
+        if asyncio.current_task().get_name() == 'jet-search-1':
             await page.route('**/*', lambda route: route.abort('failed'))
     with patch('cartoptimizer.desktop.resource_budget', return_value={**initial,'workers':4}):
         recovered = browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],

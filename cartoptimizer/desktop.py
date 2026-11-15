@@ -384,7 +384,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
             finally:
                 task_states.pop(f'boot-{number}', None)
                 if page: await page.close()
-        running=[asyncio.create_task(run_worker(n)) for n in range(budget['workers'])]
+        running=[asyncio.create_task(run_worker(n), name=f'jet-search-{n}') for n in range(budget['workers'])]
         watcher=asyncio.create_task(monitor())
         join=asyncio.create_task(queue.join())
         try:
