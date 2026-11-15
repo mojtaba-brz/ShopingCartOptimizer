@@ -52,6 +52,7 @@ function invariant(plan,items){assert.ok(plan);for(const i of items){const parts
  }
  const longList=Array.from({length:15},(_,n)=>item('long'+n)),longOffers=longList.map(i=>offer(i.id));
  r=await run(longList,longOffers,[quote()],{solve_ms:200,state_limit:20000});assert.equal(r.best.order_count,3);assert.equal(r.best.picks.reduce((n,p)=>n+p.amazing_quantity,0),6,'Independent carts must not exhaust the budget before the three-order seed');invariant(r.best,longList);
+ const bulk=longList.map(i=>({...i,quantity:3}));r=await run(bulk,longOffers,[quote()],{solve_ms:200,state_limit:20000});assert.equal(r.best.order_count,3);assert.equal(r.best.picks.reduce((n,p)=>n+p.amazing_quantity,0),6,'All order counts need feasible seeds before coupled enumeration');invariant(r.best,bulk);
  // Public stock/timer fields survive the actual catalogue/offer sanitizers.
  const ctx={CartwiseTypes:types,fetch:()=>Promise.resolve({}),location:{origin:'https://www.digikalajet.com'},URL,XMLHttpRequest:function(){}};ctx.XMLHttpRequest.prototype.send=function(){};vm.createContext(ctx);vm.runInContext(fs.readFileSync('cartoptimizer/web/jet-catalog.js','utf8'),ctx);
  const before=Date.now();ctx.CartwiseCatalog.ingest({shop:{id:'shop',title:'فروشگاه',business:'supermarket'},result:[{id:'a',title:'کالاa',price:{price:100,discount:90,vendor_discount:20,brand_discount:0,jet_discount:70,timer:30},stock:{has_stock:false},dynamic_amazing:{remaining_stock:0},badges:{is_amazing:true}}]});

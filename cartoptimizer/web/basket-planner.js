@@ -72,26 +72,28 @@
    // No repeated-SKU amazing price across separate orders unless the retailer confirms a new entitlement.
    const remaining=new Map();for(const p of c.picks){const key=pricing.identity(p.product);remaining.set(key,Math.min(remaining.get(key)??1,p.product.amazing_remaining??1));}
    const visited=new Set();
-   async function consider(bins){
+   async function consider(bins,seedOnly=false){
     if(bins.length<2||!await tick())return;
-    const signature=bins.map(b=>b.join(',')).sort().join('|');if(visited.has(signature))return;visited.add(signature);
+    const signature=bins.map(b=>b.join(',')).sort().join('|');if(!seedOnly&&visited.has(signature))return;if(!seedOnly)visited.add(signature);
     const choices=bins.map(b=>cartOptions({...c,picks:c.picks.flatMap((p,i)=>b[i]?[portion(p,b[i])]:[])},true));if(choices.some(v=>!v.length))return;
     let best=null;
+    function take(v,used){const next=new Map(used);for(const p of v.picks)if(p.amazing_quantity){const key=pricing.identity(p.product),n=(next.get(key)||0)+p.amazing_quantity;if(n>(remaining.get(key)??Infinity))return null;next.set(key,n);}return next;}
     async function allocate(i,carts,used){
      if(!await tick())return;
      if(i===choices.length){const v=summary(carts);if(!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total&&cheaper(v,best))best=v;return;}
-     for(const v of choices[i]){const next=new Map(used);let fits=true;for(const p of v.picks)if(p.amazing_quantity){const key=pricing.identity(p.product),n=(next.get(key)||0)+p.amazing_quantity;next.set(key,n);if(n>(remaining.get(key)??Infinity)){fits=false;break;}}if(fits)await allocate(i+1,[...carts,v],next);if(stopped)return;}
+     for(const v of choices[i]){const next=take(v,used);if(next)await allocate(i+1,[...carts,v],next);if(stopped)return;}
     }
     const seen=new Set();let coupled=false;
     for(const rows of choices)for(const key of new Set(rows[0].picks.map(p=>pricing.identity(p.product)))){if(seen.has(key))coupled=true;seen.add(key);}
     // Distinct SKUs in different carts cannot compete for the same entitlement.
-    if(!coupled){const carts=choices.map(rows=>rows.reduce((best,v)=>cheaper(v,best)?v:best,null)),v=summary(carts);if(!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total)best=v;}
+    if(seedOnly&&coupled){const carts=[];let used=new Map();for(const rows of choices){let choice=null,nextUsed=null;for(const v of rows){const next=take(v,used);if(next&&cheaper(v,choice)){choice=v;nextUsed=next;}}if(!choice)break;carts.push(choice);used=nextUsed;}const v=summary(carts);if(carts.length===choices.length&&!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total)best=v;}
+    else if(!coupled){const carts=choices.map(rows=>rows.reduce((best,v)=>cheaper(v,best)?v:best,null)),v=summary(carts);if(!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total)best=v;}
     else await allocate(0,[],new Map());
     if(best&&cheaper(best,plans.get(bins.length)))plans.set(bins.length,best);
    }
    const count=c.picks.reduce((n,p)=>n+p.quantity,0),cap=Math.min(maxOrders,count);
    // Balanced seeds cover large quantities before bounded package partitioning.
-   for(let k=2;k<=cap;k++){const bins=Array.from({length:k},()=>c.picks.map(()=>0));let at=0;for(let i=0;i<c.picks.length;i++)for(let q=0;q<c.picks[i].quantity;q++)bins[at++%k][i]++;await consider(bins);if(stopped)break;}
+   for(let k=2;k<=cap;k++){const bins=Array.from({length:k},()=>c.picks.map(()=>0));let at=0;for(let i=0;i<c.picks.length;i++)for(let q=0;q<c.picks[i].quantity;q++)bins[at++%k][i]++;await consider(bins,true);if(stopped)break;}
    async function visit(i,unit,bins,startBin=0){
     if(!await tick())return;if(i===c.picks.length){await consider(bins);return;}
     for(let j=startBin;j<=Math.min(bins.length,cap-1);j++){const fresh=j===bins.length;if(fresh)bins.push(c.picks.map(()=>0));bins[j][i]++;
