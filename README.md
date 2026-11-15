@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.15.4
+# سبدچین — Sabadchin 0.15.5
 
 **Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
 
@@ -127,7 +127,7 @@ The interface uses bundled Amiri 1.003 (regular and bold) in all themes, map con
 
 The [GitHub Releases page](https://github.com/mojtaba-brz/ShopingCartOptimizer/releases) provides a direct APK, a portable Windows x64 EXE and SHA256SUMS. The EXE includes Python and the Playwright driver; it uses installed Chrome or Edge for background retrieval. Launch it to open the local web interface, and close its console window to exit. It also accepts `--check-browser` for a local browser-driver diagnostic. Windows downloads are not publisher-code-signed, and the APK is a test-signed build.
 
-The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.15.4 APK in the workflow; update them alongside the app version for a later release.
+The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.15.5 APK in the workflow; update them alongside the app version for a later release.
 
 Windows initializes at most two retailer pages at once, then allows warmed pages to search up to the adaptive limit. An auxiliary startup failure retires that slot and preserves the healthy worker queue. The first page retries initialization once; a persistent failure reports its actual cause. The EXE workflow also exercises the real background search through the local HTTP service at a public test landmark; live network availability is reported separately from deterministic checks.
 
