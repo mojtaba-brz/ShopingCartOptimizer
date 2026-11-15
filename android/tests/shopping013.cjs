@@ -27,9 +27,13 @@ const quote=(id,type='supermarket',fields={})=>({source:'digikala-visible-checko
  for(let seed=1;seed<=16;seed++){
   const items=[0,1,2].map(n=>item('کالا'+n,'کالا'+n,1+(seed+n)%2)),rows=items.map((i,n)=>({id:i.id,products:['a','b'].map((id,k)=>p(i.name,id,60+(seed*13+n*17+k*19)%70,(seed+n+k)%3?10+(seed+n+k)%30:null))}));
   const fee=25,min=seed%2?0:50,free=seed%3?150:100;
-  function storeCost(chosen){const units=[],base=chosen.reduce((sum,{p,q})=>{if(p.amazing)for(let j=0;j<q;j++)units.push(p.post_amazing_price-p.promo_price);return sum+p.post_amazing_price*q;},0);let best=Infinity;const savings=[0,...units];for(let i=0;i<units.length;i++)for(let j=i+1;j<units.length;j++)savings.push(units[i]+units[j]);for(const d of savings){const subtotal=base-d;if(subtotal>=min)best=Math.min(best,subtotal+(subtotal>=free?0:fee));}return best;}
-  let best=Infinity;for(let mask=0;mask<8;mask++){let total=0;for(const id of ['a','b']){const selected=items.map((it,n)=>({p:rows[n].products[(mask>>n)&1],q:it.quantity})).filter(x=>x.p.store_id===id);if(selected.length)total+=storeCost(selected);}best=Math.min(best,total);}
-  const actual=await basket.solve(items,rows,['a','b'].map(id=>quote(id,'supermarket',{delivery_fee:{value:fee},minimum_order:{value:min},free_delivery_over:{value:free}})),{},{},{solve_ms:800,state_limit:80000});assert.equal(actual.best.total,best,'Quota/fee oracle seed '+seed);
+  const refs=rows.map((r,n)=>Math.min(...r.products.map(p=>{const q=items[n].quantity;return (p.post_amazing_price*q-(p.amazing?Math.min(2,q)*(p.post_amazing_price-p.promo_price):0))/q;})));
+  function storeCost(chosen){const slots=[];chosen.forEach((x,n)=>{if(x.p.amazing)for(let j=0;j<x.q;j++)slots.push(n);});const combos=[[],...slots.map(n=>[n])];for(let i=0;i<slots.length;i++)for(let j=i+1;j<slots.length;j++)combos.push([slots[i],slots[j]]);
+   let best={score:Infinity,cost:Infinity};for(const combo of combos){let subtotal=0,score=0;chosen.forEach((x,n)=>{const specials=combo.filter(k=>k===n).length,cost=x.p.post_amazing_price*x.q-specials*(x.p.post_amazing_price-x.p.promo_price);subtotal+=cost;score+=cost/x.q/refs[x.index];});if(subtotal<min)continue;const cost=subtotal+(subtotal>=free?0:fee);if(score<best.score-1e-9||Math.abs(score-best.score)<1e-9&&cost<best.cost)best={score,cost};}return best;
+  }
+  let best={score:Infinity,cost:Infinity};for(let mask=0;mask<8;mask++){let cost=0,score=0;for(const id of ['a','b']){const selected=items.map((it,n)=>({p:rows[n].products[(mask>>n)&1],q:it.quantity,index:n})).filter(x=>x.p.store_id===id);if(selected.length){const v=storeCost(selected);cost+=v.cost;score+=v.score;}}if(score<best.score-1e-9||Math.abs(score-best.score)<1e-9&&cost<best.cost)best={cost,score};}
+  const actual=await basket.solve(items,rows,['a','b'].map(id=>quote(id,'supermarket',{delivery_fee:{value:fee},minimum_order:{value:min},free_delivery_over:{value:free}})),{},{},{solve_ms:800,state_limit:80000});assert.equal(actual.best.total,best.cost,'Unit-price/quota/fee oracle seed '+seed);assert.ok(Math.abs(actual.best.unit_score-best.score)<1e-9);
+
  }
  // Only whitelisted public catalogue fields are exposed, with merchant and
  // displayed-current-price agreement. Account/cart prices never enter the index.

@@ -45,5 +45,10 @@
  function amount(title){const p=measure(title);return ['g','ml'].includes(p.unit)?{value:p.value,unit:p.unit}:null;}
  function explicit(title){const s=text(title);return /\d+\s*(?:برگ|عددی|تایی|عدد)/u.test(s)||[...s.matchAll(physical)].length>0;}
  function query(title){return text(title).replace(/\d+\s*[x×*]\s*(?=\d)/g,'').replace(physical,' ').replace(/(?:بسته(?: بندی)?|پک|مجموعه)?\s*\d+\s*(?:عددی|تایی|عدد|جعبه(?:ای)?|برگ(?:ی)?|لا(?:یه)?)(?![\p{L}])/gu,' ').replace(/\s+/g,' ').trim();}
- const api={text,contents,measure,amount,explicit,query};root.CartwisePackages=api;if(typeof module!=='undefined')module.exports=api;
+ // Consumer pieces are distinct from grams/sheets used to compare value.
+ function units(title){const p=contents(title);if(p.boxes)return p.boxes;if(p.unit==='count')return p.value;
+  const counts=[...text(title).matchAll(/(\d+)\s*(?:جعبه(?:ای)?|بسته(?:ای)?|عددی|تایی|عدد|قوطی|بطری|ساشه)(?![\p{L}])/gu)].map(m=>Number(m[1]));
+  return new Set(counts).size<=1?(counts[0]||p.items||1):null;
+ }
+ const api={text,contents,measure,amount,explicit,query,units};root.CartwisePackages=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

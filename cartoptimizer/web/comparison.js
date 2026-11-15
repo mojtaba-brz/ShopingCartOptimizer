@@ -16,27 +16,31 @@
   const order={g:0,ml:1,count:2,sheet:3,unknown:4};
   return [...seen.values()].sort((x,y)=>order[x.size.unit]-order[y.size.unit]||(x.unit_price??Infinity)-(y.unit_price??Infinity)||(x.promo_price??x.regular_price)-(y.promo_price??y.regular_price)||x.key.localeCompare(y.key));
  }
- function requiredUnit(item){return packages.explicit(item.name)?measure(item.name).unit:null;}
+ function requiredUnit(item){const m=measure(item.name);return packages.explicit(item.name)&&m.unit!=='unknown'?m.unit:null;}
  function group(item,rows){if(requiredUnit(item))return requiredUnit(item);
   const counts=new Map();for(const p of rows)if(p.size.unit!=='unknown')counts.set(p.size.unit,(counts.get(p.size.unit)||0)+1);
   return [...counts].sort((x,y)=>y[1]-x[1]||({g:0,ml:1,count:2,sheet:3}[x[0]]-{g:0,ml:1,count:2,sheet:3}[y[0]]))[0]?.[0]||'unknown';
  }
  function plan(item,rows,selected='',allowReview=false,override=null){
   const choices=options(item,rows),reviews=allowReview?options(item,rows,true):[];
-  const dimension=group(item,choices),p=selected?[...choices,...reviews].find(p=>p.key===selected):choices.find(p=>{if(p.size.unit!==dimension||p.unit_price===null)return false;const required=measure(item.name),n=requiredUnit(item)?Math.ceil(required.value*item.quantity/p.size.value):p.size.unit==='count'?Math.ceil(item.quantity/p.size.value):item.quantity;return n>=1&&n<=50;});
-  return purchase(item,p,override);
+  const dimension=group(item,choices),p=selected?[...choices,...reviews].find(p=>p.key===selected):choices.find(p=>p.size.unit===dimension&&p.unit_price!==null&&purchase(item,p));
+  return purchase(item,p,override,!!selected);
  }
- function purchase(item,p,override=null){
+ function purchase(item,p,override=null,manual=false){
   if(!p)return null;
-  const requested=measure(item.name),explicit=packages.explicit(item.name);
-  if(explicit&&requested.unit!==p.size.unit)return null;
-  let quantity=item.quantity,target=null;
-  if(explicit){target=requested.value*item.quantity;quantity=Math.ceil(target/p.size.value);}
-  else if(p.size.unit==='count'){target=item.quantity;quantity=Math.ceil(target/p.size.value);}
+  const requested=measure(item.name),explicit=requiredUnit(item);
+  if(explicit&&explicit!==p.size.unit)return null;
+  let quantity=item.quantity,target=null,consumerTarget=null,consumerTotal=null;
+  if(explicit&&['g','ml'].includes(requested.unit)){target=requested.value*item.quantity;quantity=Math.ceil(target/p.size.value);}
+  else {consumerTarget=packages.units(item.name)*item.quantity;const count=packages.units(p.title);if(!count||!consumerTarget)return null;quantity=Math.ceil(consumerTarget/count);consumerTotal=quantity*count;
+   // Excess packs require a deliberate manual choice, never a unit-price shortcut.
+   if(override===null&&!manual&&consumerTotal>consumerTarget)return null;
+  }
   if(override!==null)quantity=override;
+  if(consumerTarget!==null)consumerTotal=quantity*packages.units(p.title);
   if(!Number.isInteger(quantity)||quantity<1||quantity>50)return null;
   const cost=a.estimated(p,quantity),total=p.size.value?quantity*p.size.value:null;
-  return {product:p,quantity,target,total,unit:p.size.unit,cost,unit_price:p.unit_price,
+  return {product:p,quantity,target,total,consumer_target:consumerTarget,consumer_total:consumerTotal,unit:p.size.unit,cost,unit_price:p.unit_price,
    effective_unit_price:total?cost*(['g','ml'].includes(p.size.unit)?1000:1)/total:null,
    line:{item_id:item.id,title:p.title,quantity,subtotal:cost,url:p.url,store_name:p.store_name,store_id:p.store_id,store_type:p.store_type||'supermarket',image_url:p.image_url}};
  }
