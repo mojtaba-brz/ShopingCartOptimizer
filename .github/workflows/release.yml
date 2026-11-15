@@ -2,11 +2,12 @@ name: Downloadable release
 on:
   workflow_dispatch:
   push:
-    branches: ['main', 'release/windows-0151']
+    branches: ['main']
     paths:
       - '.github/workflows/release.yml'
       - 'release/windows-entry.py'
       - 'release/check-windows.py'
+      - 'cartoptimizer/release.json'
 permissions:
   contents: read
 concurrency:
@@ -63,8 +64,8 @@ jobs:
       - name: Prepare and publish both downloads
         env:
           GH_TOKEN: ${{ github.token }}
-          ANDROID_RUN: '43754092747'
-          APK_SHA256: '0b4133b57cb211c70e4378e317e369133996e4de708169466ef864d6cf85c4b8'
+          ANDROID_RUN: '43768748028'
+          APK_SHA256: 'faa03d417888a445c08615481400652c89147c77a25bf52c6c3078777d418362'
         run: |
           set -euo pipefail
           version=$(python3 -c 'import json; print(json.load(open("cartoptimizer/release.json"))["version"])')
@@ -104,9 +105,11 @@ jobs:
           PY
           (cd release-assets && sha256sum *.apk *.exe > SHA256SUMS.txt)
           cat > release-notes.md <<'NOTES'
-          نسخهٔ آزمایشی سبدچین ۰٫۱۵٫۱
+          نسخهٔ آزمایشی سبدچین ۰٫۱۵٫۲
 
-          - فونت Amiri در هر سه قالب، نقشه و اندروید، همراه با فایل‌های محلی فونت.
+          - افزایش جست‌وجوی موازی تا ۸ صفحه با توجه به پردازنده و حافظهٔ آزاد.
+          - کاهش خودکار هم‌زمانی هنگام فشار حافظه یا کندی پایدار رابط، با حفظ صف و نتایج.
+          - بودجهٔ فروشگاه‌ها و سفارش‌های بهینه‌سازی مستقل از کاهش صفحات جست‌وجو می‌ماند.
           - بهینه‌سازی قیمت واحد، شگفت‌انگیزهای غیرتکراری و چند سفارش از یک فروشگاه با احتساب هزینه‌ها.
           - APK برای نصب مستقیم و EXE قابل حمل ویندوز x64، بدون نیاز به نصب Python.
 
