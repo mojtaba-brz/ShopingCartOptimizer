@@ -159,8 +159,9 @@ class DesktopService:
         except Exception as exc:
             with self.lock:
                 if self.jobs.get(key, {}).get('state') == 'running':
+                    detail = str(exc).splitlines()[0] if str(exc) else type(exc).__name__
                     self.jobs[key].update(state='error', error=str(exc) if isinstance(exc, ValidationError) else
-                                         'اتصال به جت کامل نشد؛ اینترنت و دسترسی Chrome یا Edge را بررسی کنید.')
+                                         f'جست‌وجوی جت کامل نشد ({type(exc).__name__}): {detail[:500]}')
 
     def status(self, key):
         with self.lock:

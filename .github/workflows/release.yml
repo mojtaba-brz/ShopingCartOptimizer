@@ -2,7 +2,7 @@ name: Downloadable release
 on:
   workflow_dispatch:
   push:
-    branches: ['main']
+    branches: ['main', 'fix/windows-search-0154']
     paths:
       - '.github/workflows/release.yml'
       - 'release/windows-entry.py'
@@ -39,6 +39,13 @@ jobs:
         run: |
           $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
           python release/check-windows.py "dist/Sabadchin-Windows-$version.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Check live retrieval through the packaged Windows server
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
+          python release/check-windows.py "dist/Sabadchin-Windows-$version.exe" --live
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
