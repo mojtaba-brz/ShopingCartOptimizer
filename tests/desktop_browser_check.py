@@ -2,6 +2,7 @@
 import os
 import asyncio
 from pathlib import Path
+from unittest.mock import patch
 from cartoptimizer.desktop import browse
 
 
@@ -9,6 +10,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     html = (root / 'android/app/src/androidTest/assets/jet-search.html').read_text(encoding='utf-8')
     html = html.replace('فروشگاه ${', 'فروشگاه‌${')
+    html = html.replace("encodeURIComponent('شیر')", "encodeURIComponent(new URLSearchParams(location.search).get('q'))")
     # A cold search document resets the guest point. Address bootstrap + SPA
     # routes must avoid this real retailer behavior rather than accepting it.
     html = """<script>if(location.pathname==='/user/add-address')sessionStorage.setItem('fixture-address-ready','1');else if(!sessionStorage.getItem('fixture-address-ready')){const r=JSON.parse(localStorage.getItem('persist:DKNow'));r.address=JSON.stringify({defaultAddress:{addressAddress:'اشتباه',addressLatitude:36,addressLongitude:52}});localStorage.setItem('persist:DKNow',JSON.stringify(r));}</script>""" + html + """<script>if(location.pathname==='/user/add-address')document.getElementById('root').insertAdjacentHTML('beforeend','<input placeholder="جستجوی آدرس">');</script>"""
@@ -41,6 +43,29 @@ def main():
     assert max(x.get('active_workers',0) for x in progress)==2
     assert progress and result['location'] == 'ارسال به تهران، ونک'
     print('Python desktop collector: verified address + multiple stores + beyond first four results passed')
+    # Memory drops while four independent queries are active. Finish their work,
+    # retire surplus pages, and drain every queued store task with one worker.
+    adaptive_progress = []
+    initial = {'workers':4, 'base_carts':3, 'max_carts':6, 'state_limit':80000, 'solve_ms':800}
+    calls = 0
+    def resources():
+        nonlocal calls
+        calls += 1
+        return {**initial, 'workers':4 if calls == 1 else 1}
+    with patch('cartoptimizer.desktop.resource_budget', side_effect=resources):
+        adaptive = browse([{'id':str(n),'name':name,'query':name,'quantity':1} for n,name in enumerate(['شیر','ماست','پنیر','نان'])],
+            {'latitude':35.75,'longitude':51.4,'address':'تهران، ونک'},
+            lambda **data: adaptive_progress.append(data), page_setup=setup,
+            browser_options=({'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']}
+                             if os.environ.get('CHROMIUM_PATH') else {}))
+    assert max(x['active_workers'] for x in adaptive_progress) == 4
+    assert adaptive['resources']['workers'] == 1
+    assert adaptive['resources']['max_carts'] == 6
+    assert len(adaptive['items']) == 4
+    assert all(len(item['products']) == 24 and not item['error'] for item in adaptive['items']), adaptive['items']
+    assert adaptive_progress[-1]['completed'] == 4
+    print('Python desktop collector: four parallel searches step down to one without losing store tasks/results')
+
 
 
 if __name__ == '__main__':
