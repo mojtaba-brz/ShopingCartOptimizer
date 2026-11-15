@@ -1,5 +1,6 @@
 """Portable Windows entry point; browser check also validates the frozen driver."""
 import json
+import hashlib
 import sys
 from cartoptimizer.server import main
 
@@ -16,7 +17,9 @@ if __name__ == '__main__':
                     page = browser.new_page()
                     page.set_content('<title>Sabadchin browser check</title>')
                     assert page.title() == 'Sabadchin browser check'
-                    print(json.dumps({'browser': channel, 'version': browser.version}))
+                    from cartoptimizer.desktop import WEB
+                    assets = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in WEB.iterdir() if p.is_file()}
+                    print(json.dumps({'browser': channel, 'version': browser.version, 'assets': assets}))
                 finally:
                     browser.close()
                 break
