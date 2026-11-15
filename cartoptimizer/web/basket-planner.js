@@ -6,7 +6,7 @@
  const types=root.CartwiseTypes||(typeof require!=='undefined'?require('./retail-types.js'):null);
  const pricing=root.CartwisePricing||(typeof require!=='undefined'?require('./offer-pricing.js'):null);
  const norm=a.normalize,less=(x,y)=>x<y-1e-9,same=(x,y)=>Math.abs(x-y)<1e-9;
- function budget(value={}){const workers=Math.max(1,Math.min(4,Number(value.workers)||1));return {base:3,max:Math.max(3,Math.min(3+workers-1,Number(value.max_carts)||3)),states:Math.max(1000,Math.min(80000,Number(value.state_limit)||20000)),ms:Math.max(50,Math.min(800,Number(value.solve_ms)||200))};}
+ function budget(value={}){return {base:3,max:Math.max(3,Math.min(6,Number(value.max_carts)||3)),states:Math.max(1000,Math.min(80000,Number(value.state_limit)||20000)),ms:Math.max(50,Math.min(800,Number(value.solve_ms)||200))};}
  async function solveGroup(items,results,quotes=[],selection={},quantities={},resources={},cancelled=()=>false){
   const limits=budget(resources),allowed=resources.auto_expand===false?3:limits.max,started=Date.now(),observations=checkout.clean(quotes),aliases=new Map(),names=new Map();
   for(const e of results)for(const p of e.products||[])if(p.store_name){const name=types.store(p)+'|'+norm(p.store_name);if(!aliases.has(name))aliases.set(name,new Set());if(p.store_id)aliases.get(name).add(p.store_id);if(p.store_id)names.set(types.store(p)+'|id:'+p.store_id,p.store_name);else names.set('name:'+name,p.store_name);}

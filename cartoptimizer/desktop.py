@@ -188,7 +188,7 @@ SCROLL = """() => {let more=false;for(const e of [document.scrollingElement,...d
 SCROLL_TOP = """() => {for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY)))e.scrollTop=0;}"""
 
 def resource_budget():
-    """Conservative available-memory budget; never start unlimited browsers."""
+    """Start up to eight pages, retaining memory headroom for the interface."""
     cpu, mb = os.cpu_count() or 1, 512
     try:
         if os.name == 'nt':
@@ -203,9 +203,10 @@ def resource_budget():
             mb = os.sysconf('SC_AVPHYS_PAGES') * os.sysconf('SC_PAGE_SIZE') // 1048576
     except (AttributeError, ValueError, OSError):
         pass
-    workers = 4 if cpu >= 12 and mb >= 4096 else 3 if cpu >= 8 and mb >= 2048 else 2 if cpu >= 4 and mb >= 1024 else 1
-    return {'workers': workers, 'base_carts': 3, 'max_carts': 3 + workers - 1,
-            'state_limit': 20000 * workers, 'solve_ms': 200 * workers}
+    workers = min(8, cpu, max(1, (mb - 512) // 256))
+    solver = 4 if cpu >= 12 and mb >= 4096 else 3 if cpu >= 8 and mb >= 2048 else 2 if cpu >= 4 and mb >= 1024 else 1
+    return {'workers': workers, 'base_carts': 3, 'max_carts': 3 + solver - 1,
+            'state_limit': 20000 * solver, 'solve_ms': 200 * solver}
 
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
@@ -224,7 +225,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     from urllib.parse import parse_qs
     budget = resource_budget()
     if workers is not None:
-        budget['workers'] = max(1, min(4, int(workers)))
+        budget['workers'] = max(1, min(8, int(workers)))
     sources = {key: (WEB / file).read_text(encoding='utf-8') for key, file in {
         'reader':'jet-dom.js', 'preference':'jet-location.js', 'checkout':'digikala-checkout.js',
         'navigation':'jet-navigation.js', 'expand':'jet-expand.js', 'fees':'jet-fees.js'}.items()}
@@ -266,7 +267,20 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
             else:
                 await route.continue_()
         await context.route('**/*', lightweight)
-        async def run_worker():
+        async def monitor():
+            delayed = 0
+            while True:
+                start = time.monotonic()
+                await asyncio.sleep(2)
+                delayed = delayed + 1 if time.monotonic() - start > 3.5 else 0
+                limit = min(budget['workers'], resource_budget()['workers'])
+                if delayed >= 2:
+                    limit = max(1, limit // 2); delayed = 0
+                if limit < budget['workers']:
+                    budget['workers'] = limit
+                    progress(f'کاهش خودکار جست‌وجوی موازی به {limit} صفحه برای روان ماندن دستگاه')
+
+        async def run_worker(number):
             nonlocal active_tasks
             page = await context.new_page(); page.set_default_timeout(10000)
             try:
@@ -276,8 +290,14 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                 await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
                 await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
                 await page.evaluate(adapters + worker_script)
-                while True:
-                    task = await queue.get(); active_tasks += 1
+                while number < budget['workers']:
+                    try:
+                        task = await asyncio.wait_for(queue.get(), timeout=1)
+                    except asyncio.TimeoutError:
+                        continue
+                    if number >= budget['workers']:
+                        queue.put_nowait(task); queue.task_done(); break
+                    active_tasks += 1
                     slot=str(id(page)); task_states[slot]={'id':slot,'name':task['name'],'store':task.get('store_name',''),'kind':task['kind'],'products':0,'detail':'در حال دریافت'}
                     try:
                         deadlines.setdefault(task['id'], time.monotonic()+120)
@@ -323,19 +343,21 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                         queue.task_done()
             finally:
                 await page.close()
-        running=[asyncio.create_task(run_worker()) for _ in range(budget['workers'])]
+        running=[asyncio.create_task(run_worker(n)) for n in range(budget['workers'])]
+        watcher=asyncio.create_task(monitor())
         join=asyncio.create_task(queue.join())
         try:
-            done,_=await asyncio.wait([join,*running],return_when=asyncio.FIRST_COMPLETED)
-            for job in done:
-                if job is not join: await job
+            waiting={join,watcher,*running}
+            while not join.done():
+                done,waiting=await asyncio.wait(waiting,return_when=asyncio.FIRST_COMPLETED)
+                for job in done: await job
             await join
             result['items']=[{**entries[queries[(i['query'],i.get('department','supermarket'))]],'id':i['id']} for i in items]
             result['captured_at']=datetime.now(timezone.utc).isoformat()
             return result
         finally:
-            join.cancel()
+            join.cancel(); watcher.cancel()
             for job in running: job.cancel()
-            await asyncio.gather(*running,return_exceptions=True)
+            await asyncio.gather(join,watcher,*running,return_exceptions=True)
             await browser.close()
 

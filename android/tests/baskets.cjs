@@ -13,6 +13,7 @@ const quote=(store,delivery=200,extra={})=>({source:'digikala-visible-checkout',
  const four=[item('a','شیر'),item('b','نان'),item('c','پنیر'),item('d','ماست')],separate=four.map(i=>({id:i.id,products:[product(i.name,i.id,100)]}));
  assert.equal((await basket.solve(four,separate,[],{},{},{workers:1,max_carts:3})).best,null);
  const adaptive=await basket.solve(four,separate,[],{},{},{workers:2,max_carts:4});assert.equal(adaptive.best.carts.length,4);
+ assert.equal((await basket.solve(four,separate,[],{},{},{workers:1,max_carts:4})).best.carts.length,4,'Reducing search concurrency preserves the optimizer store budget');
  assert.equal((await basket.solve(four,separate,[],{},{},{workers:2,max_carts:4,auto_expand:false})).best,null);
  const minimum=await basket.solve([items[0]],[{id:'m',products:[product('شیر 1 لیتر کم','a',50),product('شیر 1 لیتر کافی','a',150)]}],[quote('a',20,{minimum_order:{value:100}})]);assert.equal(minimum.best.total,170);
  // Independent enumeration: merchant assignment + separately charged store fees.

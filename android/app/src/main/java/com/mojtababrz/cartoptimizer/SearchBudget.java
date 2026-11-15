@@ -10,8 +10,9 @@ final class SearchBudget {
         ActivityManager manager=(ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memory=new ActivityManager.MemoryInfo();manager.getMemoryInfo(memory);
         long mb=memory.availMem/1048576;int cpu=Runtime.getRuntime().availableProcessors();
-        int workers=manager.isLowRamDevice()||memory.lowMemory?1:cpu>=12&&mb>=4096?4:cpu>=8&&mb>=2048?3:cpu>=4&&mb>=1024?2:1;
-        JSONObject result=new JSONObject();try{result.put("workers",workers).put("base_carts",3).put("max_carts",3+workers-1).put("state_limit",20000*workers).put("solve_ms",200*workers);}catch(Exception ignored){}
+        int workers=manager.isLowRamDevice()||memory.lowMemory?1:Math.min(8,Math.min(cpu,(int)Math.max(1,(mb-512)/256)));
+        int solver=manager.isLowRamDevice()||memory.lowMemory?1:cpu>=12&&mb>=4096?4:cpu>=8&&mb>=2048?3:cpu>=4&&mb>=1024?2:1;
+        JSONObject result=new JSONObject();try{result.put("workers",workers).put("base_carts",3).put("max_carts",3+solver-1).put("state_limit",20000*solver).put("solve_ms",200*solver);}catch(Exception ignored){}
         return result;
     }
 }

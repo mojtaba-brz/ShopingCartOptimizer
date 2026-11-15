@@ -79,7 +79,13 @@ class DesktopTests(unittest.TestCase):
         with patch('cartoptimizer.desktop.os.cpu_count', return_value=1):
             self.assertEqual(resource_budget()['workers'], 1)
             self.assertEqual(resource_budget()['max_carts'], 3)
-        self.assertLessEqual(resource_budget()['workers'], 4)
+        self.assertLessEqual(resource_budget()['workers'], 8)
+        with patch('cartoptimizer.desktop.os.cpu_count', return_value=8), patch('cartoptimizer.desktop.os.sysconf', create=True, side_effect=lambda name: 1024*256 if name=='SC_AVPHYS_PAGES' else 4096):
+            if __import__('os').name != 'nt':
+                self.assertEqual(resource_budget()['workers'], 2)
+        with patch('cartoptimizer.desktop.os.cpu_count', return_value=8), patch('cartoptimizer.desktop.os.sysconf', create=True, side_effect=lambda name: 1024*1024 if name=='SC_AVPHYS_PAGES' else 4096):
+            if __import__('os').name != 'nt':
+                self.assertEqual(resource_budget()['workers'], 8)
         self.assertLessEqual(resource_budget()['max_carts'], 6)
 
     def test_department_survives_normalization_and_rejects_invalid_values(self):
