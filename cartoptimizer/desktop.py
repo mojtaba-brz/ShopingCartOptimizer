@@ -188,7 +188,7 @@ SCROLL = """() => {let more=false;for(const e of [document.scrollingElement,...d
 SCROLL_TOP = """() => {for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY)))e.scrollTop=0;}"""
 
 def resource_budget():
-    """Start up to eight pages, retaining memory headroom for the interface."""
+    """Start up to twenty pages, retaining memory headroom for the interface."""
     cpu, mb = os.cpu_count() or 1, 512
     try:
         if os.name == 'nt':
@@ -203,7 +203,7 @@ def resource_budget():
             mb = os.sysconf('SC_AVPHYS_PAGES') * os.sysconf('SC_PAGE_SIZE') // 1048576
     except (AttributeError, ValueError, OSError):
         pass
-    workers = min(8, cpu, max(1, (mb - 512) // 256))
+    workers = min(20, cpu, max(1, (mb - 512) // 256))
     solver = 4 if cpu >= 12 and mb >= 4096 else 3 if cpu >= 8 and mb >= 2048 else 2 if cpu >= 4 and mb >= 1024 else 1
     return {'workers': workers, 'base_carts': 3, 'max_carts': 3 + solver - 1,
             'state_limit': 20000 * solver, 'solve_ms': 200 * solver}
@@ -225,7 +225,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     from urllib.parse import parse_qs
     budget = resource_budget()
     if workers is not None:
-        budget['workers'] = max(1, min(8, int(workers)))
+        budget['workers'] = max(1, min(20, int(workers)))
     sources = {key: (WEB / file).read_text(encoding='utf-8') for key, file in {
         'reader':'jet-dom.js', 'preference':'jet-location.js', 'checkout':'digikala-checkout.js',
         'navigation':'jet-navigation.js', 'expand':'jet-expand.js', 'fees':'jet-fees.js'}.items()}
