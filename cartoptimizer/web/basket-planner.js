@@ -82,7 +82,11 @@
      if(i===choices.length){const v=summary(carts);if(!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total&&cheaper(v,best))best=v;return;}
      for(const v of choices[i]){const next=new Map(used);let fits=true;for(const p of v.picks)if(p.amazing_quantity){const key=pricing.identity(p.product),n=(next.get(key)||0)+p.amazing_quantity;next.set(key,n);if(n>(remaining.get(key)??Infinity)){fits=false;break;}}if(fits)await allocate(i+1,[...carts,v],next);if(stopped)return;}
     }
-    await allocate(0,[],new Map());
+    const seen=new Set();let coupled=false;
+    for(const rows of choices)for(const key of new Set(rows[0].picks.map(p=>pricing.identity(p.product)))){if(seen.has(key))coupled=true;seen.add(key);}
+    // Distinct SKUs in different carts cannot compete for the same entitlement.
+    if(!coupled){const carts=choices.map(rows=>rows.reduce((best,v)=>cheaper(v,best)?v:best,null)),v=summary(carts);if(!carts.some(c=>c.unknown_fees||c.price_unknown)&&v.known_total<base.known_total)best=v;}
+    else await allocate(0,[],new Map());
     if(best&&cheaper(best,plans.get(bins.length)))plans.set(bins.length,best);
    }
    const count=c.picks.reduce((n,p)=>n+p.quantity,0),cap=Math.min(maxOrders,count);
