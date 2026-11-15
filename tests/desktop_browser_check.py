@@ -70,8 +70,9 @@ def main():
     async def flaky_setup(page):
         nonlocal created
         created += 1
+        ordinal = created
         await setup(page)
-        if created == 2:
+        if ordinal == 2:
             await page.route('**/*', lambda route: route.abort('failed'))
     with patch('cartoptimizer.desktop.resource_budget', return_value={**initial,'workers':4}):
         recovered = browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],
