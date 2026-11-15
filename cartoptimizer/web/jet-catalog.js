@@ -21,7 +21,8 @@
     // are complete, nonnegative and reconcile exactly with the displayed total.
     const components=[x.price.vendor_discount,x.price.brand_discount,x.price.jet_discount];
     if(amazing&&!hasFirst&&components.every(money)&&components[2]>0&&components.reduce((n,v)=>n+v,0)===x.price.discount){post=x.price.price-components[0]-components[1];price_source='catalogue-components';}
-    const p={...shop,product_id:String(x.id),title:x.title.slice(0,300),regular_price:x.price.price,current_price:current,amazing,post_amazing_price:post,post_amazing_verified:post!==null,post_amazing_source:post!==null?price_source:''};
+    const seconds=x.price.timer,remaining=x.dynamic_amazing?.remaining_stock;
+    const p={...shop,has_stock:typeof x.stock?.has_stock==='boolean'?x.stock.has_stock:null,amazing_remaining:Number.isSafeInteger(remaining)&&remaining>=0?remaining:null,amazing_expires_at:Number.isFinite(seconds)&&seconds>=0&&seconds<=2592000?Date.now()+seconds*1000:null,product_id:String(x.id),title:x.title.slice(0,300),regular_price:x.price.price,current_price:current,amazing,post_amazing_price:post,post_amazing_verified:post!==null,post_amazing_source:post!==null?price_source:''};
     const key=shop.store_type+'|'+shop.store_id+'|'+p.product_id;products.set(key,p);
    }
   }

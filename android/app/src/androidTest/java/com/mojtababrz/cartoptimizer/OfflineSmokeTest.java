@@ -77,7 +77,10 @@ public class OfflineSmokeTest {
             assertTrue(eval(scenario,"CartwiseAuto.estimated({regular_price:100,promo_price:80},3)===240").equals("true"));
             eval(scenario,"window.quotaResult=null;CartwiseBasket.solve([{id:'x',name:'کالا',quantity:3}],[{id:'x',products:[{title:'کالا',store_name:'الف',store_id:'a',store_type:'supermarket',regular_price:150,promo_price:10,amazing:true,post_amazing_price:100,post_amazing_verified:true}]}]).then(r=>window.quotaResult=r.best);true");
             waitFor(scenario,"window.quotaResult!==null");
-            assertTrue(eval(scenario,"quotaResult.total===120 && quotaResult.picks[0].amazing_quantity===2 && quotaResult.picks[0].base_quantity===1").equals("true"));
+            assertTrue(eval(scenario,"quotaResult.total===210 && quotaResult.picks[0].amazing_quantity===1 && quotaResult.picks[0].base_quantity===2").equals("true"));
+            eval(scenario,"window.repeatedResult=null;CartwiseBasket.solve([0,1,2].map(n=>({id:'g'+n,name:'کالا'+n,quantity:1})),[0,1,2].map(n=>({id:'g'+n,products:[{title:'کالا'+n,product_id:'p'+n,store_id:'a',store_name:'الف',store_type:'supermarket',regular_price:100,promo_price:10,amazing:true,post_amazing_price:80,post_amazing_verified:true}]})),[{source:'digikala-visible-checkout',page_kind:'store',page_url:'https://www.digikalajet.com/search/shop',captured_at:new Date().toISOString(),store_id:'a',store_name:'الف',store_type:'supermarket',fields:{delivery_fee:{value:5},service_fee:{value:0},packaging_fee:{value:3}},notices:[]}]).then(r=>window.repeatedResult=r.single);true");
+            waitFor(scenario,"window.repeatedResult!==null");
+            assertTrue(eval(scenario,"repeatedResult.store_count===1 && repeatedResult.order_count===2 && repeatedResult.total===46 && repeatedResult.picks.every(p=>p.quantity===1 && p.amazing_quantity===1) && repeatedResult.carts.every(c=>c.delivery_fee===5 && c.extra_fees.packaging_fee===3)").equals("true"));
         }
     }
 
