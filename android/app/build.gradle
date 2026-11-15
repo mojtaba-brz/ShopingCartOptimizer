@@ -37,6 +37,7 @@ android {
         }
     }
     sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('generated/webAssets')]
+    sourceSets.main.res.srcDir(layout.buildDirectory.dir('generated/fontResources'))
 }
 
 tasks.register('syncWebAssets', Copy) {
@@ -61,12 +62,21 @@ tasks.register('syncWebAssets', Copy) {
             .replace('href="/map.css"', 'href="/assets/map.css"')
             .replace('src="/basket-planner.js"', 'src="/assets/basket-planner.js"')
             .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
-            .replace('href="/fa.css"', 'href="/assets/fa.css"') }
+            .replace('href="/fa.css"', 'href="/assets/fa.css"')
+            .replace('href="/fonts.css"', 'href="/assets/fonts.css"') }
     }
+    from('../../cartoptimizer/web') { include 'Amiri-*.ttf', 'Amiri-OFL.txt' }
     from('../../cartoptimizer') { include 'demo.json', 'release.json' }
     into(layout.buildDirectory.dir('generated/webAssets'))
 }
-tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }
+tasks.register('syncAmiriFonts', Copy) {
+    from('../../cartoptimizer/web') {
+        include 'Amiri-Regular.ttf', 'Amiri-Bold.ttf'
+        rename { it == 'Amiri-Regular.ttf' ? 'amiri_regular.ttf' : 'amiri_bold.ttf' }
+    }
+    into(layout.buildDirectory.dir('generated/fontResources/font'))
+}
+tasks.named('preBuild').configure { dependsOn 'syncWebAssets', 'syncAmiriFonts' }
 
 dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'

@@ -62,7 +62,7 @@ jobs:
         run: python release/package-desktop.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-Desktop-0.15.0
+          name: Sabadchin-Desktop-0.15.1
           path: desktop-package/**
           retention-days: 90
       - name: Install Android platform
@@ -74,7 +74,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.15.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.15.1-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -225,6 +225,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.15.0-Publication-Kit
+          name: Sabadchin-0.15.1-Publication-Kit
           path: publication-kit/**
           retention-days: 90

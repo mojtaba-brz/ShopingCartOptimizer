@@ -22,4 +22,4 @@ cartoptimizer = "cartoptimizer.server:main"
 include = ["cartoptimizer*"]
 
 [tool.setuptools.package-data]
-cartoptimizer = ["web/*.html", "web/*.css", "web/*.js", "demo.json", "release.json"]
+cartoptimizer = ["web/*.html", "web/*.css", "web/*.js", "web/*.ttf", "web/Amiri-OFL.txt", "demo.json", "release.json"]
