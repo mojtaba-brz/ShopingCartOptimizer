@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.15.0
+# سبدچین — Sabadchin 0.15.1
 
 **Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
 
@@ -120,3 +120,5 @@ A catalogue product ID identifies the same SKU across matching rows; normalized 
 Public `stock.has_stock`, `dynamic_amazing.remaining_stock` and `price.timer` fields are whitelisted from the current Jet catalogue formatter. Unavailable goods are excluded, exhausted/expired amazing prices revert to the verified ordinary discounted price, and the UI recomputes at the next observed expiry. Missing baseline prices remain explicit estimates. The `price.price - vendor_discount - brand_discount` derivation remains permitted only when all discount components reconcile exactly.
 
 Research references (public retailer assets inspected 2026-11-15): [terms](https://www.digikalajet.com/static/terms-and-conditions), [terms page source](https://www.digikalajet.com/assets/x-lazy-page-terms-and-conditions-static.CNz69Uyc.js), [catalogue/price formatter](https://www.digikalajet.com/assets/x-app.B7LUQ1z9.js). The terms reserve product quantity limits and stock/price corrections; repeated orders must not be treated as a way to bypass quantity limits. Public evidence does not confirm an account-wide quota reset. Account coupons, membership delivery allowances, actual weights/substitutions and delivery-slot compatibility need matching checkout evidence before they can be optimized as guaranteed benefits.
+
+The interface uses bundled Amiri 1.003 (regular and bold) in all themes, map controls and native Android dialogs. Fonts load locally without Google Fonts or another font service. The original SIL Open Font License and copyright notice are included in `cartoptimizer/web/Amiri-OFL.txt`; source: https://github.com/aliftype/amiri/releases/tag/1.003.

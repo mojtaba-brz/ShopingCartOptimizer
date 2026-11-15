@@ -1,6 +1,6 @@
 <resources>
     <style name="AppThemeBase" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
+        <item name="android:fontFamily">@font/amiri</item>
         <item name="android:colorAccent">#164C78</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">#FAF2E3</item>

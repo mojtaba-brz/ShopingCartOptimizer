@@ -8,6 +8,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await context.route('**/assets/product-image?**',r=>r.fulfill({contentType:'image/png',body:png}));
  await page.addInitScript(()=>{window.CartwiseAndroid={findAutomatically:()=>{},readCheckout:()=>{},savedDelivery:()=>JSON.stringify({location:'ارسال به تهران، انقلاب',shipment_type:'scheduled'}),openDigikala:()=>{},saveJSON:()=>{},setAppearance:()=>{}};});
  await page.goto('http://127.0.0.1:8765');await page.waitForFunction(()=>window.CartwiseAppearance&&document.querySelector('#live-card'));
+ await page.evaluate(()=>Promise.all([document.fonts.load('16px Amiri','سبدچین گچپژ ۱۲۳'),document.fonts.load('700 16px Amiri','سبدچین')]));assert.ok(await page.evaluate(()=>document.fonts.check('16px Amiri')&&document.fonts.check('700 16px Amiri')));assert.match(await page.locator('body').evaluate(e=>getComputedStyle(e).fontFamily),/Amiri/);
  assert.equal(await page.locator('html').getAttribute('dir'),'rtl');assert.match(await page.locator('#live-location').innerText(),/انقلاب/);
  await page.evaluate(()=>{localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم چرب ۱ لیتر',quantity:1},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];save();});
  fs.mkdirSync('/tmp/cartwise-ui',{recursive:true});

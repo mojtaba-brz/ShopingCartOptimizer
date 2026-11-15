@@ -1,6 +1,6 @@
 /* Iranian palettes, shared accessible RTL layout; no network fonts or assets. */
 :root{--ink:#243e35;--muted:#536b61;--green:#286349;--lime:#e5efd2;--paper:#f5f5ef;--line:#dce3d8;--white:#fff;--red:#a42b35;--radius:12px}
-html[dir=rtl] body{font-family:Tahoma,"Noto Sans Arabic",sans-serif;font-size:15px;line-height:1.95;letter-spacing:0}
+html[dir=rtl] body{font-family:var(--app-font);font-size:15px;line-height:1.95;letter-spacing:0}
 html[dir=rtl] .sidebar{inset:0 0 0 auto;border-left:1px solid var(--line);border-right:0;background:var(--white)}
 html[dir=rtl] main{margin-left:0;margin-right:232px}html[dir=rtl] .run-bar{left:0;right:232px;background:var(--white)}
 html[dir=rtl] .nav{text-align:right;font-size:13px;color:var(--muted)}html[dir=rtl] .nav b{margin-left:0;margin-right:auto}

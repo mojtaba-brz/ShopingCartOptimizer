@@ -1,0 +1,6 @@
+/* Amiri 1.003, bundled under the SIL Open Font License; no remote font requests. */
+@font-face{font-family:Amiri;src:url('./Amiri-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:Amiri;src:url('./Amiri-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}
+:root{--app-font:Amiri,Tahoma,serif}
+html[dir=rtl] body{font-family:var(--app-font)}
+button,input,select,textarea{font-family:inherit}
