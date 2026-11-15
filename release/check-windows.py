@@ -51,6 +51,24 @@ with tempfile.TemporaryDirectory() as folder:
             result = json.load(reply)
         assert result['total'] == 3750000, result
         print('EXE: frozen browser driver, version, shared assets/fonts and optimization passed')
+        if '--live' in sys.argv[2:]:
+            def post(path, data):
+                with urlopen(Request(base+path, data=json.dumps(data).encode(), headers={'Content-Type':'application/json'}), timeout=30) as reply:
+                    return json.load(reply)
+            post('/api/live/location', {'latitude':35.757535,'longitude':51.40994,'address':'Tehran Vanak public test point'})
+            job = post('/api/live/search', {'items':[{'id':'milk','name':'شیر','query':'شیر','quantity':1}]})
+            visited_stores = set()
+            for _ in range(200):
+                with urlopen(base+'/api/live/status?id='+job['id'], timeout=10) as reply:
+                    status=json.load(reply)
+                visited_stores.update(t['store'] for t in status.get('tasks',[]) if t.get('kind')=='store' and t.get('store'))
+                print('Frozen live search:', json.dumps({k:status.get(k) for k in ('state','detail','products','stores','error')}, ensure_ascii=True), flush=True)
+                if status['state'] != 'running': break
+                time.sleep(1)
+            assert status['state']=='done' and status.get('products',0)>0 and status.get('stores',0)>0, status
+            assert visited_stores, 'No full-store search task was observed'
+            print('EXE: live public guest product/store search passed; full-store tasks:', len(visited_stores))
+
     finally:
         # One-file PyInstaller executables launch a child that owns the server.
         if process.poll() is None:

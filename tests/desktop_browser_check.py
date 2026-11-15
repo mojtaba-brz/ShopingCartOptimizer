@@ -65,6 +65,22 @@ def main():
     assert all(len(item['products']) == 24 and not item['error'] for item in adaptive['items']), adaptive['items']
     assert adaptive_progress[-1]['completed'] == 4
     print('Python desktop collector: four parallel searches step down to one without losing store tasks/results')
+    # One failed auxiliary startup must not cancel a healthy worker or its queue.
+    async def flaky_setup(page):
+        await setup(page)
+        if asyncio.current_task().get_name() == 'jet-search-1':
+            await page.route('**/*', lambda route: route.abort('failed'))
+    with patch('cartoptimizer.desktop.resource_budget', return_value={**initial,'workers':4}):
+        recovered = browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],
+            {'latitude':35.75,'longitude':51.4,'address':'تهران، ونک'},
+            lambda **data: None, page_setup=flaky_setup,
+            browser_options=({'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']}
+                             if os.environ.get('CHROMIUM_PATH') else {}))
+    assert recovered['resources']['workers'] == 1
+    assert len(recovered['items'][0]['products']) == 24
+    assert recovered['items'][0]['error'] is None
+    print('Python desktop collector: auxiliary page startup failure preserves the remaining shop queue/results')
+
 
 
 

@@ -54,6 +54,41 @@ class DesktopTests(unittest.TestCase):
             self.assertEqual(service.status(job)['state'], 'cancelled')
             self.assertNotIn('result', service.status(job))
 
+    def test_browser_driver_startup_has_a_deadline_and_cleans_up(self):
+        import asyncio
+        from types import SimpleNamespace
+        from cartoptimizer.desktop import browse
+        class Driver:
+            closed = False
+            async def start(self):
+                await asyncio.Event().wait()
+            async def __aexit__(self):
+                self.closed = True
+        driver = Driver(); wait_for = asyncio.wait_for; reports = []
+        async def short_wait(awaitable, timeout):
+            return await wait_for(awaitable, min(timeout, .02))
+        api = SimpleNamespace(async_playwright=lambda: driver, Error=RuntimeError)
+        with patch.dict('sys.modules', {'playwright.async_api':api}), patch('asyncio.wait_for',side_effect=short_wait):
+            with self.assertRaisesRegex(ValidationError, 'موتور مرورگر'):
+                browse(ITEMS, POINT, lambda **fields: reports.append(fields))
+        self.assertTrue(driver.closed)
+        self.assertIn('موتور مرورگر', reports[0]['detail'])
+
+    def test_unexpected_search_error_keeps_the_actual_reason(self):
+        def runner(*args):
+            raise RuntimeError('browser connection closed\nCall log: internal detail')
+        with tempfile.TemporaryDirectory() as folder:
+            service = DesktopService(folder, runner); service.location = POINT
+            job = service.start(ITEMS)['id']
+            for _ in range(100):
+                status = service.status(job)
+                if status['state'] != 'running': break
+                time.sleep(.01)
+            self.assertEqual(status['state'], 'error')
+            self.assertIn('RuntimeError', status['error'])
+            self.assertIn('browser connection closed', status['error'])
+            self.assertNotIn('internal detail', status['error'])
+
     def test_only_one_job_can_run_and_location_cannot_change_mid_search(self):
         release = threading.Event()
         def runner(items, location, report):

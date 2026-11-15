@@ -2,7 +2,7 @@ name: Downloadable release
 on:
   workflow_dispatch:
   push:
-    branches: ['main']
+    branches: ['main', 'codex/**']
     paths:
       - '.github/workflows/release.yml'
       - 'release/windows-entry.py'
@@ -40,6 +40,13 @@ jobs:
           $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
           python release/check-windows.py "dist/Sabadchin-Windows-$version.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Check live retrieval through the packaged Windows server
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
+          python release/check-windows.py "dist/Sabadchin-Windows-$version.exe" --live
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: Sabadchin-Windows-EXE
@@ -64,8 +71,8 @@ jobs:
       - name: Prepare and publish both downloads
         env:
           GH_TOKEN: ${{ github.token }}
-          ANDROID_RUN: '43770008487'
-          APK_SHA256: '50074a32ed00ad97dde867fb52b7db5c647cb1f13fbf76be443bef54377f2467'
+          ANDROID_RUN: '43773585370'
+          APK_SHA256: '79f46bb3d276c8f761c3af8ba33bdde7a3c1cf1080fc9134977229632033e093'
         run: |
           set -euo pipefail
           version=$(python3 -c 'import json; print(json.load(open("cartoptimizer/release.json"))["version"])')
@@ -105,9 +112,12 @@ jobs:
           PY
           (cd release-assets && sha256sum *.apk *.exe > SHA256SUMS.txt)
           cat > release-notes.md <<'NOTES'
-          نسخهٔ آزمایشی سبدچین ۰٫۱۵٫۳
+          نسخهٔ آزمایشی سبدچین ۰٫۱۵٫۴
 
-          - افزایش جست‌وجوی موازی تا ۲۰ صفحه با توجه به پردازنده و حافظهٔ آزاد.
+          - رفع توقف کل جست‌وجوی ویندوز هنگام خطای راه‌اندازی صفحهٔ کمکی.
+          - راه‌اندازی تدریجی صفحه‌ها، حفظ صف فروشگاه‌ها و نمایش علت واقعی خطا.
+          - نمایش مرحلهٔ واقعی راه‌اندازی، نشانگر متحرک و مهلت ۲۰ ثانیه‌ای برای موتور مرورگر.
+          - سقف جست‌وجوی موازی ۲۰ صفحه با کاهش خودکار متناسب با منابع حفظ شده است.
           - کاهش خودکار هم‌زمانی هنگام فشار حافظه یا کندی پایدار رابط، با حفظ صف و نتایج.
           - بودجهٔ فروشگاه‌ها و سفارش‌های بهینه‌سازی مستقل از کاهش صفحات جست‌وجو می‌ماند.
           - بهینه‌سازی قیمت واحد، شگفت‌انگیزهای غیرتکراری و چند سفارش از یک فروشگاه با احتساب هزینه‌ها.
@@ -115,7 +125,6 @@ jobs:
 
           برای ویندوز Chrome یا Edge نصب باشد. فایل EXE رابط وب برنامه را باز می‌کند؛ برای خروج، پنجرهٔ کنسول برنامه را ببندید.
           APK امضای آزمایشی دارد و EXE امضای ناشر ویندوز ندارد. این خروجی‌ها نسخهٔ رسمی بازار یا Google Play نیستند.
-          تست‌های وب، ویندوز و اندروید ۱۱ و ۱۶ موفق‌اند.
           سهمیهٔ سفارش بعدی و مبلغ نهایی خرید باید در فروشگاه تأیید شوند. برنامه سفارش یا پرداخت ثبت نمی‌کند.
           NOTES
           if [ "$draft_exists" = false ]; then

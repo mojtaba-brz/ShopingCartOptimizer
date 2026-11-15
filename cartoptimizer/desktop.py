@@ -159,8 +159,9 @@ class DesktopService:
         except Exception as exc:
             with self.lock:
                 if self.jobs.get(key, {}).get('state') == 'running':
+                    detail = str(exc).splitlines()[0] if str(exc) else type(exc).__name__
                     self.jobs[key].update(state='error', error=str(exc) if isinstance(exc, ValidationError) else
-                                         'اتصال به جت کامل نشد؛ اینترنت و دسترسی Chrome یا Edge را بررسی کنید.')
+                                         f'جست‌وجوی جت کامل نشد ({type(exc).__name__}): {detail[:500]}')
 
     def status(self, key):
         with self.lock:
@@ -221,7 +222,8 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                   max_stores, page_seconds, item_seconds, workers):
     import asyncio
     import inspect
-    from playwright.async_api import async_playwright
+    from contextlib import AsyncExitStack, suppress
+    from playwright.async_api import async_playwright, Error as BrowserError
     from urllib.parse import parse_qs
     budget = resource_budget()
     if workers is not None:
@@ -248,17 +250,29 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     def progress(detail):
         report(completed=sum(len(aliases[k]) for k,n in pending.items() if n==0), products=sum(len(e['products']) for e in entries.values()),
             stores=len({p.get('store_name') for e in entries.values() for p in e['products'] if p.get('store_name')}),
-            active_workers=active_tasks,tasks=list(task_states.values()), detail=detail)
-    async with async_playwright() as engine:
+            active_workers=active_tasks,starting_workers=sum(t.get('kind')=='startup' for t in task_states.values()),tasks=list(task_states.values()), detail=detail)
+    progress('در حال راه‌اندازی موتور مرورگر…')
+    driver = async_playwright()
+    try:
+        engine = await asyncio.wait_for(driver.start(), timeout=20)
+    except asyncio.TimeoutError as exc:
+        with suppress(Exception):
+            await asyncio.wait_for(driver.__aexit__(), timeout=5)
+        raise ValidationError('موتور مرورگر ظرف ۲۰ ثانیه پاسخ نداد؛ راه‌اندازی جست‌وجو متوقف شد.') from exc
+    async with AsyncExitStack() as cleanup:
+        cleanup.push_async_callback(engine.stop)
         browser = None
+        progress('در حال باز کردن مرورگر جست‌وجو…')
         for candidate in ([channel] if channel else ['chrome', 'msedge', None]):
             try:
-                browser = await engine.chromium.launch(headless=True, **({'channel':candidate} if candidate else {}), **(browser_options or {})); break
+                browser = await engine.chromium.launch(headless=True, timeout=15000, **({'channel':candidate} if candidate else {}), **(browser_options or {})); break
             except Exception:
                 continue
         if browser is None:
             raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
-        context = await browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')})
+        cleanup.push_async_callback(browser.close)
+        progress('در حال آماده‌سازی موقعیت و صفحه‌های جت…')
+        context = await asyncio.wait_for(browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')}), timeout=15)
         await context.grant_permissions(['geolocation'], origin=HOME)
         await context.add_init_script(script=metadata_script+f'({sources["preference"]})("restore",{json.dumps(saved,ensure_ascii=False)})')
         async def lightweight(route):
@@ -280,16 +294,42 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                     budget['workers'] = limit
                     progress(f'کاهش خودکار جست‌وجوی موازی به {limit} صفحه برای روان ماندن دستگاه')
 
+        # Cold retailer pages are expensive. Warm at most two at once; warmed
+        # pages still search independently up to the configured limit.
+        startup = asyncio.Semaphore(2)
         async def run_worker(number):
             nonlocal active_tasks
-            page = await context.new_page(); page.set_default_timeout(10000)
+            page = None
             try:
-                if page_setup:
-                    value = page_setup(page)
-                    if inspect.isawaitable(value): await value
-                await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
-                await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
-                await page.evaluate(adapters + worker_script)
+                async with startup:
+                    if number >= budget['workers']: return
+                    for attempt in range(2 if number == 0 else 1):
+                        try:
+                            boot = f'boot-{number}'
+                            task_states[boot] = {'id':boot,'name':f'مرورگر {number+1}','kind':'startup','products':0,'detail':'بارگیری صفحهٔ جت' if not attempt else 'تلاش دوباره برای راه‌اندازی'}
+                            progress(task_states[boot]['detail'])
+                            page = await asyncio.wait_for(context.new_page(), timeout=15); page.set_default_timeout(10000)
+                            if page_setup:
+                                value = page_setup(page)
+                                if inspect.isawaitable(value): await value
+                            response = await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
+                            if response and response.status >= 400:
+                                raise ValidationError(f'صفحهٔ جت پاسخ HTTP {response.status} داد؛ دسترسی به سرویس برقرار نشد.')
+                            task_states[boot]['detail'] = 'در انتظار آماده شدن صفحهٔ جت'
+                            progress(task_states[boot]['detail'])
+                            await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
+                            await page.evaluate(adapters + worker_script)
+                            break
+                        except BrowserError as exc:
+                            if page: await page.close(); page = None
+                            if number > 0:
+                                budget['workers'] = min(budget['workers'], number)
+                                progress('راه‌اندازی یک صفحه کامل نشد؛ جست‌وجو با صفحه‌های آماده ادامه دارد.')
+                                return
+                            if attempt:
+                                raise ValidationError('راه‌اندازی صفحهٔ جت کامل نشد: '+str(exc).splitlines()[0][:400]) from exc
+                task_states.pop(f'boot-{number}', None)
+                progress('صفحهٔ جت آمادهٔ جست‌وجو است.')
                 while number < budget['workers']:
                     try:
                         task = await asyncio.wait_for(queue.get(), timeout=1)
@@ -342,8 +382,9 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                         task_states.pop(slot,None)
                         queue.task_done()
             finally:
-                await page.close()
-        running=[asyncio.create_task(run_worker(n)) for n in range(budget['workers'])]
+                task_states.pop(f'boot-{number}', None)
+                if page: await page.close()
+        running=[asyncio.create_task(run_worker(n), name=f'jet-search-{n}') for n in range(budget['workers'])]
         watcher=asyncio.create_task(monitor())
         join=asyncio.create_task(queue.join())
         try:
@@ -359,5 +400,4 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
             join.cancel(); watcher.cancel()
             for job in running: job.cancel()
             await asyncio.gather(join,watcher,*running,return_exceptions=True)
-            await browser.close()
 
