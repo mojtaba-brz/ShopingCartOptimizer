@@ -67,7 +67,7 @@
    for(const p of promo){const t=pricing.tiers(p.product),key=pricing.identity(p.product);savings.set(key,Math.max(savings.get(key)||0,t.base-t.amazing));}
    const potential=base.subtotal-c.picks.reduce((n,p)=>n+p.quantity*pricing.tiers(p.product).base,0)+[...savings.values()].reduce((n,v)=>n+v,0);
    if(resources.repeat_orders===false||maxOrders<2||base.unknown_fees||base.price_unknown||!promo.length||potential<=0)return [...plans.values()];
-   const until=Math.min(started+limits.ms,Date.now()+Math.max(10,limits.ms/8)),stateCap=Math.max(128,Math.floor(limits.states/8));let steps=0,stopped=false;
+   let until=started+limits.ms;const stateCap=Math.max(128,Math.floor(limits.states/8));let steps=0,stopped=false;
    async function tick(){if(cancelled())throw Error('cancelled');if(++steps>stateCap||Date.now()>until){splitBounded=true;stopped=true;return false;}if(steps%64===0)await new Promise(r=>setTimeout(r,0));return true;}
    // No repeated-SKU amazing price across separate orders unless the retailer confirms a new entitlement.
    const remaining=new Map();for(const p of c.picks){const key=pricing.identity(p.product);remaining.set(key,Math.min(remaining.get(key)??1,p.product.amazing_remaining??1));}
@@ -94,6 +94,7 @@
    const count=c.picks.reduce((n,p)=>n+p.quantity,0),cap=Math.min(maxOrders,count);
    // Balanced seeds cover large quantities before bounded package partitioning.
    for(let k=2;k<=cap;k++){const bins=Array.from({length:k},()=>c.picks.map(()=>0));let at=0;for(let i=0;i<c.picks.length;i++)for(let q=0;q<c.picks[i].quantity;q++)bins[at++%k][i]++;await consider(bins,true);if(stopped)break;}
+   until=Math.min(started+limits.ms,Date.now()+Math.max(10,limits.ms/8));
    async function visit(i,unit,bins,startBin=0){
     if(!await tick())return;if(i===c.picks.length){await consider(bins);return;}
     for(let j=startBin;j<=Math.min(bins.length,cap-1);j++){const fresh=j===bins.length;if(fresh)bins.push(c.picks.map(()=>0));bins[j][i]++;
