@@ -52,6 +52,8 @@ with tempfile.TemporaryDirectory() as folder:
         assert result['total'] == 3750000, result
         print('EXE: frozen browser driver, version, shared assets/fonts and optimization passed')
     finally:
-        process.terminate()
+        # One-file PyInstaller executables launch a child that owns the server.
+        if process.poll() is None:
+            subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'], check=True, stdout=subprocess.DEVNULL)
         process.wait(timeout=20)
 print('EXE SHA256:', hashlib.sha256(exe.read_bytes()).hexdigest())
