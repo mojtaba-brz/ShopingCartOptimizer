@@ -54,6 +54,21 @@ class DesktopTests(unittest.TestCase):
             self.assertEqual(service.status(job)['state'], 'cancelled')
             self.assertNotIn('result', service.status(job))
 
+    def test_unexpected_search_error_keeps_the_actual_reason(self):
+        def runner(*args):
+            raise RuntimeError('browser connection closed\nCall log: internal detail')
+        with tempfile.TemporaryDirectory() as folder:
+            service = DesktopService(folder, runner); service.location = POINT
+            job = service.start(ITEMS)['id']
+            for _ in range(100):
+                status = service.status(job)
+                if status['state'] != 'running': break
+                time.sleep(.01)
+            self.assertEqual(status['state'], 'error')
+            self.assertIn('RuntimeError', status['error'])
+            self.assertIn('browser connection closed', status['error'])
+            self.assertNotIn('internal detail', status['error'])
+
     def test_only_one_job_can_run_and_location_cannot_change_mid_search(self):
         release = threading.Event()
         def runner(items, location, report):

@@ -222,7 +222,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                   max_stores, page_seconds, item_seconds, workers):
     import asyncio
     import inspect
-    from playwright.async_api import async_playwright
+    from playwright.async_api import async_playwright, Error as BrowserError
     from urllib.parse import parse_qs
     budget = resource_budget()
     if workers is not None:
@@ -281,16 +281,35 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                     budget['workers'] = limit
                     progress(f'کاهش خودکار جست‌وجوی موازی به {limit} صفحه برای روان ماندن دستگاه')
 
+        # Cold retailer pages are expensive. Warm at most two at once; warmed
+        # pages still search independently up to the configured limit.
+        startup = asyncio.Semaphore(2)
         async def run_worker(number):
             nonlocal active_tasks
-            page = await context.new_page(); page.set_default_timeout(10000)
+            page = None
             try:
-                if page_setup:
-                    value = page_setup(page)
-                    if inspect.isawaitable(value): await value
-                await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
-                await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
-                await page.evaluate(adapters + worker_script)
+                async with startup:
+                    if number >= budget['workers']: return
+                    for attempt in range(2 if number == 0 else 1):
+                        try:
+                            page = await context.new_page(); page.set_default_timeout(10000)
+                            if page_setup:
+                                value = page_setup(page)
+                                if inspect.isawaitable(value): await value
+                            response = await page.goto(HOME+'user/add-address', wait_until='domcontentloaded', timeout=30000)
+                            if response and response.status >= 400:
+                                raise ValidationError(f'صفحهٔ جت پاسخ HTTP {response.status} داد؛ دسترسی به سرویس برقرار نشد.')
+                            await page.locator('#root input[placeholder]').first.wait_for(state='attached', timeout=20000)
+                            await page.evaluate(adapters + worker_script)
+                            break
+                        except BrowserError as exc:
+                            if page: await page.close(); page = None
+                            if number > 0:
+                                budget['workers'] = min(budget['workers'], number)
+                                progress('راه‌اندازی یک صفحه کامل نشد؛ جست‌وجو با صفحه‌های آماده ادامه دارد.')
+                                return
+                            if attempt:
+                                raise ValidationError('راه‌اندازی صفحهٔ جت کامل نشد: '+str(exc).splitlines()[0][:400]) from exc
                 while number < budget['workers']:
                     try:
                         task = await asyncio.wait_for(queue.get(), timeout=1)
@@ -343,7 +362,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                         task_states.pop(slot,None)
                         queue.task_done()
             finally:
-                await page.close()
+                if page: await page.close()
         running=[asyncio.create_task(run_worker(n)) for n in range(budget['workers'])]
         watcher=asyncio.create_task(monitor())
         join=asyncio.create_task(queue.join())

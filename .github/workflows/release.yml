@@ -2,7 +2,7 @@ name: Downloadable release
 on:
   workflow_dispatch:
   push:
-    branches: ['main', 'fix/windows-search-0154']
+    branches: ['main', 'codex/**']
     paths:
       - '.github/workflows/release.yml'
       - 'release/windows-entry.py'
