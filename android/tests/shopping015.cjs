@@ -29,6 +29,8 @@ function invariant(plan,items){assert.ok(plan);for(const i of items){const parts
  const empty=offer('a',10,'supermarket',{amazing_remaining:0});assert.equal(pricing.estimated(empty,2),160);r=await run([item('a')],[empty]);assert.equal(r.best.picks[0].amazing_quantity,0);
  r=await run([item('a')],[offer('a',10,'supermarket',{has_stock:false})]);assert.equal(r.best,null);assert.deepEqual(r.unresolved,['a']);
  const unknown=offer('a',10,'supermarket',{post_amazing_price:null,post_amazing_verified:false});r=await run([item('a',3)],[unknown]);assert.equal(r.best.total,210);assert.equal(r.best.price_unknown,1);assert.equal(r.best.order_count,1);
+ const uncertainQuote={...quote(),page_kind:'cart',fields:{total:{value:150}},cart_items:[{title:'کالاa',quantity:3,store_id:'shop',store_name:'فروشگاه',store_type:'supermarket'}],reported_units:3,items_complete:true};
+ r=await run([item('a',3)],[unknown],[quote(),uncertainQuote]);assert.equal(r.best.total,150);assert.equal(r.best.price_unknown,1,'A matched checkout total does not reveal missing per-product fallback prices');
  const observed={...quote(),page_kind:'cart',fields:{total:{value:100}},cart_items:items.map(i=>({title:'کالا'+i.id,quantity:1,store_id:'shop',store_name:'فروشگاه',store_type:'supermarket'})),reported_units:3,items_complete:true};
  r=await run(items,products,[quote(),observed]);assert.equal(r.best.total,60);assert.equal(r.best.order_count,2);assert.ok(r.best.carts.every(c=>!c.verified),'A single observed checkout cannot verify multiple future checkouts');
  // Brute force physical-package partitions and promo-to-order choices, independently

@@ -52,7 +52,7 @@
     let delivery=fields.delivery_fee?.value??null;if(free!==undefined&&v.subtotal>=free)delivery=0;
     const service=fields.service_fee?.value??null,extra={};for(const key of ['packaging_fee','processing_fee','tax_fee'])if(fields[key])extra[key]=fields[key].value;
     const lines=v.picks.map(p=>p.line),matched=split?null:observations.map(q=>checkout.reconcile(q,lines)).filter(x=>x.verified).pop();
-    options.push({...c,...v,unit_score:score(v.picks),lines,extra_fees:extra,delivery_fee:delivery,service_fee:service,minimum_order:minimum??null,free_delivery_over:free??null,verified:!!matched,unknown_fees:!matched&&(delivery===null||service===null),price_unknown:matched?0:v.price_unknown,known_total:matched?matched.total:v.subtotal+(delivery??0)+(service??0)+Object.values(extra).reduce((n,v)=>n+v,0)});
+    options.push({...c,...v,unit_score:score(v.picks),lines,extra_fees:extra,delivery_fee:delivery,service_fee:service,minimum_order:minimum??null,free_delivery_over:free??null,verified:!!matched,unknown_fees:!matched&&(delivery===null||service===null),price_unknown:v.price_unknown,known_total:matched?matched.total:v.subtotal+(delivery??0)+(service??0)+Object.values(extra).reduce((n,v)=>n+v,0)});
    }
    if(priceCache.size>=300)priceCache.clear();priceCache.set(cacheKey,options);return options;
   }
