@@ -1,0 +1,122 @@
+name: Downloadable release
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'release/windows-0151']
+    paths:
+      - '.github/workflows/release.yml'
+      - 'release/windows-entry.py'
+      - 'release/check-windows.py'
+permissions:
+  contents: read
+concurrency:
+  group: downloadable-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install packaging dependencies
+        run: python -m pip install ".[live]" pyinstaller==6.22.3
+      - name: Ensure the test browser is available
+        run: python -m playwright install msedge
+      - name: Build portable Windows executable
+        shell: pwsh
+        run: |
+          $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
+          python -m PyInstaller --noconfirm --clean --onefile --console --noupx --name "Sabadchin-Windows-$version" --collect-all cartoptimizer --collect-all playwright release/windows-entry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test the packaged executable
+        shell: pwsh
+        run: |
+          $version = (Get-Content cartoptimizer/release.json | ConvertFrom-Json).version
+          python release/check-windows.py "dist/Sabadchin-Windows-$version.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sabadchin-Windows-EXE
+          path: dist/*.exe
+          retention-days: 90
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: Sabadchin-Windows-EXE
+          path: release-assets
+      - name: Prepare and publish both downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ANDROID_RUN: '43754092747'
+          APK_SHA256: '0b4133b57cb211c70e4378e317e369133996e4de708169466ef864d6cf85c4b8'
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("cartoptimizer/release.json"))["version"])')
+          tag="v$version"
+          draft_exists=false
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,targetCommitish > existing-release.json 2>/dev/null; then
+            if [ "$(jq -r .isDraft existing-release.json)" != true ]; then
+              echo "Release $tag is already published; assets are left unchanged."
+              exit 0
+            fi
+            test "$(jq -r .targetCommitish existing-release.json)" = "$GITHUB_SHA"
+            draft_exists=true
+          fi
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ANDROID_RUN/artifacts" --jq '.artifacts[] | select(.name == "Cartwise-Android-APK" and .expired == false) | .id')
+          test -n "$artifact"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > android.zip
+          unzip -q android.zip -d android-download
+          cp "android-download/Cartwise-Android-$version-debug.apk" "release-assets/Sabadchin-Android-$version.apk"
+          echo "$APK_SHA256  release-assets/Sabadchin-Android-$version.apk" | sha256sum --check
+          python3 - <<'PY'
+          import json, pathlib, re, zipfile
+          version = json.load(open('cartoptimizer/release.json'))
+          apk = next(pathlib.Path('release-assets').glob('*.apk'))
+          with zipfile.ZipFile(apk) as z:
+              assert json.loads(z.read('assets/release.json')) == version
+              replacements = re.findall(r"\.replace\('([^']*)', '([^']*)'\)", pathlib.Path('android/app/build.gradle').read_text())
+              for p in pathlib.Path('cartoptimizer/web').iterdir():
+                  if p.suffix not in {'.html', '.css', '.js', '.ttf', '.txt'}:
+                      continue
+                  if p.suffix in {'.html', '.css', '.js'}:
+                      text = p.read_text()
+                      for a, b in replacements:
+                          text = text.replace(a, b)
+                      assert z.read('assets/' + p.name).decode().replace('\r\n', '\n') == text, p.name
+                  else:
+                      assert z.read('assets/' + p.name) == p.read_bytes(), p.name
+          PY
+          (cd release-assets && sha256sum *.apk *.exe > SHA256SUMS.txt)
+          cat > release-notes.md <<'NOTES'
+          نسخهٔ آزمایشی سبدچین ۰٫۱۵٫۱
+
+          - فونت Amiri در هر سه قالب، نقشه و اندروید، همراه با فایل‌های محلی فونت.
+          - بهینه‌سازی قیمت واحد، شگفت‌انگیزهای غیرتکراری و چند سفارش از یک فروشگاه با احتساب هزینه‌ها.
+          - APK برای نصب مستقیم و EXE قابل حمل ویندوز x64، بدون نیاز به نصب Python.
+
+          برای ویندوز Chrome یا Edge نصب باشد. فایل EXE رابط وب برنامه را باز می‌کند؛ برای خروج، پنجرهٔ کنسول برنامه را ببندید.
+          APK امضای آزمایشی دارد و EXE امضای ناشر ویندوز ندارد. این خروجی‌ها نسخهٔ رسمی بازار یا Google Play نیستند.
+          تست‌های وب، ویندوز و اندروید ۱۱ موفق‌اند؛ آزمون اندروید ۱۶ به علت قطع شبیه‌ساز هنگام بازسازی صفحه کامل نشده است.
+          سهمیهٔ سفارش بعدی و مبلغ نهایی خرید باید در فروشگاه تأیید شوند. برنامه سفارش یا پرداخت ثبت نمی‌کند.
+          NOTES
+          if [ "$draft_exists" = false ]; then
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sabadchin $version" --notes-file release-notes.md --draft --prerelease
+          fi
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber release-assets/*.apk release-assets/*.exe release-assets/SHA256SUMS.txt
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease
