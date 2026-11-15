@@ -4,15 +4,16 @@
  'use strict';
  const a=root.CartwiseAuto||(typeof require!=='undefined'?require('./auto-planner.js'):null);
  const packages=root.CartwisePackages||(typeof require!=='undefined'?require('./package-size.js'):null);
+ const pricing=root.CartwisePricing||(typeof require!=='undefined'?require('./offer-pricing.js'):null);
  const measure=packages.measure;
 
  function key(p){return encodeURIComponent([p.store_type||'supermarket',a.normalize(p.title),p.store_id||a.normalize(p.store_name||''),p.url||''].join('|'));}
- function unitPrice(p,regular=false){if(regular&&p.regular_verified===false)return null;const size=measure(p.title);if(!size.value)return null;return (regular?p.regular_price:(p.promo_price??p.regular_price))*(['g','ml'].includes(size.unit)?1000:1)/size.value;}
+ function unitPrice(p,regular=false){if(regular&&p.regular_verified===false)return null;const size=measure(p.title);if(!size.value)return null;return (regular?p.regular_price:(pricing.tiers(p).amazing??pricing.tiers(p).base))*(['g','ml'].includes(size.unit)?1000:1)/size.value;}
  function query(name){return a.searchTerm(name).replace(/(?:بسته|پک)?\s*[۰-۹٠-٩0-9]+\s*(?:عددی|تایی|عدد)/gu,' ').replace(/\s+/g,' ').trim();}
  function options(item,rows,review=false){
   const q={...item,name:query(item.name)||item.name};
   const candidates=review?a.suggestions(q,rows):a.rank(q,rows,1000),seen=new Map();
-  for(const raw of candidates){const p={...raw,key:key(raw),size:measure(raw.title)};p.unit_price=unitPrice(p);p.regular_unit_price=unitPrice(p,true);const old=seen.get(p.key);if(!old||(p.promo_price??p.regular_price)<(old.promo_price??old.regular_price))seen.set(p.key,p);}
+  for(const raw of candidates){const p={...raw,key:key(raw),size:measure(raw.title)};p.unit_price=unitPrice(p);p.regular_unit_price=unitPrice(p,true);const old=seen.get(p.key);if(!old||(pricing.tiers(p).amazing??pricing.tiers(p).base)<(pricing.tiers(old).amazing??pricing.tiers(old).base))seen.set(p.key,p);}
   const order={g:0,ml:1,count:2,sheet:3,unknown:4};
   return [...seen.values()].sort((x,y)=>order[x.size.unit]-order[y.size.unit]||(x.unit_price??Infinity)-(y.unit_price??Infinity)||(x.promo_price??x.regular_price)-(y.promo_price??y.regular_price)||x.key.localeCompare(y.key));
  }

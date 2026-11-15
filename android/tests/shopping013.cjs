@@ -11,15 +11,15 @@ const quote=(id,type='supermarket',fields={})=>({source:'digikala-visible-checko
  const tissue=c.options(item('t','دستمال کاغذی'),[{title:'دستمال کاغذی 200 برگ بسته 10 عددی',regular_price:10000,promo_price:null},{title:'دستمال کاغذی 100 برگ',regular_price:1000,promo_price:null}]);assert.equal(tissue[0].unit_price,5);assert.equal(c.plan(item('t','دستمال کاغذی'),tissue).quantity,1);
  assert.equal(a.estimated(p('کالا','a',80),5),400,'Ordinary discount repeats for every package');
  let is=[item('کالا0'),item('کالا1'),item('کالا2')],rs=is.map((i,n)=>({id:i.id,products:[p(i.name,'a',100,n+10)]}));
- let run=await basket.solve(is,rs,[quote('a')]);assert.equal(run.best.total,121);assert.equal(run.best.carts[0].amazing_used,2);assert.equal(run.best.picks.reduce((n,p)=>n+p.amazing_quantity,0),2);assert.equal(run.best.picks.reduce((n,p)=>n+p.cost,0),run.best.total);
- run=await basket.solve([item('کالا','کالا',3)],[{id:'کالا',products:[p('کالا','a',100,10)]}],[quote('a')]);assert.equal(run.best.total,120);assert.equal(run.best.picks[0].quantity,3);
+ let run=await basket.solve(is,rs,[quote('a')],{},{},{repeat_orders:false});assert.equal(run.best.total,121);assert.equal(run.best.carts[0].amazing_used,2);assert.equal(run.best.picks.reduce((n,p)=>n+p.amazing_quantity,0),2);assert.equal(run.best.picks.reduce((n,p)=>n+p.cost,0),run.best.total);
+ run=await basket.solve([item('کالا','کالا',3)],[{id:'کالا',products:[p('کالا','a',100,10)]}],[quote('a')]);assert.equal(run.best.total,210);assert.equal(run.best.picks[0].quantity,3);
  run=await basket.solve([item('کالا','کالا',3,'pastry')],[{id:'کالا',products:[p('کالا','a',100,10,'pastry')]}],[quote('a','pastry')]);assert.equal(run.best.total,210);assert.equal(run.best.carts[0].amazing_limit,1);
  const scopedItems=[item('m','کالا',3),item('n','کالا',3,'pastry')],scopedRows=[{id:'m',products:[p('کالا','same',100,10)]},{id:'n',products:[p('کالا','same',100,10,'pastry')]}];
- const scoped=await basket.solve(scopedItems,scopedRows,[quote('same'),quote('same','pastry')]);assert.equal(scoped.best.total,330);assert.deepEqual(scoped.best.carts.map(c=>c.amazing_used),[2,1]);
+ const scoped=await basket.solve(scopedItems,scopedRows,[quote('same'),quote('same','pastry')]);assert.equal(scoped.best.total,420);assert.deepEqual(scoped.best.carts.map(c=>c.amazing_used),[1,1]);
  // A regular discount can beat an individually cheaper amazing offer once the
  // merchant-wide quota is occupied by other lines. No same-store pruning loss.
- rs[2].products.push(p('کالا2 جایگزین','a',30));run=await basket.solve(is,rs,[quote('a')]);assert.equal(run.best.total,51);assert.match(run.best.picks.find(x=>x.item_id==='کالا2').product.title,/جایگزین/);
- const unknown=p('کالا','a',100,10);delete unknown.post_amazing_price;unknown.post_amazing_verified=false;run=await basket.solve([item('کالا','کالا',3)],[{id:'کالا',products:[unknown]}],[quote('a')]);assert.equal(run.best.price_unknown,1);assert.equal(run.best.total,140);
+ rs[2].products.push(p('کالا2 جایگزین','a',30));run=await basket.solve(is,rs,[quote('a')],{},{},{repeat_orders:false});assert.equal(run.best.total,51);assert.match(run.best.picks.find(x=>x.item_id==='کالا2').product.title,/جایگزین/);
+ const unknown=p('کالا','a',100,10);delete unknown.post_amazing_price;unknown.post_amazing_verified=false;run=await basket.solve([item('کالا','کالا',3)],[{id:'کالا',products:[unknown]}],[quote('a')]);assert.equal(run.best.price_unknown,1);assert.equal(run.best.total,250);
  const noOriginal={title:'کالا',store_id:'a',store_name:'a',store_type:'supermarket',regular_price:10,promo_price:null,amazing:true,regular_verified:false};
  const knownOne=await basket.solve([item('کالا')],[{id:'کالا',products:[noOriginal]}],[quote('a')]);assert.equal(knownOne.best.price_unknown,0);assert.equal(knownOne.best.carts[0].amazing_used,1);
  // Independent exhaustive assignment and quota allocation, including fee/minimum
@@ -27,12 +27,12 @@ const quote=(id,type='supermarket',fields={})=>({source:'digikala-visible-checko
  for(let seed=1;seed<=16;seed++){
   const items=[0,1,2].map(n=>item('کالا'+n,'کالا'+n,1+(seed+n)%2)),rows=items.map((i,n)=>({id:i.id,products:['a','b'].map((id,k)=>p(i.name,id,60+(seed*13+n*17+k*19)%70,(seed+n+k)%3?10+(seed+n+k)%30:null))}));
   const fee=25,min=seed%2?0:50,free=seed%3?150:100;
-  const refs=rows.map((r,n)=>Math.min(...r.products.map(p=>{const q=items[n].quantity;return (p.post_amazing_price*q-(p.amazing?Math.min(2,q)*(p.post_amazing_price-p.promo_price):0))/q;})));
-  function storeCost(chosen){const slots=[];chosen.forEach((x,n)=>{if(x.p.amazing)for(let j=0;j<x.q;j++)slots.push(n);});const combos=[[],...slots.map(n=>[n])];for(let i=0;i<slots.length;i++)for(let j=i+1;j<slots.length;j++)combos.push([slots[i],slots[j]]);
+  const refs=rows.map((r,n)=>Math.min(...r.products.map(p=>{const q=items[n].quantity;return (p.post_amazing_price*q-(p.amazing?Math.min(1,q)*(p.post_amazing_price-p.promo_price):0))/q;})));
+  function storeCost(chosen){const slots=[];chosen.forEach((x,n)=>{if(x.p.amazing)slots.push(n);});const combos=[[],...slots.map(n=>[n])];for(let i=0;i<slots.length;i++)for(let j=i+1;j<slots.length;j++)combos.push([slots[i],slots[j]]);
    let best={score:Infinity,cost:Infinity};for(const combo of combos){let subtotal=0,score=0;chosen.forEach((x,n)=>{const specials=combo.filter(k=>k===n).length,cost=x.p.post_amazing_price*x.q-specials*(x.p.post_amazing_price-x.p.promo_price);subtotal+=cost;score+=cost/x.q/refs[x.index];});if(subtotal<min)continue;const cost=subtotal+(subtotal>=free?0:fee);if(score<best.score-1e-9||Math.abs(score-best.score)<1e-9&&cost<best.cost)best={score,cost};}return best;
   }
   let best={score:Infinity,cost:Infinity};for(let mask=0;mask<8;mask++){let cost=0,score=0;for(const id of ['a','b']){const selected=items.map((it,n)=>({p:rows[n].products[(mask>>n)&1],q:it.quantity,index:n})).filter(x=>x.p.store_id===id);if(selected.length){const v=storeCost(selected);cost+=v.cost;score+=v.score;}}if(score<best.score-1e-9||Math.abs(score-best.score)<1e-9&&cost<best.cost)best={cost,score};}
-  const actual=await basket.solve(items,rows,['a','b'].map(id=>quote(id,'supermarket',{delivery_fee:{value:fee},minimum_order:{value:min},free_delivery_over:{value:free}})),{},{},{solve_ms:800,state_limit:80000});assert.equal(actual.best.total,best.cost,'Unit-price/quota/fee oracle seed '+seed);assert.ok(Math.abs(actual.best.unit_score-best.score)<1e-9);
+  const actual=await basket.solve(items,rows,['a','b'].map(id=>quote(id,'supermarket',{delivery_fee:{value:fee},minimum_order:{value:min},free_delivery_over:{value:free}})),{},{},{solve_ms:800,state_limit:80000,repeat_orders:false});assert.equal(actual.best.total,best.cost,'Unit-price/quota/fee oracle seed '+seed);assert.ok(Math.abs(actual.best.unit_score-best.score)<1e-9);
 
  }
  // Only whitelisted public catalogue fields are exposed, with merchant and

@@ -20,12 +20,12 @@
     return terms.length>0 && terms.every(t=>product.has(t));
   }
   function product(p){
-    if(!p || typeof p.title!=='string' || !p.title.trim() || p.title.length>300 ||
+    if(!p || p.has_stock===false || typeof p.title!=='string' || !p.title.trim() || p.title.length>300 ||
       !Number.isSafeInteger(p.regular_price) || p.regular_price<1 || p.regular_price>1e13) return null;
     if(p.promo_price!==null && (!Number.isSafeInteger(p.promo_price) || p.promo_price<0 || p.promo_price>=p.regular_price)) return null;
     const url=typeof p.url==='string'&&/^https:\/\/(?:www\.)?(?:digikala|digikalajet)\.com\//.test(p.url)?p.url:'';
     let image='';try{const u=new URL(p.image_url);if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['dkstatics-public.digikala.com','dkstatics-public.digikalajet.ir','images.digikalajet.ir'].includes(u.hostname))image=u.href;}catch{}
-    return {store_type:typeof p.store_type==='string'?p.store_type:'',type_source:p.type_source||'',title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
+    return {has_stock:typeof p.has_stock==='boolean'?p.has_stock:null,amazing_remaining:Number.isSafeInteger(p.amazing_remaining)&&p.amazing_remaining>=0?p.amazing_remaining:null,amazing_expires_at:Number.isFinite(p.amazing_expires_at)?p.amazing_expires_at:null,store_type:typeof p.store_type==='string'?p.store_type:'',type_source:p.type_source||'',title:p.title,regular_price:p.regular_price,promo_price:p.promo_price,url,
       image_url:image,store_name:typeof p.store_name==='string'?p.store_name.trim().slice(0,160):'',store_id:typeof p.store_id==='string'?p.store_id.slice(0,200):'',
       regular_verified:p.regular_verified!==false,amazing:p.amazing===true,discounted:p.promo_price!==null,
       product_id:typeof p.product_id==='string'?p.product_id:'',post_amazing_price:Number.isSafeInteger(p.post_amazing_price)&&p.post_amazing_price>=0&&p.post_amazing_price<=p.regular_price?p.post_amazing_price:null,post_amazing_verified:p.post_amazing_verified===true,post_amazing_source:['catalogue-components','catalogue-product-first','catalogue-ordinary'].includes(p.post_amazing_source)?p.post_amazing_source:''};
