@@ -1,6 +1,6 @@
 /* Visible, explicitly labelled per-merchant fees. Amounts remain integer rials. */
 (function(scope){
- const rules={delivery_fee:/^(?:(?:هزینه|کرایه|مبلغ)\s*(?:ارسال|پیک|تحویل)|ارسال|پیک)(?:\s|:|$)/,service_fee:/^(?:هزینه خدمات|کارمزد)(?:\s|:|$)/,packaging_fee:/^(?:هزینه\s*)?بسته بندی(?:\s|:|$)/,processing_fee:/^هزینه (?:پردازش|آماده سازی)(?:\s|:|$)/,tax_fee:/^مالیات(?:\s|:|$)/,minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/};
+ const rules={delivery_fee:/^(?:(?:هزینه|کرایه|مبلغ)\s*(?:ارسال|پیک|تحویل)|ارسال|پیک)(?:\s|:|$)/,service_fee:/^(?:هزینه خدمات|کارمزد)(?:\s|:|$)/,packaging_fee:/^(?:هزینه\s*)?بسته بندی(?:\s|:|$)/,processing_fee:/^هزینه (?:پردازش|آماده سازی|توسعه خدمات)(?:\s|:|$)/,tax_fee:/^مالیات(?:\s|:|$)/,minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/};
  const text=e=>String(e.innerText||'').replace(/[\u200c\s]+/g,' ').trim(),digits=s=>s.replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));
  const productTitles=[...scope.querySelectorAll('img[alt]')].map(e=>String(e.alt||'').replace(/[\u200c\s]+/g,' ').trim()).filter(s=>s.length>=4);
  const values={};for(const k in rules)values[k]=new Map();

@@ -13,6 +13,7 @@ const label=node('هزینه ارسال');label.parentElement=node('هزینه �
 const iconRow=node('هزینه ارسال ۲۵٬۰۰۰');iconRow.querySelectorAll=()=>[node('')];assert.equal(read([iconRow]).fields.delivery_fee.value,250000);
 const ambiguousIcons=node('هزینه ارسال ۲۵٬۰۰۰');ambiguousIcons.querySelectorAll=()=>[node(''),node('')];assert.equal(read([ambiguousIcons]).fields.delivery_fee,null);
 assert.equal(read([node('هزینه ارسال ۱۰۰۰ ۲۰۰۰ تومان')]).fields.delivery_fee,null);
+for(const label of ['هزینه پردازش','هزینه آماده‌سازی','هزینه توسعه خدمات'])assert.equal(read([node(label+' ۱٬۰۰۰ تومان')]).fields.processing_fee.value,10000);
 const quote={...r,reported_units:2,items_complete:true,cart_items:[{title:'شیر کم چرب',quantity:2}]};
 assert.equal(api.clean([quote,quote]).length,1);
 const cleaned=api.clean([quote])[0];assert.equal(api.reconcile(cleaned,[{title:'شیر کم‌چرب',quantity:2}]).verified,true);
