@@ -15,7 +15,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
    else CartwiseCatalog.ingest({shop:{id:'a',title:'فروشگاه الف',activity_type:'supermarket',delivery:{estimate_time:46}}});
   });
   const product={title:'شیر ۱ لیتر',regular_price:100000,promo_price:null,store_name:'فروشگاه الف',store_id:'a',store_type:'supermarket'};
-  window.CartwiseSearchAdapters={navigation,fees,preference:()=>({configured:true,coordinates:'35.7500|51.4000'}),reader:()=>({products:location.pathname==='/search/shop'?[product]:[],shops:[]}),checkout:(0,eval)(s['digikala-checkout'])};
+  window.CartwiseSearchAdapters={navigation,fees,preference:()=>({configured:true,coordinates:'35.7500|51.4000'}),reader:()=>({products:location.pathname==='/search/shop'?[product]:[],shops:[]}),checkout:()=>(0,eval)(s['digikala-checkout'])};
   (0,eval)(s['jet-search-task']);CartwiseSearchTask.start({kind:'store',url:'https://www.digikalajet.com/search/shop?q=milk&shopId=a',shop_id:'a',store_name:'فروشگاه الف',store_type:'supermarket',coordinates:'35.75|51.4',seconds:15});
  },sources);
  await page.waitForFunction(()=>cartwiseTask.done,{},{timeout:20000});
