@@ -15,12 +15,12 @@ async def setup(page):
    await info.close()
   except Exception as e:details.append({'error':type(e).__name__})
  async def response(reply):
-  nonlocal opened
   u=urlsplit(reply.url)
   if u.hostname!='api.digikalajet.ir' or not u.path.startswith(('/shop/','/v2/search/','/search/shop/')):return
   try:data=await reply.json()
   except Exception:return
   def walk(x):
+   global opened
    if isinstance(x,list):
     for y in x[:100]:walk(y)
    elif isinstance(x,dict):
