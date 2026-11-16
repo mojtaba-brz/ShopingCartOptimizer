@@ -71,8 +71,8 @@ jobs:
       - name: Prepare and publish both downloads
         env:
           GH_TOKEN: ${{ github.token }}
-          ANDROID_RUN: '43884073853'
-          APK_SHA256: '13c773a55cd717ed445cc3206d529201a0580aeaf2d3626f6fcd9d6db10df67c'
+          ANDROID_RUN: '43915730499'
+          APK_SHA256: '3623e1e92ed768955edf474ab8df8c9bde4347a387707ca6e4042eb702fa91da'
         run: |
           set -euo pipefail
           version=$(python3 -c 'import json; print(json.load(open("cartoptimizer/release.json"))["version"])')
