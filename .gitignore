@@ -24,3 +24,7 @@ signing.properties
 release/store-assets/*.png
 
 desktop-package/
+
+# App-owned browser sessions must never enter source packages.
+jet-browser/
+jet-account.json

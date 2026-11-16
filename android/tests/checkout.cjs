@@ -29,3 +29,4 @@ const known=api.clean([{...quote,cart_items:[{title:'شیر کم چرب',quantit
 assert.equal(api.reconcile(known,[{title:'شیر کم چرب',quantity:2,store_name:'بهار'}]).verified,true);
 assert.equal(api.reconcile(known,[{title:'شیر کم چرب',quantity:2,store_name:'باغ'}]).verified,false);
 console.log('Fee reading, ambiguity rejection, freshness and basket identity checks passed');
+const wrongAddress=api.clean([{...quote,delivery_verified:false}])[0];assert.equal(api.reconcile(wrongAddress,[{title:'شیر کم چرب',quantity:2}]).verified,false,'Unverified account-cart address cannot verify a proposal');

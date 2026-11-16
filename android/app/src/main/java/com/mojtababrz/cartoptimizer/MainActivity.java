@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
-    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12, AUTO_DIGIKALA = 13, CHECKOUT_DIGIKALA = 14, PREPARE_DELIVERY = 15;
+    private static final int IMPORT_JSON = 10, EXPORT_JSON = 11, LIVE_DIGIKALA = 12, AUTO_DIGIKALA = 13, CHECKOUT_DIGIKALA = 14, PREPARE_DELIVERY = 15, ACCOUNT_LOGIN = 16, ACCOUNT_CART = 17;
     private static final int MAX_BYTES = 1_000_000;
     private static final String HOST = "appassets.androidplatform.net";
     private WebView webView;
@@ -137,6 +137,13 @@ public final class MainActivity extends Activity {
             try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("coordinates",c.coordinates()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}
         }
         @JavascriptInterface public void chooseDelivery(){runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("app_picker",true),LIVE_DIGIKALA));}
+        @JavascriptInterface public String accountStatus(){return JetAccount.json(MainActivity.this);}
+        @JavascriptInterface public void connectAccount(){runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("account_login",true),ACCOUNT_LOGIN));}
+        @JavascriptInterface public void readAccountCart(){runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("account_quote",true),ACCOUNT_CART));}
+        @JavascriptInterface public void disconnectAccount(){runOnUiThread(()->JetAccount.disconnect(MainActivity.this,ok->{
+            String json=JetAccount.json(MainActivity.this);if(!ok)try{json=new JSONObject(json).put("error","خروج از حساب کامل نشد؛ دوباره تلاش کنید.").toString();}catch(Exception ignored){}
+            if(webView!=null&&!isDestroyed())webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:account',{detail:"+json+"}));",null);
+        }));}
         @JavascriptInterface public void readCheckout() {
             runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("checkout_only",true),CHECKOUT_DIGIKALA));
         }
@@ -146,7 +153,7 @@ public final class MainActivity extends Activity {
                 .setPositiveButton(AppLanguage.text(MainActivity.this,"پاک شود"),(dialog,which)->{
                     android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();webView.clearCache(true);
                     SearchResult.clear(MainActivity.this);getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().clear().apply();
-                    RetailerSession.discard();new DeliveryChoice(MainActivity.this).clear();
+                    RetailerSession.discard();JetAccount.save(MainActivity.this,"disconnected");new DeliveryChoice(MainActivity.this).clear();
                     android.webkit.CookieManager.getInstance().removeAllCookies(ok->{android.webkit.WebStorage.getInstance().deleteAllData();webView.evaluateJavascript("localStorage.clear();location.reload()",null);});
                 }).setNegativeButton(AppLanguage.text(MainActivity.this,"انصراف"),null).show());
         }
@@ -195,6 +202,13 @@ public final class MainActivity extends Activity {
                 try{String json=SearchResult.read(MainActivity.this,data);runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&webView!=null)webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:"+JSONObject.quote(json)+"}));",null);});}
                 catch(Exception e){runOnUiThread(()->{if(webView!=null&&!isDestroyed())webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);});}
             });}else webView.evaluateJavascript("window.dispatchEvent(new Event('cartwise:auto-cancelled'));",null);
+            return;
+        }
+        if(requestCode==ACCOUNT_LOGIN||requestCode==ACCOUNT_CART){
+            String json=data==null?null:data.getStringExtra("account_data");
+            if(json==null)json=JetAccount.json(MainActivity.this);
+            if(json.getBytes(StandardCharsets.UTF_8).length<=500000){String event=requestCode==ACCOUNT_CART?"cartwise:account-cart":"cartwise:account";
+                webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('"+event+"',{detail:"+JSONObject.quote(json)+"}));",null);}
             return;
         }
         if(requestCode==CHECKOUT_DIGIKALA) {

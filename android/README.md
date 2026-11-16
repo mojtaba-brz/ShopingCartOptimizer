@@ -1,4 +1,4 @@
-# Cartwise for Android 0.19.1
+# Cartwise for Android 0.20.0
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,
@@ -210,3 +210,5 @@ claim of live validation on the owner's phone is made.
 The native picker sends the entered query to Jet's public `GET /map/search/`, then validates the chosen point using `GET /map/reverse/no-modal/`. It sends no account credentials or cookies. Missing/false coverage, malformed responses and failed requests cannot confirm an address. Cancellation and query generations reject late callbacks. The selection is applied to the address preference before Jet initializes, then reread from the loaded page before the app remembers it. The map is optional, opens without a synthetic MID route, and has a native exit. Closed panels clipped/transformed out of view are ignored.
 
 Tests cover live public address lookup/range from Android, native confirmation and hydration, out-of-order search, outside-service results, cancellation during verification, native map exit, and kept-mounted closed-map recognition. Actual phone and authenticated retailer checkout validation remains owner testing.
+
+Optional account connection opens the official Jet login page. The private WebView retains the session; only visible account status and read-only cart quotes cross into the planner. Disconnect preserves app lists and location. Account session fixtures test persistence and expiry; they do not prove live account-specific prices or future-order eligibility.

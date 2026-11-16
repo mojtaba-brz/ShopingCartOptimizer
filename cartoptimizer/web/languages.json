@@ -2540,6 +2540,198 @@
       "ckb": "لەو فرۆشگایە نوێی بکەرەوە کە ئەپەکەت لێ دامەزراندووە.",
       "ku": "Ji firoşgeha ku te sepan jê saz kiriye nûve bike.",
       "az-Arab": "اوْیغولامانی قوراشدیردیغینیز ماغازادان گۆنجل‌له‌یین."
+    },
+    "حساب دیجی‌کالاجت": {
+      "en": "Digikala Jet account",
+      "ckb": "هەژماری دیجی‌کاڵاجێت",
+      "ku": "Hesabê Digikala Jet",
+      "az-Arab": "دیجی‌کالاجت حسابی"
+    },
+    "ورود به جت": {
+      "en": "Sign in to Jet",
+      "ckb": "چوونەژوورەوەی جێت",
+      "ku": "Têkeve Jet",
+      "az-Arab": "جته گیریش"
+    },
+    "بررسی سبد حساب": {
+      "en": "Check account basket",
+      "ckb": "پشکنینی سەبەدی هەژمار",
+      "ku": "Sepeta hesabê kontrol bike",
+      "az-Arab": "حساب سبدینی یوخلا"
+    },
+    "خروج از حساب در این برنامه": {
+      "en": "Sign out in this app",
+      "ckb": "چوونەدەرەوە لەم ئەپە",
+      "ku": "Di vê sepanê de derkeve",
+      "az-Arab": "بو اویغولامادا حسابدان چیخ"
+    },
+    "حساب جت متصل نشده است.": {
+      "en": "No Jet account session is saved.",
+      "ckb": "دانیشتنی هەژماری جێت پاشەکەوت نەکراوە.",
+      "ku": "Rûniştina hesabê Jet nehatiye tomarkirin.",
+      "az-Arab": "جت حسابینین اوتورومو ساخالانماییب."
+    },
+    "نشست جت روی این دستگاه ذخیره شده است؛ ورود هنگام خواندن سبد دوباره بررسی می‌شود.": {
+      "en": "A Jet session is saved on this device; sign-in is checked again when reading the basket.",
+      "ckb": "دانیشتنی جێت لەم ئامێرە پاشەکەوت کراوە؛ لە خوێندنەوەی سەبەددا چوونەژوورەوە دووبارە دەپشکنرێت.",
+      "ku": "Rûniştina Jet li vê amûrê hatiye tomarkirin; dema xwendina sepetê têketin dîsa tê kontrolkirin.",
+      "az-Arab": "جت اوتورومو بو جیهازدا ساخالانیب؛ سبد اوخونارکن گیریش یئنی‌دن یوخلانیر."
+    },
+    "ورود به حساب جت در صفحهٔ رسمی تأیید شد.": {
+      "en": "Sign-in was confirmed on Jet’s official page.",
+      "ckb": "چوونەژوورەوە لە پەڕەی فەرمی جێت پشتڕاست کرایەوە.",
+      "ku": "Têketin li rûpela fermî ya Jet hat piştrastkirin.",
+      "az-Arab": "جتین رسمی صفحه‌سینده گیریش تصدیقلندی."
+    },
+    "نشست جت منقضی شده؛ دوباره وارد شوید.": {
+      "en": "Your Jet session expired. Sign in again.",
+      "ckb": "دانیشتنی جێت بەسەرچووە؛ دووبارە بچۆ ژوورەوە.",
+      "ku": "Rûniştina Jet qediya; dîsa têkeve.",
+      "az-Arab": "جت اوتورومونون واختی بیتیب؛ یئنی‌دن گیریش ائدین."
+    },
+    "برای خواندن هزینه‌های سبد حساب، یک‌بار در صفحهٔ رسمی جت وارد شوید. نشست فقط در همین دستگاه نگهداری می‌شود.": {
+      "en": "Sign in once on Jet’s official page to read account-basket fees. The session stays on this device.",
+      "ckb": "بۆ خوێندنەوەی تێچووی سەبەد، جارێک لە پەڕەی فەرمی جێت بچۆ ژوورەوە. دانیشتن تەنها لەم ئامێرە دەمێنێتەوە.",
+      "ku": "Ji bo xwendina lêçûnên sepetê carekê li rûpela fermî ya Jet têkeve. Rûniştin li vê amûrê dimîne.",
+      "az-Arab": "حساب سبدینین خرجلرینی اوخوماق اوچون بیر دفعه جتین رسمی صفحه‌سینه گیریش ائدین. اوتوروم یالنیز بو جیهازدا ساخالانیر."
+    },
+    "برنامه سبد فعلی را تغییر نمی‌دهد. مبلغ حساب فقط در صورت تطابق کالاها، تعداد و نشانی تأیید می‌شود.": {
+      "en": "The existing basket is left intact. Its total is verified only when products, quantities and delivery address match.",
+      "ckb": "سەبەدی ئێستا ناگۆڕدرێت. کۆی پارە تەنها بە یەکسانی کاڵا، ژمارە و ناونیشان پشتڕاست دەکرێتەوە.",
+      "ku": "Sepeta heyî nayê guherandin. Tevahî tenê heke hilber, hejmar û navnîşan hev bigirin tê piştrastkirin.",
+      "az-Arab": "ایندیکی سبد دَییشدیریلمیر. مبلغ یالنیز مال، سای و اونوان اویغون گلنده تصدیقلنیر."
+    },
+    "در صفحهٔ رسمی جت وارد شوید؛ پس از ورود به برنامه برگردید.": {
+      "en": "Sign in on Jet’s official page, then return to the app.",
+      "ckb": "لە پەڕەی فەرمی جێت بچۆ ژوورەوە، پاشان بگەڕێوە بۆ ئەپەکە.",
+      "ku": "Li rûpela fermî ya Jet têkeve, paşê vegere sepanê.",
+      "az-Arab": "جتین رسمی صفحه‌سینه گیریش ائدین، سونرا اویغولامایا قاییدین."
+    },
+    "در حال خواندن سبد حساب…": {
+      "en": "Reading account basket…",
+      "ckb": "خوێندنەوەی سەبەدی هەژمار…",
+      "ku": "Sepeta hesabê tê xwendin…",
+      "az-Arab": "حساب سبدی اوخونور…"
+    },
+    "در حال پاک‌کردن نشست جت…": {
+      "en": "Clearing Jet session…",
+      "ckb": "سڕینەوەی دانیشتنی جێت…",
+      "ku": "Rûniştina Jet tê jêbirin…",
+      "az-Arab": "جت اوتورومو سیلینیر…"
+    },
+    "ابتدا عملیات جاری را متوقف کنید یا منتظر پایان آن بمانید.": {
+      "en": "Stop the current operation or wait for it to finish.",
+      "ckb": "کارەکەی ئێستا بوەستێنە یان چاوەڕێی تەواوبوونی بکە.",
+      "ku": "Karê heyî rawestîne an li benda qedandina wê bimîne.",
+      "az-Arab": "ایندیکی عملیاتی دایاندیرین یا بیتماسینی گؤزلَیین."
+    },
+    "بررسی نشست کامل نشد؛ دوباره تلاش کنید.": {
+      "en": "Could not check the session. Try again.",
+      "ckb": "پشکنینی دانیشتن تەواو نەبوو؛ دووبارە هەوڵ بدە.",
+      "ku": "Rûniştin nehat kontrolkirin; dîsa biceribîne.",
+      "az-Arab": "اوتوروم یوخلاماسی تاماملانمادی؛ یئنی‌دن جهد ائدین."
+    },
+    "خواندن سبد حساب کامل نشد؛ مبلغ تأیید نشده است.": {
+      "en": "Could not finish reading the account basket. Its total is unverified.",
+      "ckb": "خوێندنەوەی سەبەد تەواو نەبوو؛ کۆی پارە پشتڕاست نەکراوە.",
+      "ku": "Xwendina sepetê temam nebû; tevahî nehatiye piştrastkirin.",
+      "az-Arab": "حساب سبدینین اوخونماسی تاماملانمادی؛ مبلغ تصدیقلنمه‌ییب."
+    },
+    "سبد خوانده شد، اما نشانی آن قابل تأیید نبود؛ مبلغ هنوز تأیید نشده است.": {
+      "en": "Basket read, but its delivery address could not be verified. The total remains unverified.",
+      "ckb": "سەبەد خوێندرایەوە، بەڵام ناونیشان پشتڕاست نەکرایەوە؛ کۆی پارە پشتڕاست نەکراوە.",
+      "ku": "Sepet hat xwendin lê navnîşan nehat piştrastkirin; tevahî nepiştrast e.",
+      "az-Arab": "سبد اوخوندو، لاکین اونوانی تصدیقلنمه‌دی؛ مبلغ تصدیقلنمه‌ییب."
+    },
+    "هزینه‌های سبد حساب خوانده شد؛ فقط برای کالاها و تعداد مطابق استفاده می‌شود.": {
+      "en": "Account-basket fees were read; they apply only to matching products and quantities.",
+      "ckb": "تێچووی سەبەد خوێندرایەوە؛ تەنها بۆ کاڵا و ژمارەی یەکسان بەکاردێت.",
+      "ku": "Lêçûnên sepetê hatin xwendin; tenê ji bo hilber û hejmarên wekhev tên bikaranîn.",
+      "az-Arab": "حساب سبدینین خرجلری اوخوندو؛ یالنیز اویغون مال و سای اوچون ایشلنیر."
+    },
+    "سبد حساب خالی است.": {
+      "en": "The account basket is empty.",
+      "ckb": "سەبەدی هەژمار بەتاڵە.",
+      "ku": "Sepeta hesabê vala ye.",
+      "az-Arab": "حساب سبدی بوشدور."
+    },
+    "ابتدا یک‌بار وارد حساب جت شوید.": {
+      "en": "Sign in to Jet once first.",
+      "ckb": "سەرەتا جارێک بچۆ ژوورەوەی هەژماری جێت.",
+      "ku": "Pêşî carekê têkeve hesabê Jet.",
+      "az-Arab": "اؤنجە بیر دفعه جت حسابینا گیریش ائدین."
+    },
+    "ورود انجام شد": {
+      "en": "I have signed in",
+      "ckb": "چوومە ژوورەوە",
+      "ku": "Min têket",
+      "az-Arab": "گیریش ائتدیم"
+    },
+    "بازگشت به برنامه": {
+      "en": "Return to the app",
+      "ckb": "گەڕانەوە بۆ ئەپ",
+      "ku": "Vegere sepanê",
+      "az-Arab": "اویغولامایا قاییت"
+    },
+    "در صفحهٔ رسمی جت وارد شوید؛ سپس «ورود انجام شد» را بزنید.": {
+      "en": "Sign in on Jet’s official page, then tap “I have signed in”.",
+      "ckb": "لە پەڕەی فەرمی جێت بچۆ ژوورەوە، پاشان «چوومە ژوورەوە» بکە.",
+      "ku": "Li rûpela fermî ya Jet têkeve, paşê “Min têket” hilbijêre.",
+      "az-Arab": "جتین رسمی صفحه‌سینه گیریش ائدین، سونرا «گیریش ائتدیم» دویمه‌سینی باسین."
+    },
+    "ورود هنوز کامل نشده است؛ ادامه را در صفحهٔ جت انجام دهید.": {
+      "en": "Sign-in is not complete. Continue on Jet’s page.",
+      "ckb": "چوونەژوورەوە تەواو نەبووە؛ لە پەڕەی جێت بەردەوام بە.",
+      "ku": "Têketin temam nebûye; li rûpela Jet bidomîne.",
+      "az-Arab": "گیریش هله تاماملانماییب؛ جت صفحه‌سینده داوام ائدین."
+    },
+    "خواندن هزینه‌ها بدون تغییر سبد…": {
+      "en": "Reading fees without changing the basket…",
+      "ckb": "خوێندنەوەی تێچوو بەبێ گۆڕینی سەبەد…",
+      "ku": "Lêçûn bê guherandina sepetê tên xwendin…",
+      "az-Arab": "سبدی دَییشدیرمه‌دن خرجلر اوخونور…"
+    },
+    "ترکیب چند کالا برای یک درخواست": {
+      "en": "Several products for one request",
+      "ckb": "چەند بەرهەم بۆ یەک داواکاری",
+      "ku": "Çend berhem ji bo yek daxwazê",
+      "az-Arab": "بیر ایسته‌ک اوچون بیر نئچه محصول"
+    },
+    "میانگین کل ترکیب برای مقدار خرید شما": {
+      "en": "Average for the full combination you buy",
+      "ckb": "تێکڕای کۆی پێکهاتەکە بۆ بڕی کڕینی تۆ",
+      "ku": "Navîniya tevahiya berheman ji bo qasê kirîna te",
+      "az-Arab": "آلدیغینیز میقدار اوچون قارېشیغین اورتالاماسی"
+    },
+    "کاهش تعداد درخواستی": {
+      "en": "Decrease requested quantity",
+      "ckb": "کەمکردنەوەی بڕی داواکراو",
+      "ku": "Qasa daxwazkirî kêm bike",
+      "az-Arab": "ایسته‌نن میقداری آزالت"
+    },
+    "افزایش تعداد درخواستی": {
+      "en": "Increase requested quantity",
+      "ckb": "زیادکردنی بڕی داواکراو",
+      "ku": "Qasa daxwazkirî zêde bike",
+      "az-Arab": "ایسته‌نن میقداری آرتیر"
+    },
+    "درخواست": {
+      "en": "requested",
+      "ckb": "داواکراو",
+      "ku": "daxwazkirî",
+      "az-Arab": "ایسته‌نن"
+    },
+    "انتخاب یک کالا در این بخش، آن را جایگزین کل ترکیب می‌کند.": {
+      "en": "Choosing a product here replaces the entire combination.",
+      "ckb": "هەڵبژاردنی بەرهەمێک لێرە جێگای هەموو پێکهاتەکە دەگرێتەوە.",
+      "ku": "Hilbijartina berhemekê li vir hemû tevliheviyê diguherîne.",
+      "az-Arab": "بورادا بیر محصول سئچمک بوتون قارېشیغی عوض ائدیر."
+    },
+    "بخشی از ترکیب فعلی": {
+      "en": "Part of the current combination",
+      "ckb": "بەشێک لە پێکهاتەی ئێستا",
+      "ku": "Beşek ji tevliheviya niha",
+      "az-Arab": "ایندیکی قارېشیغین بیر حیصه‌سی"
     }
   }
 }

@@ -51,6 +51,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path == '/api/live/location':
             return self.respond(200, {**desktop(self.server).delivery(), 'app_version': __version__})
+        if path == '/api/live/account':
+            return self.respond(200, desktop(self.server).account_status())
         if path == '/api/live/status':
             try:
                 return self.respond(200, desktop(self.server).status(parse_qs(urlsplit(self.path).query).get('id', [''])[0]))
@@ -77,6 +79,7 @@ class Handler(BaseHTTPRequestHandler):
                   '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
                   '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
                   '/retailer.js': ('retailer.js', 'text/javascript; charset=utf-8'),
+                  '/account-ui.js': ('account-ui.js', 'text/javascript; charset=utf-8'),
                   '/version.js': ('version.js', 'text/javascript; charset=utf-8'),
                   '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
                   '/fonts.css': ('fonts.css', 'text/css; charset=utf-8'),
@@ -125,7 +128,10 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(data, dict):
                     raise ValidationError('درخواست معتبر نیست.')
                 service = desktop(self.server)
-                routes = {'/api/live/addresses': lambda: service.addresses(data.get('query')),
+                routes = {'/api/live/account/connect': lambda: service.account_job('login'),
+                          '/api/live/account/cart': lambda: service.account_job('cart'),
+                          '/api/live/account/disconnect': lambda: service.disconnect_account(),
+                          '/api/live/addresses': lambda: service.addresses(data.get('query')),
                           '/api/live/location': lambda: service.select(data),
                           '/api/live/search': lambda: service.start(data.get('items'),data.get('fee_cache')),
                           '/api/live/clear': lambda: service.clear(),
@@ -135,7 +141,7 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     self.respond(200, routes[self.path]())
                 except (OSError, ValueError) as exc:
-                    raise ValidationError('ارتباط با سرویس نشانی کامل نشد؛ دوباره تلاش کنید.') from exc
+                    raise ValidationError('ارتباط با نشست جت کامل نشد؛ پنجرهٔ ورود را ببندید و دوباره تلاش کنید.' if self.path.startswith('/api/live/account') else 'ارتباط با سرویس نشانی کامل نشد؛ دوباره تلاش کنید.') from exc
             elif self.path == '/api/optimize':
                 self.respond(200, optimize(data))
             elif self.path == '/api/validate':

@@ -1,9 +1,10 @@
-"""Desktop retailer driver. Public pages only; no account or purchase actions."""
+"""Desktop retailer driver. Optional app-owned login; no purchase actions."""
 from __future__ import annotations
 import importlib.util
 import json
 import math
 import os
+import shutil
 from pathlib import Path
 import threading
 import time
@@ -78,14 +79,99 @@ class DesktopService:
         base = Path(os.environ.get('LOCALAPPDATA') or Path.home() / '.local' / 'share')
         self.directory = Path(directory) if directory else base / 'Sabadchin'
         self.location_file = self.directory / 'delivery.json'
+        self.account_file = self.directory / 'jet-account.json'
+        self.account_directory = self.directory / 'jet-browser'
         self.location = None
         self.jobs = {}
+        self.closing = False
         self.lock = threading.RLock()
         self.runner = runner or browse
         try:
             self.location = point(json.loads(self.location_file.read_text(encoding='utf-8')))
         except (OSError, ValueError, ValidationError):
             pass
+
+    def _account(self):
+        try:
+            data=json.loads(self.account_file.read_text(encoding='utf-8'))
+            if data.get('channel') in ('chrome','msedge','chromium') and data.get('status') in ('saved','signed_in','login_required'):
+                return data
+        except (OSError,ValueError,AttributeError):pass
+        return {'status':'disconnected'}
+
+    def account_status(self):
+        with self.lock:return {'status':self._account()['status']}
+
+    def _save_account(self,data):
+        self.directory.mkdir(parents=True,exist_ok=True,mode=0o700)
+        temp=self.account_file.with_suffix('.tmp')
+        temp.write_text(json.dumps({'status':data['status'],'channel':data['channel']}),encoding='utf-8')
+        try:temp.chmod(0o600)
+        except OSError:pass
+        temp.replace(self.account_file)
+
+    def _ensure_idle(self):
+        if self.closing or any(j['state']=='running' for j in self.jobs.values()):
+            raise ValidationError('ابتدا عملیات جاری را متوقف کنید یا منتظر پایان آن بمانید.')
+
+    def account_job(self,kind):
+        with self.lock:
+            self._ensure_idle()
+            if importlib.util.find_spec('playwright') is None:raise ValidationError('اتصال دسکتاپ نصب نیست؛ Chrome یا Edge و بستهٔ live برنامه را نصب کنید.')
+            if kind=='cart' and self._account()['status'] not in ('saved','signed_in'):
+                raise ValidationError('ابتدا یک‌بار وارد حساب جت شوید.')
+            if kind=='cart' and not self.location:raise ValidationError('ابتدا موقعیت تحویل را انتخاب کنید.')
+            key=uuid.uuid4().hex;self.jobs={key:{'id':key,'state':'running','detail':'در حال اتصال به جت…'}}
+            threading.Thread(target=self._run_account,args=(key,kind),daemon=True).start()
+            return {'id':key}
+
+    def _run_account(self,key,kind):
+        def report(**values):
+            with self.lock:
+                if self.jobs.get(key,{}).get('state')!='running':raise InterruptedError()
+                self.jobs[key].update(values)
+        try:
+            from .account import connect
+            if kind=='login':
+                result=connect(self.account_directory,report,preferred=self._account().get('channel'))
+                with self.lock:
+                    report()
+                    self._save_account(result)
+                result={'account_status':result['status']}
+            else:
+                result=self._read_account_cart()
+                with self.lock:
+                    report()
+                    if result.get('account_status')=='login_required':self._save_account({**self._account(),'status':'login_required'})
+            report(state='done',result=result)
+        except InterruptedError:pass
+        except Exception as exc:
+            # Never return browser tracebacks or page content from an account operation.
+            with self.lock:
+                if self.jobs.get(key,{}).get('state')=='running':
+                    self.jobs[key].update(state='error',error=str(exc) if isinstance(exc,ValidationError) else 'ارتباط با حساب جت کامل نشد؛ دوباره تلاش کنید.')
+
+        finally:
+            with self.lock:self.closing=False
+
+    def _read_account_cart(self):
+        import asyncio
+        from .account import open_context,read_cart
+        from playwright.async_api import async_playwright
+        data=self._account();delivery=self.delivery()
+        async def run():
+            async with async_playwright() as engine:
+                context=await open_context(engine,self.account_directory/data['channel'],channel=None if data['channel']=='chromium' else data['channel'])
+                try:return {**delivery,**await read_cart(context,delivery)}
+                finally:await context.close()
+        return asyncio.run(run())
+
+    def disconnect_account(self):
+        with self.lock:
+            self._ensure_idle()
+            shutil.rmtree(self.account_directory,ignore_errors=False) if self.account_directory.exists() else None
+            self.account_file.unlink(missing_ok=True)
+            return {'status':'disconnected'}
 
     def addresses(self, query):
         if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200:
@@ -132,8 +218,7 @@ class DesktopService:
         with self.lock:
             if not self.location:
                 raise ValidationError('ابتدا موقعیت تحویل را انتخاب کنید.')
-            if any(j['state'] == 'running' for j in self.jobs.values()):
-                raise ValidationError('یک جست‌وجو در حال اجراست.')
+            self._ensure_idle()
             if self.runner is browse and importlib.util.find_spec('playwright') is None:
                 raise ValidationError('اتصال دسکتاپ نصب نیست. در پوشهٔ پروژه اجرا کنید: py -m pip install -e ".[live]"')
             self.jobs = {}  # Retain only the current result, not search history.
@@ -152,7 +237,13 @@ class DesktopService:
                     raise InterruptedError()
                 self.jobs[key].update(fields)
         try:
-            result = self.runner(items, location, report, **({'fee_cache':fee_cache} if isinstance(fee_cache,dict) else {}))
+            options={'fee_cache':fee_cache} if isinstance(fee_cache,dict) else {}
+            account=self._account()
+            if account['status'] in ('saved','signed_in'):
+                options.update(session_directory=self.account_directory/account['channel'],session_channel=account['channel'])
+            result = self.runner(items, location, report, **options)
+            if result.get('account_status')=='login_required':
+                with self.lock:self._save_account({**account,'status':'login_required'})
             report(result=result, state='done', completed=len(items), detail='مقایسه آماده است.')
         except InterruptedError:
             pass
@@ -162,6 +253,9 @@ class DesktopService:
                     detail = str(exc).splitlines()[0] if str(exc) else type(exc).__name__
                     self.jobs[key].update(state='error', error=str(exc) if isinstance(exc, ValidationError) else
                                          f'جست‌وجوی جت کامل نشد ({type(exc).__name__}): {detail[:500]}')
+
+        finally:
+            with self.lock:self.closing=False
 
     def status(self, key):
         with self.lock:
@@ -174,11 +268,13 @@ class DesktopService:
             raise ValidationError('شناسهٔ جست‌وجو معتبر نیست.')
         with self.lock:
             if key in self.jobs and self.jobs[key]['state'] == 'running':
+                self.closing=True
                 self.jobs[key].update(state='cancelled', detail='جست‌وجو متوقف شد.')
         return {'cancelled': True}
 
     def clear(self):
         with self.lock:
+            self.disconnect_account()
             self.location_file.unlink(missing_ok=True)
             self.location = None
             self.jobs.clear()
@@ -211,15 +307,15 @@ def resource_budget():
 
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
-           max_stores=40, page_seconds=20, item_seconds=30, workers=None, fee_cache=None):
+           max_stores=40, page_seconds=20, item_seconds=30, workers=None, fee_cache=None, session_directory=None, session_channel=None):
     import asyncio
     return asyncio.run(_browse(items, location, report, channel=channel, page_setup=page_setup,
         browser_options=browser_options, max_stores=max_stores, page_seconds=page_seconds,
-        item_seconds=item_seconds, workers=workers, fee_cache=fee_cache))
+        item_seconds=item_seconds, workers=workers, fee_cache=fee_cache, session_directory=session_directory, session_channel=session_channel))
 
 
 async def _browse(items, location, report, *, channel, page_setup, browser_options,
-                  max_stores, page_seconds, item_seconds, workers, fee_cache):
+                  max_stores, page_seconds, item_seconds, workers, fee_cache, session_directory, session_channel):
     import asyncio
     import inspect
     from contextlib import AsyncExitStack, suppress
@@ -261,18 +357,25 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
         raise ValidationError('موتور مرورگر ظرف ۲۰ ثانیه پاسخ نداد؛ راه‌اندازی جست‌وجو متوقف شد.') from exc
     async with AsyncExitStack() as cleanup:
         cleanup.push_async_callback(engine.stop)
-        browser = None
-        progress('در حال باز کردن مرورگر جست‌وجو…')
-        for candidate in ([channel] if channel else ['chrome', 'msedge', None]):
+        if session_directory:
+            from .account import open_context
             try:
-                browser = await engine.chromium.launch(headless=True, timeout=15000, **({'channel':candidate} if candidate else {}), **(browser_options or {})); break
-            except Exception:
-                continue
-        if browser is None:
-            raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
-        cleanup.push_async_callback(browser.close)
+                context=await open_context(engine,session_directory,channel=None if session_channel=='chromium' else session_channel,options=browser_options)
+            except Exception as exc:raise ValidationError('مرورگر نشست جت باز نشد؛ پنجرهٔ ورود را ببندید یا دوباره به حساب متصل شوید.') from exc
+            cleanup.push_async_callback(context.close)
+            await context.set_geolocation({k:location[k] for k in ('latitude','longitude')})
+        else:
+            browser = None
+            progress('در حال باز کردن مرورگر جست‌وجو…')
+            for candidate in ([channel] if channel else ['chrome', 'msedge', None]):
+                try:
+                    browser = await engine.chromium.launch(headless=True, timeout=15000, **({'channel':candidate} if candidate else {}), **(browser_options or {})); break
+                except Exception:continue
+            if browser is None:
+                raise ValidationError('مرورگر جست‌وجو در دسترس نیست. Chrome یا Edge نصب کنید، یا اجرا کنید: py -m playwright install chromium')
+            cleanup.push_async_callback(browser.close)
+            context = await asyncio.wait_for(browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')}), timeout=15)
         progress('در حال آماده‌سازی موقعیت و صفحه‌های جت…')
-        context = await asyncio.wait_for(browser.new_context(geolocation={k:location[k] for k in ('latitude','longitude')}), timeout=15)
         await context.grant_permissions(['geolocation'], origin=HOME)
         await context.add_init_script(script=metadata_script+f'({sources["preference"]})("restore",{json.dumps(saved,ensure_ascii=False)})')
         async def lightweight(route):
@@ -395,6 +498,15 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                 for job in done: await job
             await join
             result['items']=[{**entries[queries[(i['query'],i.get('department','supermarket'))]],'id':i['id']} for i in items]
+            if session_directory:
+                from .account import read_cart
+                progress('بررسی هزینه‌های سبد حساب…')
+                try:
+                    account_cart=await read_cart(context,saved,setup=page_setup)
+                    result['account_status']=account_cart['account_status']
+                    result['account_notice']=account_cart.get('notice','')
+                    if account_cart.get('checkout'):result['checkout_quotes'].append(account_cart['checkout'])
+                except Exception:result['account_notice']='خواندن سبد حساب کامل نشد؛ مبلغ تأیید نشده است.'
             result['captured_at']=datetime.now(timezone.utc).isoformat()
             return result
         finally:

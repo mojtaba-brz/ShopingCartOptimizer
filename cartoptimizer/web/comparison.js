@@ -45,5 +45,10 @@
    effective_unit_price:total?cost*(['g','ml'].includes(p.size.unit)?1000:1)/total:null,
    line:{item_id:item.id,title:p.title,quantity,subtotal:cost,url:p.url,store_name:p.store_name,store_id:p.store_id,store_type:p.store_type||'supermarket',image_url:p.image_url}};
  }
- const api={measure,unitPrice,key,query,options,requiredUnit,group,plan,purchase};root.CartwiseComparison=api;if(typeof module!=='undefined')module.exports=api;
+ function combine(parts){
+  if(!parts.length)return null;if(parts.length===1)return parts[0];
+  const first=parts[0],cost=parts.reduce((n,p)=>n+p.cost,0),total=parts.some(p=>p.total===null)?null:parts.reduce((n,p)=>n+p.total,0);
+  return {...first,parts,quantity:parts.reduce((n,p)=>n+p.quantity,0),cost,total,consumer_total:first.consumer_target===null?null:parts.reduce((n,p)=>n+p.consumer_total,0),amazing_quantity:parts.reduce((n,p)=>n+p.amazing_quantity,0),base_quantity:parts.reduce((n,p)=>n+p.base_quantity,0),price_unknown:parts.some(p=>p.price_unknown),effective_unit_price:total?cost*(['g','ml'].includes(first.unit)?1000:1)/total:null};
+ }
+ const api={combine,measure,unitPrice,key,query,options,requiredUnit,group,plan,purchase};root.CartwiseComparison=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:window);

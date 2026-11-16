@@ -66,3 +66,5 @@ html[dir=rtl] .toolbar{gap:2px}html[dir=rtl] .topbar{font-size:12px}html[dir=rtl
 .repeat-order-note{font-size:13px;padding:12px 14px;background:var(--lime);color:var(--ink);border-radius:10px;line-height:1.9}.basket-summary .hint{color:#fff!important;opacity:.9}.basket-summary .repeat-order-note{background:#ffffff18;color:#fff;border:1px solid #ffffff40}
 
 .product-result .unit-price small{display:block;font-size:11px;font-weight:normal;color:var(--muted);margin-top:3px}
+
+.mixed-products{display:grid;gap:.75rem}.mixed-product{padding:.8rem;border:1px solid var(--line);border-radius:1rem}.mixed-product .product-main{margin:0}.mixed-product .unit-price{font-size:1rem}.mixed-result>.unit-price{margin-block:1rem}.mixed-result .purchase-row{margin-top:1rem}
