@@ -25,7 +25,7 @@ public class AccountSessionTest {
     @Test public void loginPersistsAndLogoutClearsOnlyRetailerStorage()throws Exception{
         android.content.Context context=ApplicationProvider.getApplicationContext();JetAccount.save(context,"disconnected");
         Intent login=new Intent(context,DigikalaActivity.class).putExtra("account_login",true);
-        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launch(login)){
+        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launchActivityForResult(login)){
             AtomicReference<WebView> ref=new AtomicReference<>();a.onActivity(x->{ref.set(RetailerFixtures.browser(x));RetailerFixtures.load(ref.get(),"https://www.digikalajet.com/user/login","<div id='root'><input type='tel' value='fixture-only'><button>ادامه</button></div>");});
             waitFor(ref.get(),"Boolean(document.querySelector('input[type=tel]'))");
             a.onActivity(x->{ViewGroup root=(ViewGroup)((ViewGroup)x.findViewById(android.R.id.content)).getChildAt(0);((Button)((ViewGroup)root.getChildAt(0)).getChildAt(1)).performClick();});Thread.sleep(300);
@@ -38,7 +38,7 @@ public class AccountSessionTest {
         }
         new DeliveryChoice(context).rememberJet("ارسال به ونک","35.75|51.4");
         InstrumentationRegistry.getInstrumentation().runOnMainSync(RetailerSession::discard);
-        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launch(new Intent(context,DigikalaActivity.class).putExtra("account_quote",true))){
+        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launchActivityForResult(new Intent(context,DigikalaActivity.class).putExtra("account_quote",true))){
             a.onActivity(x->RetailerFixtures.load(RetailerFixtures.browser(x),"https://www.digikalajet.com/checkout/cart","<div id='root'><p>ارسال به ونک</p><p>تعداد کالاها ۲</p><div data-store-name='ونک'><img alt='شیر یک لیتری'><span data-testid='cart-item-quantity'>2</span></div><p>جمع کالاها ۲۰٬۰۰۰ تومان</p><p>هزینه ارسال ۳٬۰۰۰ تومان</p><p>هزینه بسته بندی ۱٬۰۰۰ تومان</p><p>مبلغ قابل پرداخت ۲۴٬۰۰۰ تومان</p></div><script>if(localStorage.getItem('fixture-session')!=='private-fixture'){document.body.innerHTML='<input type=tel><button>ادامه</button>';history.replaceState({},'', '/user/login')}</script>"));
             for(int n=0;n<150&&a.getState()!=Lifecycle.State.DESTROYED;n++)Thread.sleep(100);
             assertEquals("Account quote completes without manual import",Lifecycle.State.DESTROYED,a.getState());
@@ -54,7 +54,7 @@ public class AccountSessionTest {
             eval(ref.get(),"CartwiseAndroid.disconnectAccount();true");waitFor(ref.get(),"JSON.parse(CartwiseAndroid.accountStatus()).status==='disconnected'");
             assertEquals("true",eval(ref.get(),"state.items[0].quantity===2&&JSON.parse(localStorage.getItem('cartwise.lists.v1')).length===1"));assertEquals("35.75|51.4",new DeliveryChoice(context).coordinates());
         }
-        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launch(login)){
+        try(ActivityScenario<DigikalaActivity> a=ActivityScenario.launchActivityForResult(login)){
             AtomicReference<WebView> ref=new AtomicReference<>();a.onActivity(x->{ref.set(RetailerFixtures.browser(x));RetailerFixtures.load(ref.get(),"https://www.digikalajet.com/user/login","<div id='root'><input type='tel'><button>ادامه</button></div>");});waitFor(ref.get(),"Boolean(document.querySelector('input[type=tel]'))");
             assertEquals("true",eval(ref.get(),"localStorage.getItem('fixture-session')===null"));
         }

@@ -79,6 +79,7 @@ class Handler(BaseHTTPRequestHandler):
                   '/auto-planner.js': ('auto-planner.js', 'text/javascript; charset=utf-8'),
                   '/auto-ui.js': ('auto-ui.js', 'text/javascript; charset=utf-8'),
                   '/retailer.js': ('retailer.js', 'text/javascript; charset=utf-8'),
+                  '/account-ui.js': ('account-ui.js', 'text/javascript; charset=utf-8'),
                   '/version.js': ('version.js', 'text/javascript; charset=utf-8'),
                   '/fa.css': ('fa.css', 'text/css; charset=utf-8'),
                   '/fonts.css': ('fonts.css', 'text/css; charset=utf-8'),

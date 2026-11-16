@@ -44,6 +44,8 @@ with tempfile.TemporaryDirectory() as folder:
         for path in sorted(paths):
             with urlopen(base + path, timeout=10) as reply:
                 assert reply.read() == (web / ('index.html' if path == '/' else path[1:])).read_bytes(), path
+        with urlopen(base + '/api/live/account') as reply:
+            assert json.load(reply) == {'status':'disconnected'}
         with urlopen(base + '/api/demo') as reply:
             demo = reply.read()
         request = Request(base + '/api/optimize', data=demo, headers={'Content-Type': 'application/json'})
