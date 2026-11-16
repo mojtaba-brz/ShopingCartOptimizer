@@ -143,7 +143,7 @@ The initial proposal uses up to two shops per department. All shop checkboxes st
 
 Empty catalogue pages wait for pending responses and re-enter the search route once within the existing time budget. Human verification and address changes stop the task. A retry-unmatched-items action preserves valid results and manual choices, while refreshing missing, expired or address-invalid data. Named shopping lists (names, goods, quantities and departments) save/load inside app storage on desktop and Android; file backup remains optional in Settings. Product review cards share rows when space allows. Light/night mode works with all three themes and persists, including app-owned Android address dialogs and progress.
 
-### 0.20.0 pricing and fees
+### 0.19.1 pricing and fees
 
 For fixed goods, amazing slots maximize payable savings after observed fees and shipping thresholds; product/store selection retains normalized unit-price ranking. Public Jet catalogue delivery prices are integer rials. Partial metadata preserves prior known fields; explicit unknown and membership-dependent shipping do not become zero. The current `/v4/shop` header is inspected automatically. Cart-only charges remain unverified until an exactly matching observed basket provides them.
 

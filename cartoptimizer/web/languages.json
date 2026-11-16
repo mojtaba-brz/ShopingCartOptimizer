@@ -2720,6 +2720,18 @@
       "ckb": "داواکراو",
       "ku": "daxwazkirî",
       "az-Arab": "ایسته‌نن"
+    },
+    "انتخاب یک کالا در این بخش، آن را جایگزین کل ترکیب می‌کند.": {
+      "en": "Choosing a product here replaces the entire combination.",
+      "ckb": "هەڵبژاردنی بەرهەمێک لێرە جێگای هەموو پێکهاتەکە دەگرێتەوە.",
+      "ku": "Hilbijartina berhemekê li vir hemû tevliheviyê diguherîne.",
+      "az-Arab": "بورادا بیر محصول سئچمک بوتون قارېشیغی عوض ائدیر."
+    },
+    "بخشی از ترکیب فعلی": {
+      "en": "Part of the current combination",
+      "ckb": "بەشێک لە پێکهاتەی ئێستا",
+      "ku": "Beşek ji tevliheviya niha",
+      "az-Arab": "ایندیکی قارېشیغین بیر حیصه‌سی"
     }
   }
 }
