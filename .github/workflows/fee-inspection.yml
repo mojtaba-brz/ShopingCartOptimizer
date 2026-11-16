@@ -1,0 +1,24 @@
+name: Guest fee inspection
+on:
+  push:
+    branches: ['codex/publication-018']
+    paths: ['release/inspect-public-fees.py', '.github/workflows/fee-inspection.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install ".[live]"
+      - run: python -m playwright install --with-deps chromium
+      - run: |
+          export CHROMIUM_PATH="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          python release/inspect-public-fees.py
