@@ -12,6 +12,7 @@
   const send=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){network.pending++;let ended=false;const finish=()=>{if(!ended){ended=true;network.pending--;network.completed++;}};this.addEventListener('loadend',finish,{once:true});try{return send.apply(this,args);}catch(e){finish();throw e;}};
  }
  root.CartwiseSearchTask={start(options){
+  options={...options,department:options.department||'supermarket'};
   const state={done:false,products:0,stores:0,detail:'آماده‌سازی صفحه…'};
   root.cartwiseTask=state;
   const a=root.CartwiseSearchAdapters,rows=new Map(),shops=new Map(),quotes=[],tasks=[],warnings=[],feeChecks=[];
