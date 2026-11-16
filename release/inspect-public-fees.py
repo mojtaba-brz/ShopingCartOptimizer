@@ -1,8 +1,8 @@
-import asyncio,json,os
+import asyncio,json,os,re
 from pathlib import Path
 from urllib.parse import urlsplit
 from cartoptimizer.desktop import browse
-samples=[];texts=set();details=[];opened=False;seen=set();paths=set()
+samples=[];texts=set();details=[];opened=False;seen=set();paths=set();financial=[]
 async def setup(page):
  async def inspect(shop_id,shop_title):
   try:
@@ -21,10 +21,21 @@ async def setup(page):
   except Exception as e:details.append({'error':type(e).__name__})
  async def response(reply):
   u=urlsplit(reply.url)
-  if u.hostname=='api.digikalajet.ir':paths.add(u.path)
+  if u.hostname=='api.digikalajet.ir' and re.match(r'^/(?:v[0-9]+/)?(?:shop|search|products)(?:/|$)',u.path):paths.add(u.path)
   if u.hostname!='api.digikalajet.ir' or not u.path.startswith(('/shop/','/v2/search/','/search/shop/')):return
   try:data=await reply.json()
   except Exception:return
+  if u.path.endswith('/header/'):
+   def amounts(x,path=''):
+    if isinstance(x,list):
+     for n,v in enumerate(x[:50]):amounts(v,path+'/'+str(n))
+    elif isinstance(x,dict):
+     for k,v in x.items():
+      if k in ('account','user','address','customer','token','cart','cart_items','comments','reviews'):continue
+      if re.search('fee|cost|price|minimum|prepar|packag|service|shipping|tax|vat|delivery',k,re.I) and len(financial)<80:
+       financial.append({'field':path+'/'+k,'value':v if not isinstance(v,(dict,list)) else {a:b for a,b in v.items() if isinstance(b,(int,float,bool,type(None))) } if isinstance(v,dict) else str(type(v))})
+      if isinstance(v,(dict,list)):amounts(v,path+'/'+k)
+   amounts(data)
   def walk(x):
    global opened
    if isinstance(x,list):
@@ -43,4 +54,4 @@ async def setup(page):
  await page.expose_binding('reportPublicFeeLabels',lambda source,rows:texts.update(rows))
  await page.add_init_script("""setInterval(()=>{const rows=[...document.querySelectorAll('p,span,div,li,button,a')].filter(e=>e.getClientRects().length&&e.children.length<4).map(e=>e.innerText?.replace(/[\\u200c\\s]+/g,' ').trim()).filter(s=>s&&s.length<160&&/(ارسال|بسته بندی|خدمات|کارمزد|حداقل)/.test(s));if(rows.length)window.reportPublicFeeLabels([...new Set(rows)].slice(0,40));},1000);""")
 r=browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],{'latitude':35.757535,'longitude':51.40994,'address':'Tehran Vanak public test point'},lambda **x:None,page_setup=setup,browser_options={'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']},max_stores=2,page_seconds=12,item_seconds=65,workers=1)
-print(json.dumps({'catalogue_shop_delivery':samples,'visible_fee_labels':list(texts)[:70],'observed_quotes':r['checkout_quotes'][:15],'details':details,'public_paths':list(paths)},ensure_ascii=False))
+print(json.dumps({'catalogue_shop_delivery':samples,'visible_fee_labels':list(texts)[:70],'observed_quotes':r['checkout_quotes'][:15],'details':details,'public_paths':list(paths),'financial_fields':financial},ensure_ascii=False))
