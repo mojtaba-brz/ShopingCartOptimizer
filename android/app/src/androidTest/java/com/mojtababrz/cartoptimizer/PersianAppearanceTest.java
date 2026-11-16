@@ -20,7 +20,7 @@ public class PersianAppearanceTest {
         assertTrue(done.await(10,TimeUnit.SECONDS));return result.get();
     }
     private void ready(ActivityScenario<MainActivity> scenario)throws Exception{
-        for(int i=0;i<100;i++){if("true".equals(eval(scenario,"Boolean(window.CartwiseAppearance && window.CartwiseCheckout)")))return;Thread.sleep(100);}fail("Persian UI unavailable");
+        for(int i=0;i<100;i++){if("true".equals(eval(scenario,"Boolean(window.CartwiseAppearance && window.CartwiseCheckout && document.getElementById('app-language'))")))return;Thread.sleep(100);}fail("Persian UI unavailable");
     }
     private void rendered(ActivityScenario<MainActivity> scenario)throws Exception{
         CountDownLatch next=new CountDownLatch(1);
@@ -47,6 +47,15 @@ public class PersianAppearanceTest {
                 assertNotNull(bitmap);AtomicReference<java.io.File> directory=new AtomicReference<>();scenario.onActivity(a->directory.set(new java.io.File(a.getFilesDir(),"store-screenshots")));
                 directory.get().mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(directory.get(),theme+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
                 }
+            }
+            // Exercise the real WebView/native bridge and saved locale, including both Kurdish scripts.
+            for(String language:new String[]{"en","ckb","ku","az-Arab","fa"}){
+                eval(scenario,"CartwiseI18n.setLanguage('"+language+"');true");
+                for(int i=0;i<50;i++){if(("\""+language+"\"").equals(eval(scenario,"CartwiseAndroid.savedLanguage()")))break;Thread.sleep(100);}
+                assertEquals("\""+language+"\"",eval(scenario,"CartwiseAndroid.savedLanguage()"));
+                final boolean rtl=!(language.equals("en")||language.equals("ku"));
+                scenario.onActivity(a->{assertEquals(language,AppLanguage.get(a));assertEquals(rtl?android.view.View.LAYOUT_DIRECTION_RTL:android.view.View.LAYOUT_DIRECTION_LTR,AppLanguage.direction(a));assertFalse(AppLanguage.text(a,"توقف جست‌وجو").isEmpty());});
+                assertEquals("true",eval(scenario,"document.documentElement.dir==='"+(rtl?"rtl":"ltr")+"' && document.documentElement.scrollWidth<=innerWidth"));
             }
             progress("recreating");scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
             eval(scenario,"showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));

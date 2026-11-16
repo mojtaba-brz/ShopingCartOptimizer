@@ -1772,6 +1772,510 @@
       "ckb": "خوێندنەوەی وەشان…",
       "ku": "Guherto tê xwendin…",
       "az-Arab": "نسخه اوخونور…"
+    },
+    "بازگشت": {
+      "en": "Back",
+      "ckb": "گەڕانەوە",
+      "ku": "Vegere",
+      "az-Arab": "گئری"
+    },
+    "خروج": {
+      "en": "Exit",
+      "ckb": "دەرچوون",
+      "ku": "Derkeve",
+      "az-Arab": "چیخیش"
+    },
+    "ماندن": {
+      "en": "Stay",
+      "ckb": "مانەوە",
+      "ku": "Bimîne",
+      "az-Arab": "قال"
+    },
+    "ادامه": {
+      "en": "Continue",
+      "ckb": "بەردەوامبە",
+      "ku": "Berdewam bike",
+      "az-Arab": "داوام ائت"
+    },
+    "باز کردن": {
+      "en": "Open",
+      "ckb": "کردنەوە",
+      "ku": "Veke",
+      "az-Arab": "آچ"
+    },
+    "تغییر موقعیت": {
+      "en": "Change location",
+      "ckb": "گۆڕینی شوێن",
+      "ku": "Cih biguherîne",
+      "az-Arab": "یئری دَییش"
+    },
+    "آدرس بازیابی شد": {
+      "en": "Address restored",
+      "ckb": "ناونیشان گەڕایەوە",
+      "ku": "Navnîşan hat vegerandin",
+      "az-Arab": "آدرس قایتاریلدی"
+    },
+    "آدرس تحویل": {
+      "en": "Delivery address",
+      "ckb": "ناونیشانی گەیاندن",
+      "ku": "Navnîşana radestkirinê",
+      "az-Arab": "تحویل آدرسی"
+    },
+    "آدرس نمایش‌داده‌شده در دیجی‌کالاجت": {
+      "en": "Address shown in Jet",
+      "ckb": "ناونیشانی نیشاندراوی جێت",
+      "ku": "Navnîşana di Jet de",
+      "az-Arab": "جتده گؤستریلن آدرس"
+    },
+    "ثبت آدرس تحویل": {
+      "en": "Save delivery address",
+      "ckb": "پاشەکەوتکردنی ناونیشان",
+      "ku": "Navnîşana radestkirinê tomar bike",
+      "az-Arab": "تحویل آدرسینی ساخلا"
+    },
+    "ثبت موقعیت": {
+      "en": "Save location",
+      "ckb": "پاشەکەوتکردنی شوێن",
+      "ku": "Cih tomar bike",
+      "az-Arab": "یئری ساخلا"
+    },
+    "ثبت موقعیت و شروع": {
+      "en": "Save location and start",
+      "ckb": "شوێن پاشەکەوت بکە و دەست پێ بکە",
+      "ku": "Cih tomar bike û dest pê bike",
+      "az-Arab": "یئری ساخلا و باشلا"
+    },
+    "خواندن کالاها": {
+      "en": "Read products",
+      "ckb": "خوێندنەوەی کاڵاکان",
+      "ku": "Berheman bixwîne",
+      "az-Arab": "ماللاری اوخو"
+    },
+    "خواندن سبد": {
+      "en": "Read basket",
+      "ckb": "خوێندنەوەی سەبەتە",
+      "ku": "Sepetê bixwîne",
+      "az-Arab": "سبدی اوخو"
+    },
+    "خواندن قیمت‌های روز": {
+      "en": "Read current prices",
+      "ckb": "خوێندنەوەی نرخی ئەمڕۆ",
+      "ku": "Bihayên niha bixwîne",
+      "az-Arab": "ایندیکی قییمتلری اوخو"
+    },
+    "خواندن همه نتایج فروشگاه": {
+      "en": "Read all shop results",
+      "ckb": "خوێندنەوەی هەموو ئەنجامەکان",
+      "ku": "Hemû encamên dikanê bixwîne",
+      "az-Arab": "بوتون ماغازا نتیجه‌لرینی اوخو"
+    },
+    "انتخاب نشانی بدون GPS": {
+      "en": "Choose address without GPS",
+      "ckb": "هەڵبژاردنی ناونیشان بێ GPS",
+      "ku": "Navnîşanê bê GPS hilbijêre",
+      "az-Arab": "GPS‌سیز آدرس سئچ"
+    },
+    "انتخاب بدون GPS": {
+      "en": "Choose without GPS",
+      "ckb": "هەڵبژاردن بێ GPS",
+      "ku": "Bê GPS hilbijêre",
+      "az-Arab": "GPS‌سیز سئچ"
+    },
+    "استفاده از موقعیت گوشی": {
+      "en": "Use phone location",
+      "ckb": "بەکارهێنانی شوێنی مۆبایل",
+      "ku": "Cihê telefonê bi kar bîne",
+      "az-Arab": "تلفونون یئریندن ایستیفاده ائت"
+    },
+    "بررسی موقعیت جت": {
+      "en": "Checking Jet location",
+      "ckb": "پشکنینی شوێنی جێت",
+      "ku": "Cihê Jet kontrol dike",
+      "az-Arab": "جت یئری یوخلانیر"
+    },
+    "بررسی موقعیت دیجی‌کالاجت": {
+      "en": "Checking Jet location",
+      "ckb": "پشکنینی شوێنی جێت",
+      "ku": "Cihê Jet kontrol dike",
+      "az-Arab": "جت یئری یوخلانیر"
+    },
+    "تأیید موقعیت انتخاب‌شده": {
+      "en": "Confirming selected location",
+      "ckb": "پشتڕاستکردنەوەی شوێنی هەڵبژێردراو",
+      "ku": "Cihê hilbijartî piştrast dike",
+      "az-Arab": "سئچیلن یئر تصدیق اولونور"
+    },
+    "تأیید موقعیت ثبت‌شده": {
+      "en": "Confirming saved location",
+      "ckb": "پشتڕاستکردنەوەی شوێنی پاشەکەوتکراو",
+      "ku": "Cihê tomarkirî piştrast dike",
+      "az-Arab": "ساقلانان یئر تصدیق اولونور"
+    },
+    "موقعیت نیاز به اصلاح دارد": {
+      "en": "Location needs updating",
+      "ckb": "شوێن پێویستی بە ڕاستکردنەوەیە",
+      "ku": "Cih pêdivî bi nûvekirinê ye",
+      "az-Arab": "یئر دوزلدیلمه‌لیدیر"
+    },
+    "موقعیت تحویل را یک‌بار انتخاب کنید": {
+      "en": "Choose your delivery location once",
+      "ckb": "شوێنی گەیاندن یەک جار هەڵبژێرە",
+      "ku": "Cihê radestkirinê carekê hilbijêre",
+      "az-Arab": "تحویل یئرینی بیر دفعه سئچین"
+    },
+    "آماده‌سازی جست‌وجوی کالاها…": {
+      "en": "Preparing product search…",
+      "ckb": "ئامادەکردنی گەڕانی کاڵا…",
+      "ku": "Lêgerîna berheman amade dike…",
+      "az-Arab": "مال آختاریشی حاضیرلانیر…"
+    },
+    "ثبت موقعیت کامل نشد": {
+      "en": "Location was not saved",
+      "ckb": "شوێن پاشەکەوت نەکرا",
+      "ku": "Cih nehat tomarkirin",
+      "az-Arab": "یئر ساقلانمادی"
+    },
+    "ثبت موقعیت کامل نشد؛ نشانی را دوباره انتخاب کنید.": {
+      "en": "Location was not saved. Choose the address again.",
+      "ckb": "شوێن پاشەکەوت نەکرا؛ ناونیشان دووبارە هەڵبژێرە.",
+      "ku": "Cih nehat tomarkirin; navnîşanê dîsa hilbijêre.",
+      "az-Arab": "یئر ساقلانمادی؛ آدرسی یئنی‌دن سئچین."
+    },
+    "پاسخ جت برای ثبت موقعیت نرسید؛ دوباره تلاش کنید.": {
+      "en": "Jet did not confirm the location. Try again.",
+      "ckb": "جێت شوێنی پشتڕاست نەکردەوە؛ دووبارە هەوڵ بدە.",
+      "ku": "Jet cih piştrast nekir; dîsa biceribîne.",
+      "az-Arab": "جت یئری تصدیق ائتمه‌دی؛ یئنی‌دن یوخلایین."
+    },
+    "جت موقعیت را ذخیره نکرد؛ دوباره انتخاب کنید.": {
+      "en": "Jet did not save the location. Choose it again.",
+      "ckb": "جێت شوێنی پاشەکەوت نەکرد؛ دووبارە هەڵبژێرە.",
+      "ku": "Jet cih tomar nekir; dîsa hilbijêre.",
+      "az-Arab": "جت یئری ساخلامادی؛ یئنی‌دن سئچین."
+    },
+    "در حال ثبت و بررسی موقعیت انتخاب‌شده در جت…": {
+      "en": "Saving and checking the Jet location…",
+      "ckb": "پاشەکەوت و پشکنینی شوێنی جێت…",
+      "ku": "Cihê Jet tomar û kontrol dike…",
+      "az-Arab": "جت یئری ساقلانیر و یوخلانیر…"
+    },
+    "در حال بررسی موقعیت ثبت‌شده در جت…": {
+      "en": "Checking the saved Jet location…",
+      "ckb": "پشکنینی شوێنی پاشەکەوتکراو…",
+      "ku": "Cihê tomarkirî yê Jet kontrol dike…",
+      "az-Arab": "ساقلانان جت یئری یوخلانیر…"
+    },
+    "موقعیت ثبت‌شده پیدا شد؛ در حال تأیید…": {
+      "en": "Saved location found; confirming…",
+      "ckb": "شوێنی پاشەکەوتکراو دۆزرایەوە؛ پشتڕاستکردنەوە…",
+      "ku": "Cihê tomarkirî hat dîtin; piştrast dike…",
+      "az-Arab": "ساقلانان یئر تاپیلدی؛ تصدیق اولونور…"
+    },
+    "منتظر اطلاعات آدرس انتخاب‌شده در جت…": {
+      "en": "Waiting for the selected Jet address…",
+      "ckb": "چاوەڕێی ناونیشانی هەڵبژێردراوی جێت…",
+      "ku": "Li benda navnîşana Jet a hilbijartî ye…",
+      "az-Arab": "سئچیلن جت آدرسی گؤزلنیر…"
+    },
+    "اطلاعات موقعیت دریافت شد؛ در حال تأیید پایداری انتخاب…": {
+      "en": "Location received; confirming the saved choice…",
+      "ckb": "زانیاریی شوێن وەرگیرا؛ پشتڕاستکردنەوەی هەڵبژاردن…",
+      "ku": "Cih hat wergirtin; hilbijartina tomarkirî piştrast dike…",
+      "az-Arab": "یئر معلوماتی آلیندی؛ سئچیم تصدیق اولونور…"
+    },
+    "پیش از جست‌وجو، موقعیت انتخاب‌شده بررسی و بازیابی می‌شود…": {
+      "en": "Restoring and checking your location before searching…",
+      "ckb": "پێش گەڕان شوێن دەگەڕێنرێتەوە و دەپشکنرێت…",
+      "ku": "Berî lêgerînê cih tê vegerandin û kontrolkirin…",
+      "az-Arab": "آختاریشدان اؤنجه یئر قایتاریلیر و یوخلانیر…"
+    },
+    "جت خدمات این نقطه را تأیید کرده است؛ در حال آماده‌سازی جست‌وجو…": {
+      "en": "Jet serves this location; preparing search…",
+      "ckb": "جێت لەم شوێنە خزمەت دەکات؛ ئامادەکردنی گەڕان…",
+      "ku": "Jet li vî cihî xizmet dike; lêgerîn amade dike…",
+      "az-Arab": "جت بو یئرده خیدمت گؤستریر؛ آختاریش حاضیرلانیر…"
+    },
+    "اتصال به جت کامل نشد. نشانی انتخاب‌شده هنوز در برنامه تأیید نشده است.": {
+      "en": "Jet connection failed. The address is not confirmed yet.",
+      "ckb": "پەیوەندیی جێت سەرکەوتوو نەبوو؛ ناونیشان هێشتا پشتڕاست نەکراوەتەوە.",
+      "ku": "Têkiliya Jet çênebû; navnîşan hê ne piştrast e.",
+      "az-Arab": "جت باغلانتیسی آلینمادی؛ آدرس هله تصدیق اولونماییب."
+    },
+    "اتصال به دیجی‌کالاجت برقرار نشد؛ اینترنت را بررسی و دوباره تلاش کنید.": {
+      "en": "Could not connect to Jet. Check the connection and retry.",
+      "ckb": "پەیوەندی بە جێتەوە نەکرا؛ پەیوەندی بپشکنە و دووبارە هەوڵ بدە.",
+      "ku": "Têkilî bi Jet re çênebû; girêdanê kontrol bike û dîsa biceribîne.",
+      "az-Arab": "جت باغلانتیسی آلینمادی؛ باغلانتی‌نی یوخلایین و یئنی‌دن چالیشین."
+    },
+    "بررسی موقعیت پیش از شروع جست‌وجوی کالاها": {
+      "en": "Checking delivery location before product search",
+      "ckb": "پشکنینی شوێنی گەیاندن پێش گەڕان",
+      "ku": "Berî lêgerînê cihê radestkirinê kontrol dike",
+      "az-Arab": "مال آختاریشیندان اؤنجه تحویل یئری یوخلانیر"
+    },
+    "آدرس و روش ارسال را در دیجی‌کالاجت انتخاب کنید و «ثبت موقعیت» را بزنید.": {
+      "en": "Choose the Jet address and delivery method, then save the location.",
+      "ckb": "ناونیشان و شێوازی گەیاندن هەڵبژێرە، پاشان شوێن پاشەکەوت بکە.",
+      "ku": "Navnîşan û awayê radestkirinê hilbijêre, paşê cih tomar bike.",
+      "az-Arab": "جت آدرسی و چاتدیرما اصولونو سئچین، سونرا یئری ساخلا‌یین."
+    },
+    "آدرس و روش ارسال را در دیجی‌کالاجت انتخاب کنید. جست‌وجوی آدرس و نقشه در دسترس است.": {
+      "en": "Choose your Jet address and delivery method. Address search and map are available.",
+      "ckb": "ناونیشان و شێوازی گەیاندن هەڵبژێرە؛ گەڕان و نەخشە بەردەستن.",
+      "ku": "Navnîşan û awayê radestkirinê hilbijêre; lêgerîn û nexşe hene.",
+      "az-Arab": "جت آدرسی و چاتدیرما اصولونو سئچین؛ آدرس آختاریشی و خریطه مووجوددور."
+    },
+    "نشست دیجی‌کالاجت حفظ شده است؛ فقط برای تغییر آدرس، «تغییر موقعیت» را بزنید.": {
+      "en": "Your Jet location is remembered. Use Change location to update it.",
+      "ckb": "شوێنی جێت پارێزراوە؛ بۆ گۆڕینی، گۆڕینی شوێن هەڵبژێرە.",
+      "ku": "Cihê Jet hatiye parastin; ji bo nûvekirinê Cih biguherîne hilbijêre.",
+      "az-Arab": "جت یئری ساقلانیر؛ یئنیله‌مک اوچون یئری دَییش دۆیمه‌سینی وورون."
+    },
+    "آدرس در دیجی‌کالاجت حفظ می‌شود؛ برای عوض کردن آن «تغییر موقعیت» را بزنید.": {
+      "en": "Your Jet address is remembered. Use Change location to update it.",
+      "ckb": "ناونیشانی جێت پارێزراوە؛ بۆ گۆڕینی، گۆڕینی شوێن هەڵبژێرە.",
+      "ku": "Navnîşana Jet hatiye parastin; ji bo nûvekirinê Cih biguherîne hilbijêre.",
+      "az-Arab": "جت آدرسی ساقلانیر؛ یئنیله‌مک اوچون یئری دَییش دۆیمه‌سینی وورون."
+    },
+    "پس از ثبت موقعیت در جت، برنامه آن را خودکار می‌خواند.": {
+      "en": "The app reads your saved Jet location automatically.",
+      "ckb": "بەرنامە شوێنی پاشەکەوتکراوی جێت خۆکار دەخوێنێتەوە.",
+      "ku": "Sepan cihê tomarkirî yê Jet bixweber dixwîne.",
+      "az-Arab": "پروقرام ساقلانان جت یئرینی اوتوماتیک اوخویور."
+    },
+    "نشانی را بدون GPS جست‌وجو کنید؛ موقعیت در همین گوشی نگهداری می‌شود.": {
+      "en": "Find the address without GPS; the location stays on this phone.",
+      "ckb": "ناونیشان بێ GPS بدۆزەوە؛ شوێن لەم مۆبایلە دەمێنێتەوە.",
+      "ku": "Navnîşanê bê GPS bibîne; cih li ser vê telefonê dimîne.",
+      "az-Arab": "آدرسی GPS‌سیز آختارین؛ یئر بو تلفوندا ساقلانیر."
+    },
+    "یک‌بار آدرس را از «تغییر موقعیت» انتخاب کنید؛ در جست‌وجوهای بعدی حفظ می‌شود.": {
+      "en": "Choose the address once in Change location; later searches reuse it.",
+      "ckb": "یەک جار ناونیشان لە گۆڕینی شوێن هەڵبژێرە؛ گەڕانەکانی دواتر بەکاری دەهێننەوە.",
+      "ku": "Navnîşanê carekê hilbijêre; lêgerînên paşîn dîsa bi kar tînin.",
+      "az-Arab": "آدرسی بیر دفعه سئچین؛ سونراکی آختاریشلاردا ساقلانیر."
+    },
+    "جت مختصات این آدرس را معتبر نمی‌داند؛ از «تغییر موقعیت» آن را اصلاح کنید.": {
+      "en": "Jet rejected these coordinates. Update the location.",
+      "ckb": "جێت ئەم کۆئۆردیناتانە پەسەند ناکات؛ شوێن نوێ بکەرەوە.",
+      "ku": "Jet van koordînatan qebûl nake; cih nûve bike.",
+      "az-Arab": "جت بو مختصاتلاری قبول ائتمه‌دی؛ یئری یئنیله‌یین."
+    },
+    "بررسی هزینه‌ها و اصلاحات سبد": {
+      "en": "Checking basket fees and updates",
+      "ckb": "پشکنینی تێچوو و گۆڕانکاریی سەبەتە",
+      "ku": "Lêçûn û nûvekirinên sepetê kontrol dike",
+      "az-Arab": "سبدین خَرجلری و دَییشیکلیکلری یوخلانیر"
+    },
+    "جست‌وجوی اقلام تمام شد؛ اکنون مبلغ و پیام‌های سبد بررسی می‌شوند.": {
+      "en": "Item search finished; checking basket totals and notices.",
+      "ckb": "گەڕانی کاڵا تەواو بوو؛ کۆ و ئاگادارکردنەوەکان دەپشکنرێن.",
+      "ku": "Lêgerîna tiştan qediya; tevahî û agahdarî tên kontrolkirin.",
+      "az-Arab": "مال آختاریشی بیتدی؛ جمع و سبد پیاملاری یوخلانیر."
+    },
+    "در حال بررسی هزینه ارسال و پیام‌های سبد دیجی‌کالاجت…": {
+      "en": "Checking Jet delivery fees and basket updates…",
+      "ckb": "پشکنینی تێچووی گەیاندن و گۆڕانکاریی جێت…",
+      "ku": "Lêçûna radestkirinê û nûvekirinên Jet kontrol dike…",
+      "az-Arab": "جت چاتدیرما خَرجی و سبد پیاملاری یوخلانیر…"
+    },
+    "سبد دیجی‌کالاجت را باز کنید؛ قیمت‌ها، هزینه‌ها و پیام‌های اصلاح خوانده می‌شوند. برنامه خریدی ثبت نمی‌کند.": {
+      "en": "Open the Jet basket to read prices, fees and changes. No purchase is placed.",
+      "ckb": "سەبەتەی جێت بکەرەوە بۆ خوێندنەوەی نرخ و تێچوو و گۆڕانکاری. کڕین تۆمار ناکرێت.",
+      "ku": "Sepeta Jet veke ji bo xwendina biha, lêçûn û guherînan. Kirîn nayê tomarkirin.",
+      "az-Arab": "قییمت، خَرج و دَییشیکلیکلری اوخوماق اوچون جت سبدینی آچین. آلیش ثبت اولونمور."
+    },
+    "جست‌وجوی کالا آماده است.": {
+      "en": "Product search is ready.",
+      "ckb": "گەڕانی کاڵا ئامادەیە.",
+      "ku": "Lêgerîna berheman amade ye.",
+      "az-Arab": "مال آختاریشی حاضیردیر."
+    },
+    "در حال جست‌وجوی": {
+      "en": "Searching for",
+      "ckb": "گەڕان بۆ",
+      "ku": "Li ... digere",
+      "az-Arab": "آختاریلان"
+    },
+    "دریافت قیمت‌ها و فروشگاه‌های قابل مشاهده…": {
+      "en": "Reading available prices and shops…",
+      "ckb": "خوێندنەوەی نرخ و فرۆشگا بەردەستەکان…",
+      "ku": "Biha û dikanên amade dixwîne…",
+      "az-Arab": "مووجود قییمتلر و ماغازالار اوخونور…"
+    },
+    "یافتن فروشگاه‌های بیشتر": {
+      "en": "Finding more shops",
+      "ckb": "دۆزینەوەی فرۆشگای زیاتر",
+      "ku": "Dikanên zêdetir dibîne",
+      "az-Arab": "داها چوخ ماغازا تاپیلیر"
+    },
+    "برای بررسی کالاهای بعد از ردیف اول…": {
+      "en": "Checking products beyond the first row…",
+      "ckb": "پشکنینی کاڵاکانی دوای ڕیزی یەکەم…",
+      "ku": "Berhemên piştî rêza yekem kontrol dike…",
+      "az-Arab": "ایلک سیطرْدَن سونراکی ماللار یوخلانیر…"
+    },
+    "پیمایش": {
+      "en": "Scrolling",
+      "ckb": "جوڵاندنی پەڕە",
+      "ku": "Guhastina rûpelê",
+      "az-Arab": "صفحه‌نی سوروشدورمه"
+    },
+    "صفحهٔ هم‌زمان": {
+      "en": "parallel pages",
+      "ckb": "پەڕەی هاوکات",
+      "ku": "rûpelên hevdem",
+      "az-Arab": "پارالل صفحه"
+    },
+    "قلم تکمیل شده": {
+      "en": "items completed",
+      "ckb": "کاڵا تەواو بوو",
+      "ku": "tişt temam bûn",
+      "az-Arab": "مال تامام‌لاندی"
+    },
+    "کالای خوانده‌شده": {
+      "en": "products read",
+      "ckb": "کاڵا خوێندرایەوە",
+      "ku": "berhem hatin xwendin",
+      "az-Arab": "مال اوخوندو"
+    },
+    "فروشگاه شناسایی‌شده تکمیل شد…": {
+      "en": "shops checked…",
+      "ckb": "فرۆشگا پشکنرا…",
+      "ku": "dikan hatin kontrolkirin…",
+      "az-Arab": "ماغازا یوخلاندی…"
+    },
+    "فوری": {
+      "en": "Instant",
+      "ckb": "خێرا",
+      "ku": "Lezgîn",
+      "az-Arab": "تئز"
+    },
+    "زمان‌دار": {
+      "en": "Scheduled",
+      "ckb": "کات‌دیاریکراو",
+      "ku": "Bi demê",
+      "az-Arab": "واختلی"
+    },
+    "روش ارسال فعلی فروشگاه": {
+      "en": "Current delivery method",
+      "ckb": "شێوازی گەیاندنی ئێستا",
+      "ku": "Awayê radestkirina niha",
+      "az-Arab": "ایندیکی چاتدیرما اصولو"
+    },
+    "روش ارسال فعلی دیجی‌کالاجت را انتخاب کنید.": {
+      "en": "Choose the current Jet delivery method.",
+      "ckb": "شێوازی گەیاندنی ئێستای جێت هەڵبژێرە.",
+      "ku": "Awayê radestkirina niha yê Jet hilbijêre.",
+      "az-Arab": "ایندیکی جت چاتدیرما اصولونو سئچین."
+    },
+    "کدام روش ارسال در فروشگاه انتخاب شده است؟": {
+      "en": "Which delivery method is selected at the shop?",
+      "ckb": "کام شێوازی گەیاندن لە فرۆشگا هەڵبژێردراوە؟",
+      "ku": "Di dikanê de kîjan awayê radestkirinê hatiye hilbijartin?",
+      "az-Arab": "ماغازادا هانسی چاتدیرما اصولو سئچیلیب؟"
+    },
+    "است؛ همان گزینه را انتخاب کنید یا ابتدا آن را در دیجی‌کالاجت تغییر دهید.": {
+      "en": "is active; select it or change it in Jet first.",
+      "ckb": "چالاکە؛ هەمانی هەڵبژێرە یان سەرەتا لە جێت بیگۆڕە.",
+      "ku": "çalak e; wê hilbijêre an pêşî di Jet de biguherîne.",
+      "az-Arab": "فعال‌دیر؛ اونو سئچین یا اؤنجه جتده دَییشین."
+    },
+    "اطلاعات کالا خوانده نشد؛ دوباره جست‌وجو کنید.": {
+      "en": "Product data could not be read. Search again.",
+      "ckb": "زانیاریی کاڵا نەخوێندرایەوە؛ دووبارە بگەڕێ.",
+      "ku": "Daneyên berhemê nehatin xwendin; dîsa lê bigere.",
+      "az-Arab": "مال معلوماتی اوخونمادی؛ یئنی‌دن آختارین."
+    },
+    "صفحه خوانده نشد؛ جست‌وجوی کالا را باز کنید و دوباره تلاش کنید.": {
+      "en": "Page could not be read. Open product search and retry.",
+      "ckb": "پەڕە نەخوێندرایەوە؛ گەڕانی کاڵا بکەرەوە و دووبارە هەوڵ بدە.",
+      "ku": "Rûpel nehat xwendin; lêgerîna berhemê veke û dîsa biceribîne.",
+      "az-Arab": "صفحه اوخونمادی؛ مال آختاریشینی آچین و یئنی‌دن یوخلایین."
+    },
+    "خواندن کالاها در دسترس نیست؛ به لیست خرید برگردید.": {
+      "en": "Product reading is unavailable. Return to the list.",
+      "ckb": "خوێندنەوەی کاڵا بەردەست نییە؛ بگەڕێوە بۆ لیست.",
+      "ku": "Xwendina berheman ne amade ye; vegere lîsteyê.",
+      "az-Arab": "مال اوخوما مومکون دئییل؛ لیسته قایدین."
+    },
+    "مرورگر دیجی‌کالاجت بسته شد؛ به برنامه برگردید و دوباره تلاش کنید. لیست خرید شما ذخیره است.": {
+      "en": "The Jet browser closed. Return and retry; your list is saved.",
+      "ckb": "وێبگەڕی جێت داخرا؛ بگەڕێوە و دووبارە هەوڵ بدە. لیستەکەت پارێزراوە.",
+      "ku": "Geroka Jet hat girtin; vegere û dîsa biceribîne. Lîsteya te tomarkirî ye.",
+      "az-Arab": "جت براوزری باغلاندی؛ قایدین و یئنی‌دن یوخلایین. لیستینیز ساقلانیر."
+    },
+    "انتخاب آدرس را تمام کنید؛ سپس به کالاها برگردید.": {
+      "en": "Finish choosing the address, then return to products.",
+      "ckb": "هەڵبژاردنی ناونیشان تەواو بکە، پاشان بگەڕێوە بۆ کاڵا.",
+      "ku": "Hilbijartina navnîşanê temam bike, paşê vegere berheman.",
+      "az-Arab": "آدرس سئچیمینی تامام‌لایین، سونرا ماللارا قایدین."
+    },
+    "این پیوند خارج از دیجی‌کالاجت است؛ برای خواندن قیمت‌ها به سوپرمارکت برگردید.": {
+      "en": "This link is outside Jet. Return to the supermarket to read prices.",
+      "ckb": "ئەم بەستەرە لە دەرەوەی جێتە؛ بۆ نرخ بگەڕێوە بۆ سوپەرمارکێت.",
+      "ku": "Ev girêdan li derveyî Jet e; ji bo biha vegere supermarketê.",
+      "az-Arab": "بو لینک جتدن کناردادیر؛ قییمتلری اوخوماق اوچون سوپرمارکته قایدین."
+    },
+    "برای بازکردن پیوندها یک مرورگر نصب کنید.": {
+      "en": "Install a browser to open links.",
+      "ckb": "بۆ کردنەوەی بەستەر وێبگەڕێک دابمەزرێنە.",
+      "ku": "Ji bo vekirina girêdanan gerokek saz bike.",
+      "az-Arab": "لینکلری آچماق اوچون براوزر قورون."
+    },
+    "انتخاب‌گر فایل در دسترس نیست.": {
+      "en": "File picker unavailable.",
+      "ckb": "هەڵبژێرەری فایل بەردەست نییە.",
+      "ku": "Hilbijêra pelan ne amade ye.",
+      "az-Arab": "فایل سئچیجیسی مووجود دئییل."
+    },
+    "حجم پشتیبان بیش از یک مگابایت است.": {
+      "en": "Backup exceeds 1 MB.",
+      "ckb": "قەبارەی پاشەکەوت لە ١ مێگابایت زیاترە.",
+      "ku": "Kopiya ewle ji 1 MB mezintir e.",
+      "az-Arab": "یئدک ۱ مگابایتدان بؤیوکدور."
+    },
+    "فایل خوانده نشد؛ یک فایل پشتیبان کوچک‌تر از یک مگابایت انتخاب کنید.": {
+      "en": "Could not read the file. Choose a backup smaller than 1 MB.",
+      "ckb": "فایل نەخوێندرایەوە؛ پاشەکەوتێکی کەمتر لە ١ مێگابایت هەڵبژێرە.",
+      "ku": "Pel nehat xwendin; kopiyeke ewle ji 1 MB biçûktir hilbijêre.",
+      "az-Arab": "فایل اوخونمادی؛ ۱ مگابایتدان کیچیک یئدک سئچین."
+    },
+    "ذخیره پشتیبان انجام نشد؛ پوشه دیگری را انتخاب کنید.": {
+      "en": "Could not save the backup. Choose another folder.",
+      "ckb": "پاشەکەوت نەکرا؛ بوخچەیەکی تر هەڵبژێرە.",
+      "ku": "Kopiya ewle nehat tomarkirin; peldankeke din hilbijêre.",
+      "az-Arab": "یئدک ساقلانمادی؛ باشقا قووللوق سئچین."
+    },
+    "فایل پشتیبان ذخیره شد.": {
+      "en": "Backup saved.",
+      "ckb": "پاشەکەوت تۆمار کرا.",
+      "ku": "Kopiya ewle hat tomarkirin.",
+      "az-Arab": "یئدک فایلی ساقلان‌دی."
+    },
+    "دوباره پشتیبان بگیرید.": {
+      "en": "Create the backup again.",
+      "ckb": "دووبارە پاشەکەوت بکە.",
+      "ku": "Dîsa kopiyeke ewle çêbike.",
+      "az-Arab": "یئنی‌دن یئدک آلین."
+    },
+    "از سبدچین خارج می‌شوید؟ لیست خرید روی این گوشی ذخیره می‌ماند.": {
+      "en": "Exit Sabadchin? Your shopping list stays on this phone.",
+      "ckb": "لە سەبەدچین دەردەچیت؟ لیستی کڕین لەم مۆبایلە دەمێنێتەوە.",
+      "ku": "Ji Sabadçîn derkeve? Lîsteya kirînê li ser vê telefonê dimîne.",
+      "az-Arab": "سبدچیندن چیخیرسینیز؟ آلیش لیستی بو تلفوندا قالیر."
+    },
+    "موقعیت گوشی با دیجی‌کالاجت به اشتراک گذاشته شود؟ این دسترسی اختیاری است؛ از «بستن نقشه» می‌توانید نشانی را بدون GPS انتخاب کنید.": {
+      "en": "Share phone location with Jet? This is optional; close the map to choose an address without GPS.",
+      "ckb": "شوێنی مۆبایل لەگەڵ جێت هاوبەش بکرێت؟ ئارەزوومەندانەیە؛ نەخشە دابخە بۆ هەڵبژاردنی ناونیشان بێ GPS.",
+      "ku": "Cihê telefonê bi Jet re were parvekirin? Ev ne mecbûrî ye; nexşeyê bigire û navnîşanê bê GPS hilbijêre.",
+      "az-Arab": "تلفونون یئری جتله پایلاشیل‌سین؟ اختیاری‌دیر؛ GPS‌سیز آدرس سئچمک اوچون خریطه‌نی باغلایین."
+    },
+    "نام شهر و خیابان را جست‌وجو کنید. اگر نقشه یا GPS پاسخ نداد، «بستن نقشه» را بزنید و نشانی را بدون آن انتخاب کنید.": {
+      "en": "Search the city and street. If the map or GPS fails, close the map and choose an address directly.",
+      "ckb": "شار و شەقام بگەڕێ. ئەگەر نەخشە یان GPS وەڵامی نەدا، نەخشە دابخە و ناونیشان هەڵبژێرە.",
+      "ku": "Bajar û kolanê bigere. Heke nexşe an GPS nexebitî, nexşeyê bigire û navnîşanê rast hilbijêre.",
+      "az-Arab": "شهر و کوچه‌نی آختارین. خریطه یا GPS ایشله‌مه‌سه، خریطه‌نی باغلایین و آدرسی سئچین."
     }
   }
 }
