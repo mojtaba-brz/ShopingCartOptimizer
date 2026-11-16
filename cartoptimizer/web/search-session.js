@@ -5,7 +5,7 @@
  function storedFees(context){try{const data=JSON.parse(root.localStorage?.getItem(feeKey)||'null');return data?.context===context&&Array.isArray(data.quotes)?data.quotes.filter(q=>q.page_kind==='store'&&Date.now()-Date.parse(q.captured_at)<feeTTL&&Date.parse(q.captured_at)<=Date.now()+60000):[];}catch{return [];}}
  function saveFees(context,quotes){
   const fields=new Map();for(const q of [...storedFees(context),...quotes].filter(q=>q.page_kind==='store'&&q.store_id&&['digikala-public-store','digikala-visible-checkout'].includes(q.source)).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at))){
-   if(!Number.isFinite(Date.parse(q.captured_at))||Date.now()-Date.parse(q.captured_at)>feeTTL)continue;
+   if(!Number.isFinite(Date.parse(q.captured_at))||Date.now()-Date.parse(q.captured_at)>feeTTL||Date.parse(q.captured_at)>Date.now()+60000)continue;
    for(const key of ['delivery_fee','service_fee','packaging_fee','processing_fee','tax_fee','minimum_order','free_delivery_over']){
     const id=JSON.stringify([q.store_type,q.store_id,key]),unknown=q.unknown_fields?.includes(key),f=q.fields?.[key];
     if(unknown||f&&Number.isSafeInteger(f.value)&&f.value>=0)fields.set(id,{source:q.source,page_kind:'store',page_url:q.page_url,store_id:q.store_id,store_name:q.store_name,store_type:q.store_type,captured_at:q.captured_at,fields:unknown?{}:{[key]:f},unknown_fields:unknown?[key]:[],notices:[]});

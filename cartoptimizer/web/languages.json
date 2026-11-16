@@ -1594,10 +1594,10 @@
       "az-Arab": "سیناق نسخه‌سی"
     },
     "شمارهٔ نسخه در دسترس نیست": {
-      "en": "Version unavailable",
+      "en": "Version number unavailable",
       "ckb": "ژمارەی وەشان بەردەست نییە",
-      "ku": "Hejmara guhertoyê ne amade ye",
-      "az-Arab": "نسخه نومره‌سی بیلینمیر"
+      "ku": "Hejmara guhertoyê tune ye",
+      "az-Arab": "نسخه نومره‌سی اَلچاتان دئییل"
     },
     "بودجهٔ زمانی جست‌وجو تمام شد؛ نتایج بررسی‌شده نمایش داده می‌شوند.": {
       "en": "Search time limit reached; showing checked results.",
@@ -2498,6 +2498,48 @@
       "ckb": "پشتڕاست نەکراوەتەوە",
       "ku": "Nehatiye piştrastkirin",
       "az-Arab": "تصدیق اولونماییب"
+    },
+    "بررسی به‌روزرسانی": {
+      "en": "Check for updates",
+      "ckb": "پشکنینی نوێکردنەوە",
+      "ku": "Nûvekirinan kontrol bike",
+      "az-Arab": "گۆنجل‌له‌مه‌نی یوخلا"
+    },
+    "دریافت نسخهٔ جدید": {
+      "en": "Get the new version",
+      "ckb": "وەرگرتنی وەشانی نوێ",
+      "ku": "Guhertoya nû bigire",
+      "az-Arab": "یئنی نسخه‌نی آل"
+    },
+    "در حال بررسی نسخهٔ جدید…": {
+      "en": "Checking for a new version…",
+      "ckb": "پشکنینی وەشانی نوێ…",
+      "ku": "Guhertoya nû tê kontrolkirin…",
+      "az-Arab": "یئنی نسخه یوخلانیر…"
+    },
+    "نسخهٔ جدید آماده است:": {
+      "en": "A new version is available:",
+      "ckb": "وەشانێکی نوێ بەردەستە:",
+      "ku": "Guhertoyeke nû amade ye:",
+      "az-Arab": "یئنی نسخه حاضیر‌دیر:"
+    },
+    "نسخهٔ جدیدتری در کانال انتشار شما موجود نیست.": {
+      "en": "No newer version is available in your release channel.",
+      "ckb": "لە کەناڵی بڵاوکردنەوەی تۆ وەشانێکی نوێتر نییە.",
+      "ku": "Di kanala te de guhertoyeke nûtir tune ye.",
+      "az-Arab": "سیزین یاییم کانالینیزدا داها یئنی نسخه یوخدور."
+    },
+    "بررسی به‌روزرسانی انجام نشد؛ اتصال اینترنت را بررسی کنید.": {
+      "en": "Could not check for updates. Check your internet connection.",
+      "ckb": "پشکنینی نوێکردنەوە سەرکەوتوو نەبوو؛ پەیوەندی ئینتەرنێت بپشکنە.",
+      "ku": "Nûvekirin nehat kontrolkirin; girêdana înternetê kontrol bike.",
+      "az-Arab": "گۆنجل‌له‌مه یوخلانیلمادی؛ اینترنت باغلانتینی یوخلایین."
+    },
+    "به‌روزرسانی از فروشگاهی که برنامه را نصب کرده‌اید انجام می‌شود.": {
+      "en": "Update through the store where you installed the app.",
+      "ckb": "لەو فرۆشگایە نوێی بکەرەوە کە ئەپەکەت لێ دامەزراندووە.",
+      "ku": "Ji firoşgeha ku te sepan jê saz kiriye nûve bike.",
+      "az-Arab": "اوْیغولامانی قوراشدیردیغینیز ماغازادان گۆنجل‌له‌یین."
     }
   }
 }

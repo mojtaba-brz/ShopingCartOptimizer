@@ -111,20 +111,17 @@ class DesktopTests(unittest.TestCase):
 
     def test_hardware_budget_is_bounded_and_preserves_three_cart_baseline(self):
         from cartoptimizer.desktop import resource_budget
-        with patch('cartoptimizer.desktop.os.cpu_count', return_value=1):
-            self.assertEqual(resource_budget()['workers'], 1)
-            self.assertEqual(resource_budget()['max_carts'], 3)
-        self.assertLessEqual(resource_budget()['workers'], 20)
-        with patch('cartoptimizer.desktop.os.cpu_count', return_value=8), patch('cartoptimizer.desktop.os.sysconf', create=True, side_effect=lambda name: 1024*256 if name=='SC_AVPHYS_PAGES' else 4096):
-            if __import__('os').name != 'nt':
-                self.assertEqual(resource_budget()['workers'], 2)
-        with patch('cartoptimizer.desktop.os.cpu_count', return_value=8), patch('cartoptimizer.desktop.os.sysconf', create=True, side_effect=lambda name: 1024*1024 if name=='SC_AVPHYS_PAGES' else 4096):
-            if __import__('os').name != 'nt':
-                self.assertEqual(resource_budget()['workers'], 8)
-        with patch('cartoptimizer.desktop.os.cpu_count', return_value=32), patch('cartoptimizer.desktop.os.sysconf', create=True, side_effect=lambda name: 1024*2048 if name=='SC_AVPHYS_PAGES' else 4096):
-            if __import__('os').name != 'nt':
-                self.assertEqual(resource_budget()['workers'], 20)
+        self.assertLessEqual(resource_budget()['workers'], 30)
         self.assertLessEqual(resource_budget()['max_carts'], 6)
+        if __import__('os').name == 'nt':
+            return  # The Windows memory API is covered by the actual-host bound above.
+        for cpu, memory_mb, expected in [(16,8192,30),(32,16384,30),(8,8192,16),
+                                         (8,4096,14),(8,1024,2),(16,512,1),(1,8192,2)]:
+            with self.subTest(cpu=cpu,memory_mb=memory_mb), patch('cartoptimizer.desktop.os.cpu_count',return_value=cpu), patch('cartoptimizer.desktop.os.sysconf',create=True,side_effect=lambda name: memory_mb*256 if name=='SC_AVPHYS_PAGES' else 4096):
+                budget=resource_budget()
+                self.assertEqual(budget['workers'],expected)
+                self.assertGreaterEqual(budget['max_carts'],3)
+                if cpu==1:self.assertEqual(budget['max_carts'],3)
 
     def test_department_survives_normalization_and_rejects_invalid_values(self):
         from cartoptimizer.models import normalize_snapshot, ValidationError

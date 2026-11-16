@@ -16,7 +16,7 @@
       const signature=JSON.stringify([q.page_kind,url.pathname,q.store_id,q.store_name,q.store_type,fields,unknown,notices,cartItems]);if(seen.has(signature))continue;seen.add(signature);
       quotes.push({source:q.source,store_type:typeof q.store_type==='string'?q.store_type:'',store_name:typeof q.store_name==='string'?q.store_name.trim().slice(0,160):'',store_id:typeof q.store_id==='string'?q.store_id.slice(0,200):'',page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,unknown_fields:unknown,notices,cart_items:cartItems,reported_units:q.reported_units,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length&&Number.isInteger(q.reported_units)&&q.reported_units===cartItems.reduce((n,i)=>n+i.quantity,0)});
     }
-    return quotes.slice(-100);
+    return quotes.slice(-300);
   }
   function reconcile(quote,proposed){
     if(quote?.page_kind!=='cart'||!quote.items_complete||!quote.fields?.total||!proposed?.length)return {verified:false};
