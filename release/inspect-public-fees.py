@@ -9,9 +9,9 @@ async def setup(page):
    info=await page.context.new_page();info.on('response',response)
    await info.goto('https://www.digikalajet.com/user/add-address',wait_until='domcontentloaded');await info.locator('#root input[placeholder]').first.wait_for(timeout=20000)
    script=Path('cartoptimizer/web/jet-navigation.js').read_text()
-   await info.evaluate('(s)=>{const nav='+script+';return nav(s)}','https://www.digikalajet.com/shop?shopId='+str(shop_id))
+   await info.evaluate('(s)=>{const nav='+script+';return nav(s)}','https://www.digikalajet.com/search/shop?q=%D8%B4%DB%8C%D8%B1&shopId='+str(shop_id))
    await info.wait_for_timeout(5000)
-   details.append({'path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:3000]})
+   details.append({'path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:3000],'links':await info.locator('a[href]').evaluate_all("es=>es.map(e=>({text:e.innerText,url:e.getAttribute('href')})).filter(x=>x.url.includes('shop')).slice(0,15)"),'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>e.innerText).filter(t=>t&&t.length<100).slice(0,20)")})
    await info.close()
   except Exception as e:details.append({'error':type(e).__name__})
  async def response(reply):
