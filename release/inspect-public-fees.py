@@ -2,7 +2,7 @@ import asyncio,json,os
 from pathlib import Path
 from urllib.parse import urlsplit
 from cartoptimizer.desktop import browse
-samples=[];texts=set();details=[];opened=False;seen=set()
+samples=[];texts=set();details=[];opened=False;seen=set();paths=set()
 async def setup(page):
  async def inspect(shop_id,shop_title):
   try:
@@ -14,10 +14,14 @@ async def setup(page):
    clicked=await info.evaluate("name=>{const n=s=>s.replace(/[\\u200c\\s]+/g,' ').trim();const e=[...document.querySelectorAll('p.truncate')].find(e=>n(e.innerText)===n(name));if(e){e.click();return true;}return false;}",shop_title)
    await info.wait_for_timeout(4000)
    details.append({'clicked_header':clicked,'path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:3000],'links':await info.locator('a[href]').evaluate_all("es=>es.map(e=>({text:e.innerText,url:e.getAttribute('href')})).filter(x=>x.url.includes('shop')).slice(0,15)"),'fee_texts':await info.locator('p,span,div').evaluate_all("es=>es.map(e=>e.innerText?.trim()).filter(t=>t&&t.length<160&&/ارسال|کارمزد|خدمات|بسته|حداقل/.test(t)).slice(0,60)"),'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>e.innerText).filter(t=>t&&t.length<100).slice(0,20)")})
+   about=info.get_by_role('link',name='درباره فروشگاه',exact=True)
+   if await about.count():
+    await about.click();await info.wait_for_timeout(4000);details.append({'about_path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:5000]})
    await info.close()
   except Exception as e:details.append({'error':type(e).__name__})
  async def response(reply):
   u=urlsplit(reply.url)
+  if u.hostname=='api.digikalajet.ir':paths.add(u.path)
   if u.hostname!='api.digikalajet.ir' or not u.path.startswith(('/shop/','/v2/search/','/search/shop/')):return
   try:data=await reply.json()
   except Exception:return
@@ -26,7 +30,7 @@ async def setup(page):
    if isinstance(x,list):
     for y in x[:100]:walk(y)
    elif isinstance(x,dict):
-    if x.get('id') is not None and isinstance(x.get('title'),str) and 'delivery' in x and len(samples)<20 and (str(x['id']),u.path) not in seen:
+    if x.get('id') is not None and isinstance(x.get('title'),str) and 'delivery' in x and (len(samples)<20 or u.path.startswith('/shop/')) and (str(x['id']),u.path) not in seen:
      seen.add((str(x['id']),u.path))
      if not opened:
       opened=True;asyncio.create_task(inspect(x['id'],x['title']))
@@ -39,4 +43,4 @@ async def setup(page):
  await page.expose_binding('reportPublicFeeLabels',lambda source,rows:texts.update(rows))
  await page.add_init_script("""setInterval(()=>{const rows=[...document.querySelectorAll('p,span,div,li,button,a')].filter(e=>e.getClientRects().length&&e.children.length<4).map(e=>e.innerText?.replace(/[\\u200c\\s]+/g,' ').trim()).filter(s=>s&&s.length<160&&/(ارسال|بسته بندی|خدمات|کارمزد|حداقل)/.test(s));if(rows.length)window.reportPublicFeeLabels([...new Set(rows)].slice(0,40));},1000);""")
 r=browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],{'latitude':35.757535,'longitude':51.40994,'address':'Tehran Vanak public test point'},lambda **x:None,page_setup=setup,browser_options={'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']},max_stores=2,page_seconds=12,item_seconds=65,workers=1)
-print(json.dumps({'catalogue_shop_delivery':samples,'visible_fee_labels':list(texts)[:70],'observed_quotes':r['checkout_quotes'][:15],'details':details},ensure_ascii=False))
+print(json.dumps({'catalogue_shop_delivery':samples,'visible_fee_labels':list(texts)[:70],'observed_quotes':r['checkout_quotes'][:15],'details':details,'public_paths':list(paths)},ensure_ascii=False))
