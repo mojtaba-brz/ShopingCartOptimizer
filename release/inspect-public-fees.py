@@ -1,43 +1,32 @@
-"""Isolated public guest fee probe. No account, login, purchase or payment."""
-import asyncio,json,os,re
+"""Probe the public anonymous guest validation contract, without account/cart mutation."""
+import asyncio,json,os
 from pathlib import Path
 from urllib.parse import urlsplit
 from cartoptimizer.desktop import browse
-started=False;report=[];money=[]
+samples=[];done=False;results=[]
 async def setup(page):
  async def response(reply):
-  u=urlsplit(reply.url)
-  if u.hostname!='api.digikalajet.ir' or not u.path.startswith('/cart/guest/'):return
+  global done
+  if done or urlsplit(reply.url).hostname!='api.digikalajet.ir' or not urlsplit(reply.url).path.startswith('/v2/search/'):return
   try:data=await reply.json()
   except Exception:return
-  def walk(x,path=''):
+  def walk(x):
    if isinstance(x,list):
-    for n,v in enumerate(x[:8]):walk(v,path+'/'+str(n))
+    for v in x:walk(v)
    elif isinstance(x,dict):
+    if isinstance(x.get('products'),list) and x.get('id'):
+     ps=[p['id'] for p in x['products'] if p.get('id') and p.get('stock',{}).get('has_stock')]
+     if ps:samples.append({'shop':x['id'],'products':ps[:2]})
     for k,v in x.items():
-     if k in ('user','account','address','token','customer','phone'):continue
-     if re.search('price|cost|fee|packing|preparation|vat|tax|shipping|shop_id',k) and isinstance(v,(str,int,float,bool,type(None))):money.append({'field':path+'/'+k,'value':v})
-     if isinstance(v,(dict,list)):walk(v,path+'/'+k)
+     if k not in ('user','account','token','address'):walk(v)
   walk(data)
- async def probe():
-  global started
-  if started:return
-  started=True
-  info=await page.context.new_page();info.on('response',response)
-  try:
-   await info.goto('https://www.digikalajet.com/user/add-address',wait_until='domcontentloaded');await info.locator('#root input[placeholder]').first.wait_for(timeout=20000)
-   nav=Path('cartoptimizer/web/jet-navigation.js').read_text()
-   await info.evaluate('(u)=>('+nav+')(u)','https://www.digikalajet.com/search/v2/result?q=%D8%B4%DB%8C%D8%B1')
-   add=info.locator('button[data-cro-id="add-one-more-to-cart"]:enabled').first
-   await add.wait_for(timeout=20000);await add.click();await info.wait_for_timeout(4000)
-   report.append({'stage':'after_guest_add','text':(await info.locator('body').inner_text())[-2500:],'links':await info.locator('a[href]').evaluate_all("es=>es.map(e=>({text:e.innerText,url:e.getAttribute('href')})).filter(x=>/cart|checkout/.test(x.url))"),'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>({text:e.innerText,id:e.getAttribute('data-cro-id')})).filter(x=>x.text||x.id).slice(-20)")})
-   button=info.locator('[data-cro-id="checkout_display_cart_sheet"]')
-   if await button.count():await button.first.click();await info.wait_for_timeout(2500)
-   else:await info.evaluate('(u)=>('+nav+')(u)','https://www.digikalajet.com/cart/');await info.wait_for_timeout(2500)
-   report.append({'stage':'guest_cart','path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[-5000:],'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>({text:e.innerText,id:e.getAttribute('data-cro-id')})).filter(x=>x.text||x.id).slice(-20)")})
-  except Exception as e:report.append({'error':type(e).__name__,'message':str(e)[:180]})
-  finally:await info.close()
- await page.expose_binding('startFeeProbe',lambda source:probe())
- await page.add_init_script("setInterval(()=>{if(document.querySelector('button[data-cro-id=\"add-one-more-to-cart\"]:enabled'))window.startFeeProbe();},1000)")
-r=browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],{'latitude':35.757535,'longitude':51.40994,'address':'Tehran Vanak public test point'},lambda **x:None,page_setup=setup,browser_options={'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']},max_stores=2,page_seconds=20,item_seconds=80,workers=1)
-print(json.dumps({'report':report,'guest_fee_fields':money[:150]},ensure_ascii=False))
+  if not samples:return
+  done=True
+  for sample in samples[:1]:
+   for count in [1]:
+    payload={'shop_products':[{'id':p,'quantity':count,'extensions':[]} for p in sample['products']],'latitude':35.757535,'longitude':51.40994}
+    result=await page.evaluate("""async payload=>{try{const id=crypto.randomUUID();const r=await fetch('https://api.digikalajet.ir/cart/guest/validate/?ch=jj',{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json','Client':'mobile','ClientOs':'Linux','ClientId':'JETAPPID-'+id,'clientid-v2':'JETAPPID-'+id,'app-id':id,'session':crypto.randomUUID(),'platform-sso-disable-prod':'1','X-Request-UUID':crypto.randomUUID()},body:JSON.stringify(payload)});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{return{http:r.status,type:r.headers.get('content-type'),redirected:r.redirected,path:new URL(r.url).pathname}}const fields=[];function walk(x,path=''){if(Array.isArray(x))x.slice(0,10).forEach((v,n)=>walk(v,path+'/'+n));else if(x&&typeof x==='object')for(const [k,v] of Object.entries(x)){if(['user','account','address','token','customer','phone'].includes(k))continue;if(/price|cost|fee|packing|preparation|vat|tax|shipping|shop_id|minimum/.test(k)&&(!v||typeof v!=='object'))fields.push({field:path+'/'+k,value:v});if(v&&typeof v==='object')walk(v,path+'/'+k);}}walk(d);return {http:r.status,status:d.status,fields};}catch(e){return{error:e.name}}}""",payload)
+    results.append({'shop':sample['shop'],'quantity':count,'result':result})
+ page.on('response',response)
+r=browse([{'id':'milk','name':'شیر','query':'شیر','quantity':1}],{'latitude':35.757535,'longitude':51.40994,'address':'Tehran Vanak public test point'},lambda **x:None,page_setup=setup,browser_options={'executable_path':os.environ['CHROMIUM_PATH'],'args':['--no-sandbox']},max_stores=1,page_seconds=20,item_seconds=70,workers=1)
+print(json.dumps({'public_guest_validation':results},ensure_ascii=False))

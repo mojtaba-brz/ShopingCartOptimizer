@@ -127,6 +127,7 @@ jobs:
           node android/tests/jet-browser.cjs
           node android/tests/fees-browser.cjs
           node android/tests/store-mode.cjs
+          node android/tests/backup.cjs
           node android/tests/desktop-ui.cjs
           node android/tests/workflow012.cjs
           node android/tests/workflow013.cjs
