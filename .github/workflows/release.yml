@@ -71,8 +71,8 @@ jobs:
       - name: Prepare and publish both downloads
         env:
           GH_TOKEN: ${{ github.token }}
-          ANDROID_RUN: '43817376451'
-          APK_SHA256: '3c8751b5d17927606be82d0ec701d4ab6ca166870354b10e58780f75e0932b22'
+          ANDROID_RUN: '43870251199'
+          APK_SHA256: '8347048f8df2c6e66ba3fb692dd3fd9c0c10d3d746b3259f587e355588324949'
         run: |
           set -euo pipefail
           version=$(python3 -c 'import json; print(json.load(open("cartoptimizer/release.json"))["version"])')
@@ -92,40 +92,25 @@ jobs:
           unzip -q android.zip -d android-download
           cp "android-download/Cartwise-Android-$version-debug.apk" "release-assets/Sabadchin-Android-$version.apk"
           echo "$APK_SHA256  release-assets/Sabadchin-Android-$version.apk" | sha256sum --check
-          python3 - <<'PY'
-          import json, pathlib, re, zipfile
-          version = json.load(open('cartoptimizer/release.json'))
-          apk = next(pathlib.Path('release-assets').glob('*.apk'))
-          with zipfile.ZipFile(apk) as z:
-              assert json.loads(z.read('assets/release.json')) == version
-              replacements = re.findall(r"\.replace\('([^']*)', '([^']*)'\)", pathlib.Path('android/app/build.gradle').read_text())
-              for p in pathlib.Path('cartoptimizer/web').iterdir():
-                  if p.suffix not in {'.html', '.css', '.js', '.ttf', '.woff2', '.txt', '.json'}:
-                      continue
-                  if p.suffix in {'.html', '.css', '.js'}:
-                      text = p.read_text()
-                      for a, b in replacements:
-                          text = text.replace(a, b)
-                      assert z.read('assets/' + p.name).decode().replace('\r\n', '\n') == text, p.name
-                  else:
-                      assert z.read('assets/' + p.name) == p.read_bytes(), p.name
-          PY
+          python3 release/verify-release.py "release-assets/Sabadchin-Android-$version.apk"
           (cd release-assets && sha256sum *.apk *.exe > SHA256SUMS.txt)
           cat > release-notes.md <<'NOTES'
-          نسخهٔ آزمایشی سبدچین ۰٫۱۷٫۱
+          نسخهٔ آزمایشی سبدچین ۰٫۱۸٫۰
 
-          - تخصیص سهمیهٔ شگفت‌انگیز به کالاهایی که مبلغ پرداختی سبد را بیشتر کاهش می‌دهند، با لحاظ آستانهٔ ارسال رایگان و هزینه‌های مشاهده‌شده.
-          - حفظ رتبه‌بندی قیمت واحد برای انتخاب کالا و فروشگاه، سهمیهٔ کالاهای متمایز و قیمت تخفیف‌دار پس از شگفت‌انگیز.
-          - خواندن خودکار هزینهٔ ارسال از پاسخ عمومی جت و سربرگ مسیر فعلی فروشگاه؛ حفظ هزینه‌های معلوم در پاسخ‌های ناقص.
-          - عدم فرض ارسال رایگانِ مشروط به اشتراک و نمایش سهمیهٔ واقعی شگفت‌انگیز در کنار کالاهای سبد.
-          - استفاده از هزینه‌های تفکیک‌شدهٔ سبد مشاهده‌شده فقط در صورت تطابق کالاها، تعداد و جمع کالاها.
+          - افزایش سقف جست‌وجوی موازی به ۳۰ صفحه در دسکتاپ و اندروید، با حفظ کاهش خودکار هنگام فشار حافظه یا کندی رابط. تعداد فعال به حافظه، پردازنده و صف کار وابسته است.
+          - رفع نمایش چند فروشگاه پس از انتخاب «یک فروشگاه در هر گروه»: کالاهای بدون سبد معتبر جدا و روشن نمایش داده می‌شوند؛ محدودیت انتخاب‌شده دور زده نمی‌شود.
+          - گزینه‌های ناموجود غیرفعال هستند و نشانگر انتظار ماوس ندارند.
+          - نگهداری هزینه‌های عمومی هر فروشگاه تا هفت روز، وابسته به آدرس و روش تحویل و با حفظ زمان واقعی خواندن هر هزینه. سبد واقعی همچنان اعتبار کوتاه‌تر دارد.
+          - دکمهٔ بررسی به‌روزرسانی در تنظیمات؛ نصب مستقیم از GitHub و نصب‌های بازار/پلی از فروشگاه اصلی خود پیگیری می‌شوند. نصب خودکار انجام نمی‌شود.
+          - چیدمان خواناتر سبدها، کارت‌های کالا و هزینه‌ها، با حفظ سه ظاهر، حالت شب، پنج زبان و لیست‌های ذخیره‌شده.
+          - مسیر ساخت APK/AAB با امضای دائمی مالک و بررسی تطابق فایل‌های مشترک آماده شده است؛ پیکربندی ناشر هنوز لازم است.
 
-          هزینه‌های جانبی که جت فقط در سبد واقعی اعلام می‌کند، تا تأیید آن سبد «تأیید نشده» می‌مانند و صفر فرض نمی‌شوند. بررسی زنده فقط با موقعیت عمومی و حساب مهمان انجام شده است.
-          لیست‌های ذخیره‌شده، حالت شب هر سه تم و پنج زبان رابط حفظ شده‌اند.
+          هزینه‌های جانبی که جت فقط در سبد واقعی اعلام می‌کند همچنان «تأیید نشده» می‌مانند؛ صفر فرض نمی‌شوند. بررسی زنده با موقعیت عمومی و حساب مهمان انجام شد: ورود برای سبد لازم بود و API اعتبارسنجی مهمان HTTP 500 برگرداند. استخراج کامل هزینه‌های سبد حساب واردشده هنوز تأیید نشده است.
+          شبیه‌ساز Android 16 در زیرساخت آزمون قطع می‌شود؛ این مورد آزمون موفق محسوب نمی‌شود. وضعیت دقیق کنترل‌ها در PR #16 و GitHub Actions ثبت شده است.
 
           برای ویندوز Chrome یا Edge نصب باشد. فایل EXE رابط وب برنامه را باز می‌کند؛ برای خروج، پنجرهٔ کنسول برنامه را ببندید.
-          APK امضای آزمایشی دارد و EXE امضای ناشر ویندوز ندارد. این خروجی‌ها نسخهٔ رسمی بازار یا Google Play نیستند.
-          سهمیهٔ سفارش بعدی و مبلغ نهایی خرید باید در فروشگاه تأیید شوند. برنامه سفارش یا پرداخت ثبت نمی‌کند.
+          APK امضای آزمایشی موقت دارد و ممکن است روی APK آزمایشی قبلی نصب نشود؛ قبل از حذف نسخهٔ قبلی از داده‌های لازم پشتیبان بگیرید. EXE امضای ناشر ویندوز ندارد. این خروجی‌ها نسخهٔ رسمی بازار یا Google Play نیستند.
+          انتشار رسمی و آپدیت پایدار اندروید به اطلاعات عمومی ناشر، امضای دائمی یکسان، بررسی زندهٔ گوشی و تکمیل پنل‌های فروشگاه نیاز دارد. برنامه سفارش یا پرداخت ثبت نمی‌کند.
           NOTES
           if [ "$draft_exists" = false ]; then
             gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sabadchin $version" --notes-file release-notes.md --draft --prerelease

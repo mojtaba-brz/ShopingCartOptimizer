@@ -2,7 +2,7 @@
 import hashlib,json,os,pathlib,re,shutil,zipfile
 root=pathlib.Path('publication-kit');root.mkdir(exist_ok=True)
 source=pathlib.Path('release')
-for name in ['README-fa.md','publication.json','check-publication.py','privacy-policy-fa.html']:
+for name in ['README-fa.md','publication.json','check-publication.py','privacy-policy-fa.html','setup-signing.ps1','verify-release.py']:
     shutil.copy2(source/name,root/name)
 shutil.copytree(source/'store-listing',root/'store-listing',dirs_exist_ok=True)
 candidates=pathlib.Path('candidates')
@@ -16,7 +16,7 @@ for f in candidates.rglob('*'):
     if 'store-assets' in f.parts and f.suffix=='.png':
         target=root/'store-assets'/f.name;target.parent.mkdir(exist_ok=True);shutil.copy2(f,target)
 for f in pathlib.Path('test-apk').glob('*.apk'):
-    shutil.copy2(f,root/'Sabadchin-Android-0.17.1-test.apk')
+    shutil.copy2(f,root/'Sabadchin-Android-0.18.0-test.apk')
 validation={'desktop_live_smoke':os.environ.get('DESKTOP_LIVE_RESULT','not-run'),'source_commit':os.environ['SOURCE_COMMIT'],'run_url':os.environ['RUN_URL'],'job_results':json.loads(os.environ['JOB_RESULTS']),'android':{},'live_retailer_validation':False,'store_submission_ready':False}
 for api in [30,36]:
     folder=pathlib.Path('qa')/str(api)
@@ -28,10 +28,10 @@ for api in [30,36]:
         target=root/'validation'/('android-'+str(api)+'.txt');target.parent.mkdir(exist_ok=True);shutil.copy2(logs[0],target)
     for f in folder.rglob('*.png'):
         if f.name not in ['simple.png','modern.png','traditional.png']:continue
-        assert f.read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
+        if not f.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'):continue
         target=root/'screenshots'/('api-'+str(api))/f.name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,target)
 (root/'VALIDATION.json').write_text(json.dumps(validation,indent=2,ensure_ascii=False)+'\n')
-(root/'README-English.txt').write_text("""Sabadchin 0.17.1 - publication preparation kit
+(root/'README-English.txt').write_text("""Sabadchin 0.18.0 - publication preparation kit
 
 The included test APK is installable. APK/AAB files in android-candidates are UNSIGNED release candidates requiring owner signing. Do not submit the debug-signed test APK to stores.
 

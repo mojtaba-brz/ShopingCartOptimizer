@@ -99,13 +99,14 @@ public class HeaderlessFlowTest {
             waitFor(main,"document.getElementById('results').textContent.includes('۱۴۵٬۳۰۰')");
             String deliveryState=eval(main,"JSON.stringify({context:state.context,price:state.offers[0].promo_price})");
             assertEquals(deliveryState,"true",eval(main,"state.context.includes('انقلاب') && state.context.includes('on_demand') && state.offers[0].promo_price===1353000"));
+            // Use identified merchant fixtures: anonymous offers cannot form a store-limited basket.
             // Feed a captured search response through the Android result event and
             // verify the new list-to-review UI without a dependency on live prices.
             eval(main,"state.items=[{id:'pasta',name:'ماکارونی',quantity:1}];save();document.getElementById('optimize').click();true");
             DigikalaActivity automatic=child();
             InstrumentationRegistry.getInstrumentation().runOnMainSync(automatic::finish);
             waitFor(main,"!busy");
-            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'on_demand',items:[{id:'pasta',products:[{title:'ماکارونی ساده',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',regular_price:500000,promo_price:null}]}]})}));true");
+            eval(main,"window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:JSON.stringify({source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'on_demand',items:[{id:'pasta',products:[{title:'ماکارونی ساده',store_name:'فروشگاه آزمون',store_id:'fixture',store_type:'supermarket',regular_price:1353000,promo_price:null},{title:'پاستا 500 گرم',store_name:'فروشگاه آزمون',store_id:'fixture',store_type:'supermarket',regular_price:1000000,promo_price:null},{title:'پنیر آزمون',store_name:'فروشگاه آزمون',store_id:'fixture',store_type:'supermarket',regular_price:500000,promo_price:null}]}]})}));true");
             waitFor(main,"document.getElementById('results').textContent.includes('۱۳۵٬۳۰۰') && document.getElementById('results').textContent.includes('برآورد')");
             eval(main,"document.querySelector('[data-change-item]').click();document.querySelector('[data-choice-unit=g]').click();true");
             waitFor(main,"document.querySelector('#choice-list').textContent.includes('پاستا 500 گرم')");
@@ -124,7 +125,7 @@ public class HeaderlessFlowTest {
             DigikalaActivity first=child();
             // The real address bootstrap has no products. Keep that route separate
             // from search so the stale-response guard remains exercised correctly.
-            page(first,"<style>body{min-height:2400px}img{width:60px;height:60px}</style><div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>function card(t,p){return '<div><img alt=\"'+t+'\"><div><p>'+p+'</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'}window.addEventListener('popstate',()=>{if(location.pathname==='/'||location.pathname==='/user/add-address'){document.getElementById('root').innerHTML='<p>ارسال به تهران، انقلاب</p>';return;}document.getElementById('root').innerHTML=card('شیر 1 لیتر','100');window.scrollTo(0,0)});window.addEventListener('scroll',()=>{if(location.pathname==='/search/v2/result'&&!document.getElementById('extra')&&scrollY>0){let d=document.createElement('div');d.id='extra';d.innerHTML=card('شیر 500 میلی لیتر','30');document.getElementById('root').appendChild(d)}});</script>");
+            page(first,"<style>body{min-height:2400px}img{width:60px;height:60px}</style><div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>function card(t,p){return '<div data-store-name=\"فروشگاه آزمون\" data-store-id=\"fixture\" data-business=\"supermarket\"><img alt=\"'+t+'\"><div><p>'+p+'</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'}window.addEventListener('popstate',()=>{if(location.pathname==='/'||location.pathname==='/user/add-address'){document.getElementById('root').innerHTML='<p>ارسال به تهران، انقلاب</p>';return;}document.getElementById('root').innerHTML=card('شیر 1 لیتر','100');window.scrollTo(0,0)});window.addEventListener('scroll',()=>{if(location.pathname==='/search/v2/result'&&!document.getElementById('extra')&&scrollY>0){let d=document.createElement('div');d.id='extra';d.innerHTML=card('شیر 500 میلی لیتر','30');document.getElementById('root').appendChild(d)}});</script>");
             read(first);continueChoice();
             waitFor(main,"document.getElementById('live-location').textContent.includes('انقلاب')");
             eval(main,"document.getElementById('optimize').click();true");
@@ -138,7 +139,7 @@ public class HeaderlessFlowTest {
             waitFor(main,"Boolean(window.CartwiseAuto && document.getElementById('optimize'))");
             eval(main,"localStorage.clear();state=initialState();state.items=[{id:'bread',name:'نان',quantity:1}];dirty.clear();save();document.getElementById('optimize').click();true");
             DigikalaActivity browser=child();
-            page(browser,"<div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML='<div><img alt=\"نان تست\" style=\"width:60px;height:60px\"><div><p>100</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'})</script>");
+            page(browser,"<div id='root'><div><p>ارسال به</p><p>تهران، انقلاب</p></div><button aria-pressed='true'>ارسال زمان‌دار</button><button aria-pressed='false'>ارسال فوری</button></div><script>window.addEventListener('popstate',()=>{document.getElementById('root').innerHTML='<div data-store-name=\"فروشگاه آزمون\" data-store-id=\"fixture\" data-business=\"supermarket\"><img alt=\"نان تست\" style=\"width:60px;height:60px\"><div><p>100</p><img src=\"/supermarket/i/toman.svg\"></div><button data-cro-id=\"add-one-more-to-cart\">+</button></div>'})</script>");
             waitFor(main,"document.getElementById('results').textContent.includes('نان تست') && document.getElementById('results').textContent.includes('۱۰۰')");
         }
     }
