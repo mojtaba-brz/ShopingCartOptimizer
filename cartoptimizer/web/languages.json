@@ -1350,19 +1350,19 @@
     "نوع فروشگاه": {
       "en": "Shop category",
       "ckb": "جۆری فرۆشگا",
-      "ku": "Beşa dikanê",
-      "az-Arab": "ماغازا نوعو"
+      "ku": "Cureyê firoşgehê",
+      "az-Arab": "ماغازا نؤوعو"
     },
     "افزایش تعداد": {
       "en": "Increase quantity",
       "ckb": "زیادکردنی ژمارە",
-      "ku": "Hejmarê zêde bike",
+      "ku": "Hejmara zêde bike",
       "az-Arab": "سایی آرتیر"
     },
     "کاهش تعداد": {
       "en": "Decrease quantity",
       "ckb": "کەمکردنی ژمارە",
-      "ku": "Hejmarê kêm bike",
+      "ku": "Hejmara kêm bike",
       "az-Arab": "سایی آزالت"
     },
     "جست‌وجو": {
@@ -2276,6 +2276,78 @@
       "ckb": "شار و شەقام بگەڕێ. ئەگەر نەخشە یان GPS وەڵامی نەدا، نەخشە دابخە و ناونیشان هەڵبژێرە.",
       "ku": "Bajar û kolanê bigere. Heke nexşe an GPS nexebitî, nexşeyê bigire û navnîşanê rast hilbijêre.",
       "az-Arab": "شهر و کوچه‌نی آختارین. خریطه یا GPS ایشله‌مه‌سه، خریطه‌نی باغلایین و آدرسی سئچین."
+    },
+    "مقایسه آماده است؛ مقدار خرید و انتخاب‌ها را مرور کنید.": {
+      "en": "Comparison ready. Review the amounts and your choices.",
+      "ckb": "بەراورد ئامادەیە؛ بڕ و هەڵبژاردنەکان بپشکنە.",
+      "ku": "Berawird amade ye. Qas û hilbijartinên xwe binêre.",
+      "az-Arab": "مقایسه حاضیردیر؛ میقدار و سئچیم‌لرینیزی یوخلایین."
+    },
+    "گام اول": {
+      "en": "Start here",
+      "ckb": "لێرە دەست پێ بکە",
+      "ku": "Li vir dest pê bike",
+      "az-Arab": "بورادان باشلایین"
+    },
+    "گزینه مرتبط": {
+      "en": "matching choices",
+      "ckb": "هەڵبژاردەی پەیوەندیدار",
+      "ku": "hilbijartinên têkildar",
+      "az-Arab": "اویغون سئچیم"
+    },
+    "تصویر در دسترس نیست": {
+      "en": "Image unavailable",
+      "ckb": "وێنە بەردەست نییە",
+      "ku": "Wêne ne li ber dest e",
+      "az-Arab": "شکیل یوخدور"
+    },
+    "آدرس قبلی از نشست و انتخاب‌گر دیجی‌کالاجت بازیابی می‌شود.": {
+      "en": "Your previous delivery address is restored automatically.",
+      "ckb": "ناونیشانی پێشووت خۆکارانە دەگەڕێتەوە.",
+      "ku": "Navnîşana te ya berê bixwe tê vegerandin.",
+      "az-Arab": "اؤنجکی آدرسینیز اوتوماتیک قایتاریلیر."
+    },
+    "جست‌وجو در پس‌زمینه انجام می‌شود و پیشرفت آن را می‌بینید.": {
+      "en": "Search runs in the background. You can follow its progress.",
+      "ckb": "گەڕان لە پاشبنەمادا ئەنجام دەدرێت؛ پێشکەوتنەکە دەبینیت.",
+      "ku": "Lêgerîn li paşperdeyê dimeşe. Tu dikarî pêşveçûna wê bibînî.",
+      "az-Arab": "آختاریش آرخا پلاندا گئدیر؛ گئدیشینی گؤره بیلرسینیز."
+    },
+    "آدرس یا روش ارسال سبد با نتیجه فعلی یکسان نیست.": {
+      "en": "The basket address or delivery method has changed.",
+      "ckb": "ناونیشان یان شێوازی گەیاندنی سەبەتەکە گۆڕاوە.",
+      "ku": "Navnîşan an awayê gihandina seleyê guheriye.",
+      "az-Arab": "سبتین آدرسی یا چاتدیرما اۆسولو دَییشیب."
+    },
+    "مبلغ سبد مطابق فروشگاه": {
+      "en": "Basket total matches the shop",
+      "ckb": "کۆی سەبەتەکە لەگەڵ فرۆشگا یەکسانە",
+      "ku": "Koma seleyê bi firoşgehê re yek e",
+      "az-Arab": "سبتین مبلغی ماغازا ایله اویغوندور"
+    },
+    "گزینه‌های بعضی اقلام نیاز به بررسی دارند.": {
+      "en": "Some item choices need your review.",
+      "ckb": "هەڵبژاردەی هەندێک کاڵا پێویستی بە پشکنین هەیە.",
+      "ku": "Hin hilbijartinên kelûpelan divê bên kontrolkirin.",
+      "az-Arab": "بعضی ماللارین سئچیمی یوخلانمالیدیر."
+    },
+    "آدرس ذخیره شد؛ حالا لیست خرید را جست‌وجو کنید.": {
+      "en": "Address saved. You can search your shopping list now.",
+      "ckb": "ناونیشان پاشەکەوت کرا؛ ئێستا لیستی کڕین بگەڕێ.",
+      "ku": "Navnîşan hat tomarkirin. Niha li lîsteya kirînê bigere.",
+      "az-Arab": "آدرس ساخ لاندی؛ ایندی آلیش لیستینی آختارین."
+    },
+    "آدرس را با جست‌وجو یا نقشه دیجی‌کالاجت انتخاب کنید.": {
+      "en": "Choose your delivery address with search or the map.",
+      "ckb": "ناونیشانی گەیاندن بە گەڕان یان نەخشە هەڵبژێرە.",
+      "ku": "Navnîşana gihandinê bi lêgerînê an nexşeyê hilbijêre.",
+      "az-Arab": "چاتدیرما آدرسینی آختاریش یا خریطه ایله سئچین."
+    },
+    "موقعیت روی نقشه": {
+      "en": "Location on map",
+      "ckb": "شوێن لەسەر نەخشە",
+      "ku": "Cih li ser nexşeyê",
+      "az-Arab": "خریطه‌ده یئر"
     }
   }
 }
