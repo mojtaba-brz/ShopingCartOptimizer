@@ -85,6 +85,7 @@ public final class MainActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if(trusted(uri)&&"/assets/product-image".equals(uri.getPath())&&"GET".equals(request.getMethod()))return ProductImages.read(uri.getQueryParameter("u"));
+                if ("GET".equals(request.getMethod()) && "https://api.github.com/repos/mojtaba-brz/ShopingCartOptimizer/releases?per_page=10".equals(uri.toString())) return null;
                 WebResourceResponse response = trusted(uri) ? loader.shouldInterceptRequest(uri) : null;
                 if (response != null) return response;
                 return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", null,
@@ -121,6 +122,10 @@ public final class MainActivity extends Activity {
     private void toast(String text) { runOnUiThread(() -> Toast.makeText(this, text, Toast.LENGTH_LONG).show()); }
 
     private final class Bridge {
+        @JavascriptInterface public String updateSource() {
+            String source=getPackageManager().getInstallerPackageName(getPackageName());
+            return "com.android.vending".equals(source)?"play":"com.farsitel.bazaar".equals(source)?"bazaar":"direct";
+        }
         @JavascriptInterface public String savedLanguage(){return AppLanguage.get(MainActivity.this);}
         @JavascriptInterface public void setNightMode(boolean night){getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putBoolean("night",night).apply();runOnUiThread(()->AppAppearance.apply(MainActivity.this));}
         @JavascriptInterface public void setLanguage(String language){if(!AppLanguage.valid(language))return;getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("language",language).apply();runOnUiThread(()->AppLanguage.apply(MainActivity.this));}
