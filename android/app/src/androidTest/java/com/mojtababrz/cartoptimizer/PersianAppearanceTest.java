@@ -48,6 +48,9 @@ public class PersianAppearanceTest {
                 directory.get().mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(directory.get(),theme+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
                 }
             }
+            assertEquals("true",eval(scenario,"CartwiseAppearance.setNightMode(true);document.documentElement.dataset.colorScheme==='dark' && document.documentElement.scrollWidth<=innerWidth"));
+            scenario.onActivity(a->{assertTrue(AppAppearance.night(a));assertEquals(android.graphics.Color.parseColor("#191b19"),AppAppearance.paper(a));});
+            assertEquals("true",eval(scenario,"document.getElementById('my-lists').click();document.getElementById('saved-list-name').value='هفتگی';document.getElementById('save-list-form').requestSubmit();document.getElementById('saved-lists').close();JSON.parse(localStorage.getItem('cartwise.lists.v1'))[0].items.length===2"));
             // Exercise the real WebView/native bridge and saved locale, including both Kurdish scripts.
             for(String language:new String[]{"en","ckb","ku","az-Arab","fa"}){
                 eval(scenario,"CartwiseI18n.setLanguage('"+language+"');true");
@@ -57,8 +60,8 @@ public class PersianAppearanceTest {
                 scenario.onActivity(a->{assertEquals(language,AppLanguage.get(a));assertEquals(rtl?android.view.View.LAYOUT_DIRECTION_RTL:android.view.View.LAYOUT_DIRECTION_LTR,AppLanguage.direction(a));assertFalse(AppLanguage.text(a,"توقف جست‌وجو").isEmpty());});
                 assertEquals("true",eval(scenario,"document.documentElement.dir==='"+(rtl?"rtl":"ltr")+"' && document.documentElement.scrollWidth<=innerWidth"));
             }
-            progress("recreating");scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
-            eval(scenario,"showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));
+            progress("recreating");scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.documentElement.dataset.colorScheme==='dark' && document.querySelectorAll('.item-row').length===2 && JSON.parse(localStorage.getItem('cartwise.lists.v1'))[0].items.length===2"));
+            eval(scenario,"CartwiseAppearance.setNightMode(false);showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));
         }
     }
 }

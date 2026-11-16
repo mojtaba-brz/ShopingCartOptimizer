@@ -51,9 +51,9 @@
    let quiet=0,prior='',empty=0;
    for(let step=0;step<120;step++){
     const d=collect(),fp=JSON.stringify((d.products||[]).map(p=>[p.title,p.regular_price,p.promo_price,p.store_name]));
-    const more=scroll(false);quiet=fp===prior&&!more?quiet+1:0;prior=fp;
+    const more=scroll(false);quiet=fp===prior&&!more&&!network.pending?quiet+1:0;prior=fp;
     if(d.products?.length&&quiet>=3)return;
-    if(!d.products?.length&&++empty>=18){warnings.push('صفحه در زمان بررسی کالای قابل خواندن نشان نداد.');return;}
+    if(!d.products?.length&&++empty>=18&&quiet>=3){warnings.push('صفحه در زمان بررسی کالای قابل خواندن نشان نداد.');return;}
     if(rows.size>=1000){warnings.push('سقف حافظهٔ این جست‌وجو رسید؛ نتایج ممکن است کامل نباشند.');return;}
     await sleep(400);
    }
@@ -63,6 +63,13 @@
    try{
     for(let n=0;(!document.querySelector('#root')||(location.pathname==='/user/add-address'&&!document.querySelector('#root input[placeholder]')))&&n<80;n++){check();await sleep(250);}
     await navigate(options.url);await scan();
+    // The same SPA URL is a no-op. Re-enter through the address route once to
+    // request fresh catalogue data, retaining the verified delivery selection.
+    if(!rows.size&&deadline-Date.now()>4000){
+     state.detail='تلاش خودکار دوباره برای دریافت کالاها';const firstWarnings=warnings.length;
+     await navigate(new URL('/user/add-address',options.url).href);await navigate(options.url);await scan();
+     if(rows.size)warnings.splice(0,firstWarnings);
+    }
     if(options.kind==='store'){const links=[...document.querySelectorAll('a[href]')].map(e=>{try{return new URL(e.href);}catch{return null;}});const info=links.find(u=>u&&u.origin===location.origin&&u.pathname==='/shop'&&u.searchParams.get('shopId')===options.shop_id);if(info){await navigate(info.href);const fields=a.fees(document);if(Object.keys(fields).length)quotes.push({quote:{source:'digikala-visible-checkout',page_kind:'store',page_url:location.origin+location.pathname,captured_at:new Date().toISOString(),store_name:options.store_name,store_id:options.shop_id,store_type:options.store_type||options.department,fields,notices:[]}});}}
 
     if(options.kind!=='store')for(const [name,meta] of shops){

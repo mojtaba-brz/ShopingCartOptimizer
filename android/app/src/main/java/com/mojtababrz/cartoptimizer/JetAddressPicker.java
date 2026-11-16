@@ -47,7 +47,7 @@ final class JetAddressPicker {
             if(DeliveryChoice.label(s.toString()).length()>=2)main.postDelayed(delayedSearch,650);
         }public void afterTextChanged(Editable e){}});
     }
-    private Button button(String text,int id){Button b=new Button(activity);b.setText(text);b.setId(id);b.setTextColor(Color.rgb(22,76,60));return b;}
+    private Button button(String text,int id){Button b=new Button(activity);b.setText(text);b.setId(id);b.setTextColor(AppAppearance.accent(activity));return b;}
     void show(){dialog.show();confirm=dialog.getButton(AlertDialog.BUTTON_POSITIVE);confirm.setId(R.id.address_confirm);confirm.setEnabled(false);confirm.setOnClickListener(v->verify());dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);}
     boolean isShowing(){return !closed&&dialog.isShowing();}
     void dismiss(){dialog.dismiss();close();}

@@ -12,6 +12,8 @@ const p=(title,store_type,store_id,regular_price)=>({title,store_type,store_id,s
  partial.pending(prior,context);partial.merge(prior,{items:[{...results[0],error:'بودجهٔ زمانی جست‌وجو تمام شد؛ نتایج بررسی‌شده نمایش داده می‌شوند.'}]},context);
  assert.deepEqual(partial.pending([...prior,added],context).map(i=>i.id),['new'],'Coverage notices with products must not restart old queries');
  partial.merge([added],{items:[{id:'new',products:[],error:'ارتباط قطع شد'}]},context);assert.deepEqual(partial.pending([...prior,added],context).map(i=>i.id),['new'],'A failed empty query is retried');
+ partial.merge([added],{items:[{id:'new',products:[],error:null}]},context);assert.deepEqual(partial.pending([...prior,added],context).map(i=>i.id),['new'],'An empty success must not become a permanent cache hit');
+ partial.merge([added],{items:[{id:'new',products:[p('نام نامرتبط','supermarket','s',10)],error:null}]},context);assert.deepEqual(partial.pending([...prior,added],context,false,['new']).map(i=>i.id),['new'],'Explicit unmatched retry preserves successful queries and can retry nonempty but unusable results');
  const time=Date.now;try{Date.now=()=>time()+900001;assert.equal(partial.pending(prior,context).length,1,'Expired prices are refreshed');}finally{Date.now=time;}
  const snapshot=require('../../cartoptimizer/demo.json');snapshot.items[0].department='produce';assert.equal(require('../../cartoptimizer/web/engine.js').normalize(snapshot).items[0].department,'produce');
  const a=map.project(35.75,51.4,14),b=map.unproject(a.x,a.y,14);assert.ok(Math.abs(b.latitude-35.75)<1e-9);assert.ok(Math.abs(b.longitude-51.4)<1e-9);

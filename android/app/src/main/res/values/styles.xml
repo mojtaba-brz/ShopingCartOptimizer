@@ -9,4 +9,13 @@
         <item name="android:windowBackground">#FAF2E3</item>
     </style>
     <style name="AppTheme" parent="AppThemeBase" />
+    <style name="AppThemeDark" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">@font/vazirmatn</item>
+        <item name="android:colorAccent">#8FCEC8</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#121B18</item>
+        <item name="android:navigationBarColor">#121B18</item>
+        <item name="android:windowBackground">#121B18</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
 </resources>

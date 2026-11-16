@@ -86,7 +86,7 @@ public final class DigikalaActivity extends Activity {
             && ("www.digikalajet.com".equals(uri.getHost()) || "digikalajet.com".equals(uri.getHost()));
     }
     @Override public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);AppAppearance.apply(this);
         AppLanguage.apply(this);
         if(android.os.Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::handleBack);
         deliveryChoice=new DeliveryChoice(this);
@@ -108,7 +108,7 @@ public final class DigikalaActivity extends Activity {
         }
         locationOnly = automated() || getIntent().getBooleanExtra("location_only", false);
         LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);root.setLayoutDirection(AppLanguage.direction(this));
-        root.setBackgroundColor(Color.rgb(245,246,241));
+        root.setBackgroundColor(AppAppearance.paper(this));
         root.setPadding(0, 0, 0, 0);
         setContentView(root);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -117,7 +117,7 @@ public final class DigikalaActivity extends Activity {
             return insets;
         });
         LinearLayout toolbar = new LinearLayout(this);
-        Button back = new Button(this); back.setText(AppLanguage.text(DigikalaActivity.this,"بازگشت")); back.setOnClickListener(v -> handleBack());
+        Button back = new Button(this); back.setText(AppLanguage.text(DigikalaActivity.this,automated()?"توقف جست‌وجو":"بازگشت")); back.setOnClickListener(v -> handleBack());
         toolbar.addView(back);
         read = new Button(this); read.setText(autoItems!=null && locationOnly ? AppLanguage.text(DigikalaActivity.this,"ثبت موقعیت و شروع") : locationOnly ? AppLanguage.text(DigikalaActivity.this,"ثبت موقعیت") : AppLanguage.text(DigikalaActivity.this,"خواندن کالاها"));
         if(cartOnly)read.setText(AppLanguage.text(DigikalaActivity.this,"خواندن سبد"));
@@ -447,8 +447,8 @@ public final class DigikalaActivity extends Activity {
     private void buildProgress(FrameLayout parent) {
         progressLayer=new LinearLayout(this);progressLayer.setOrientation(LinearLayout.VERTICAL);progressLayer.setGravity(android.view.Gravity.CENTER);progressLayer.setPadding(36,32,36,32);
         String theme=getSharedPreferences("cartwise-preferences",MODE_PRIVATE).getString("theme","simple");
-        int paper=Color.parseColor(theme.equals("modern")?"#EDF4F7":theme.equals("traditional")?"#FAF2E3":"#F5F5EF");progressLayer.setBackgroundColor(paper);
-        progressTitle=new TextView(this);progressTitle.setTextSize(22);progressTitle.setTextColor(Color.parseColor("#164C78"));progressTitle.setGravity(android.view.Gravity.CENTER);progressLayer.addView(progressTitle);
+        int paper=AppAppearance.paper(this);progressLayer.setBackgroundColor(paper);
+        progressTitle=new TextView(this);progressTitle.setTextSize(22);progressTitle.setTextColor(AppAppearance.accent(this));progressTitle.setGravity(android.view.Gravity.CENTER);progressLayer.addView(progressTitle);
         progressDetail=new TextView(this);progressDetail.setTextSize(15);progressDetail.setGravity(android.view.Gravity.CENTER);progressDetail.setPadding(0,20,0,20);progressLayer.addView(progressDetail);
         scrollSpinner=new ProgressBar(this);scrollSpinner.setIndeterminate(true);progressLayer.addView(scrollSpinner,new LinearLayout.LayoutParams(72,72));
         progressBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progressBar.setMax(autoItems==null?1:autoItems.length());progressBar.setIndeterminate(autoItems==null);progressLayer.addView(progressBar,new LinearLayout.LayoutParams(-1,24));
