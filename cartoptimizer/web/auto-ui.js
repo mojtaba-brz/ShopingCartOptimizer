@@ -62,7 +62,8 @@
   function checkoutSection(proposed=[],allowMatch=true){
     const quotes=CartwiseCheckout.clean(lastResult?.checkout_quotes),notices=[...new Set(quotes.flatMap(q=>q.notices))];
     const verified=allowMatch?quotes.map(q=>CartwiseCheckout.reconcile(q,proposed)).find(q=>q.verified):null;
-    return `<section class="card checkout-summary"><h3>قیمت‌ها و هزینه‌ها</h3>${verified?`<p class="auto-total">${money(verified.total)} <small>تومان؛ مبلغ سبد مطابق دیجی‌کالاجت</small></p>`:''}${notices.map(n=>`<p class="checkout-notice">${escapeHTML(n)}</p>`).join('')}<button type="button" class="secondary" data-read-checkout>به‌روزرسانی خودکار قیمت و هزینه‌ها</button></section>`;
+    if(!verified&&!notices.length)return '';
+    return `<section class="card checkout-summary"><h3>قیمت‌ها و هزینه‌ها</h3>${verified?`<p class="auto-total">${money(verified.total)} <small>تومان؛ مبلغ سبد مطابق دیجی‌کالاجت</small></p>`:''}${notices.map(n=>`<p class="checkout-notice">${escapeHTML(n)}</p>`).join('')}</section>`;
   }
  async function calculate(reveal=true){
   clearTimeout(expiryTimer);if(!lastResult||invalidateContext())return;
@@ -88,7 +89,7 @@
   $('results').querySelector('[data-update-optimization]').onclick=()=>chooseOptimization(()=>{excludedStores=new Set(pendingExcluded);for(const i of requested)if(selected[i.id]&&!cmp.options(i,rows(i),true).some(p=>p.key===selected[i.id])){delete selected[i.id];delete quantities[i.id];}});
   $('results').querySelectorAll('[data-change-item]').forEach(b=>b.onclick=()=>openChoices(requested.find(i=>i.id===b.dataset.changeItem)));
   $('results').querySelectorAll('[data-quantity-item]').forEach(b=>b.onclick=()=>{const i=b.dataset.quantityItem;quantities[i]=plans.get(i).quantity+Number(b.dataset.delta);calculate();});
-  $('results').querySelectorAll('[data-read-checkout]').forEach(b=>b.onclick=()=>start(true));prepareImages($('results'));
+  prepareImages($('results'));
   const upcoming=allProducts.filter(p=>p.amazing).map(p=>p.amazing_expires_at).filter(t=>Number.isFinite(t)&&t>Date.now());
   if(upcoming.length)expiryTimer=setTimeout(()=>{calculate(false);if(sheet.open){for(const p of activeChoices)p.unit_price=cmp.unitPrice(p);activeChoices.sort((a,b)=>(a.unit_price??Infinity)-(b.unit_price??Infinity));paintChoices();}},Math.min(2147483647,Math.max(1,Math.min(...upcoming)-Date.now()+30)));
   plan={status:'multi-store-estimate',optimal:false,total,carts:proposal?.carts||[{lines}]};$('export-plan').hidden=true;if(reveal)showTab('results');message(missing.length?'گزینه‌های بعضی اقلام نیاز به بررسی دارند.':'مقایسه آماده است؛ مقدار خرید و انتخاب‌ها را مرور کنید.',!!missing.length);
