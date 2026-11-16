@@ -127,7 +127,7 @@ class DesktopService:
         with self.lock:
             return {'location': 'ارسال به ' + self.location['address'], 'shipment_type': 'on_demand','coordinates':f"{self.location['latitude']}|{self.location['longitude']}"} if self.location else {}
 
-    def start(self, items):
+    def start(self, items, fee_cache=None):
         items = validate_items(items)
         with self.lock:
             if not self.location:
@@ -142,17 +142,17 @@ class DesktopService:
                    'detail': 'آماده‌سازی جست‌وجوی جت…', 'products': 0, 'stores': 0}
             self.jobs[key] = job
             location = dict(self.location)
-            threading.Thread(target=self._run, args=(key, items, location), daemon=True).start()
+            threading.Thread(target=self._run, args=(key, items, location, fee_cache), daemon=True).start()
             return {'id': key}
 
-    def _run(self, key, items, location):
+    def _run(self, key, items, location, fee_cache=None):
         def report(**fields):
             with self.lock:
                 if self.jobs.get(key, {}).get('state') != 'running':
                     raise InterruptedError()
                 self.jobs[key].update(fields)
         try:
-            result = self.runner(items, location, report)
+            result = self.runner(items, location, report, **({'fee_cache':fee_cache} if isinstance(fee_cache,dict) else {}))
             report(result=result, state='done', completed=len(items), detail='مقایسه آماده است.')
         except InterruptedError:
             pass
@@ -211,15 +211,15 @@ def resource_budget():
 
 
 def browse(items, location, report, *, channel=None, page_setup=None, browser_options=None,
-           max_stores=40, page_seconds=20, item_seconds=30, workers=None):
+           max_stores=40, page_seconds=20, item_seconds=30, workers=None, fee_cache=None):
     import asyncio
     return asyncio.run(_browse(items, location, report, channel=channel, page_setup=page_setup,
         browser_options=browser_options, max_stores=max_stores, page_seconds=page_seconds,
-        item_seconds=item_seconds, workers=workers))
+        item_seconds=item_seconds, workers=workers, fee_cache=fee_cache))
 
 
 async def _browse(items, location, report, *, channel, page_setup, browser_options,
-                  max_stores, page_seconds, item_seconds, workers):
+                  max_stores, page_seconds, item_seconds, workers, fee_cache):
     import asyncio
     import inspect
     from contextlib import AsyncExitStack, suppress
@@ -237,7 +237,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
     coordinates = f"{location['latitude']}|{location['longitude']}"
     saved = {'location':'ارسال به '+location['address'], 'coordinates':coordinates}
     result = {'source':'digikala-automatic', 'location':saved['location'], 'shipment_type':'on_demand','coordinates':coordinates,
-        'items':[], 'checkout_quotes':[], 'resources':budget}
+        'items':[], 'checkout_quotes':[], 'fee_checks':[], 'resources':budget}
     entries, pending, aliases, queries = {}, {}, {}, {}
     queue = asyncio.Queue(); quote_keys = set(); active_tasks = 0; deadlines = {}; task_states = {}
     for item in items:
@@ -347,7 +347,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                             pending[task['id']]-=1
                             progress('پایان بودجهٔ بررسی · '+task['name'])
                             continue
-                        options = {**task, 'coordinates':coordinates, 'seconds':min(remaining,page_seconds if task['kind']=='store' else item_seconds), 'max_stores':max_stores}
+                        options = {**task, 'coordinates':coordinates, 'seconds':min(remaining,page_seconds if task['kind']=='store' else item_seconds), 'max_stores':max_stores, 'fee_cache':fee_cache}
                         await page.evaluate('(x)=>CartwiseSearchTask.start(x)', options)
                         until = time.monotonic() + options['seconds'] + 10
                         while True:
@@ -367,6 +367,7 @@ async def _browse(items, location, report, *, channel, page_setup, browser_optio
                             key=json.dumps([p['title'],p.get('store_id'),p.get('store_name'),p['regular_price'],p.get('promo_price')])
                             if key not in seen and len(entry['products'])<1000: entry['products'].append(p);seen.add(key)
                         if data.get('error'): entry['error']='؛ '.join(filter(None,[entry['error'],data['error']]))
+                        result['fee_checks'].extend(data.get('fee_checks',[]))
                         for q in data.get('checkout_quotes',[]):
                             key=json.dumps({k:v for k,v in q.items() if k!='captured_at'},sort_keys=True)
                             if key not in quote_keys and len(result['checkout_quotes'])<100: quote_keys.add(key);result['checkout_quotes'].append(q)

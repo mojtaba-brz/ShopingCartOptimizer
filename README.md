@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.18.0
+# سبدچین — Sabadchin 0.19.0
 
 **Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
 
@@ -127,7 +127,7 @@ The interface uses bundled Amiri 1.003 (regular and bold) in all themes, map con
 
 The [GitHub Releases page](https://github.com/mojtaba-brz/ShopingCartOptimizer/releases) provides a direct APK, a portable Windows x64 EXE and SHA256SUMS. The EXE includes Python and the Playwright driver; it uses installed Chrome or Edge for background retrieval. Launch it to open the local web interface, and close its console window to exit. It also accepts `--check-browser` for a local browser-driver diagnostic. Windows downloads are not publisher-code-signed, and the APK is a test-signed build.
 
-The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.18.0 APK in the workflow; update them alongside the app version for a later release.
+The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.19.0 APK in the workflow; update them alongside the app version for a later release.
 
 Windows initializes at most two retailer pages at once, then allows warmed pages to search up to the adaptive limit. An auxiliary startup failure retires that slot and preserves the healthy worker queue. The first page retries initialization once; a persistent failure reports its actual cause. The EXE workflow also exercises the real background search through the local HTTP service at a public test landmark; live network availability is reported separately from deterministic checks.
 
@@ -143,6 +143,8 @@ The initial proposal uses up to two shops per department. All shop checkboxes st
 
 Empty catalogue pages wait for pending responses and re-enter the search route once within the existing time budget. Human verification and address changes stop the task. A retry-unmatched-items action preserves valid results and manual choices, while refreshing missing, expired or address-invalid data. Named shopping lists (names, goods, quantities and departments) save/load inside app storage on desktop and Android; file backup remains optional in Settings. Product review cards share rows when space allows. Light/night mode works with all three themes and persists, including app-owned Android address dialogs and progress.
 
-### 0.18.0 pricing and fees
+### 0.19.0 pricing and fees
 
 For fixed goods, amazing slots maximize payable savings after observed fees and shipping thresholds; product/store selection retains normalized unit-price ranking. Public Jet catalogue delivery prices are integer rials. Partial metadata preserves prior known fields; explicit unknown and membership-dependent shipping do not become zero. The current `/v4/shop` header is inspected automatically. Cart-only charges remain unverified until an exactly matching observed basket provides them.
+
+Storefront fee inspections are reused for seven days at the same delivery coordinates and mode. A scan that found no fee evidence is retried after one hour; unknown amounts stay unknown. Product searches and promotion/stock checks still run normally.
