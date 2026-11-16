@@ -39,7 +39,7 @@ with tempfile.TemporaryDirectory() as folder:
         else:
             raise RuntimeError('EXE did not start its local server')
         web = root / 'cartoptimizer/web'
-        paths = {'/', '/Amiri-Regular.ttf', '/Amiri-Bold.ttf', '/Amiri-OFL.txt'}
+        paths = {'/', '/Amiri-Regular.ttf', '/Amiri-Bold.ttf', '/Amiri-OFL.txt', '/Vazirmatn.woff2', '/Inter.woff2', '/Vazirmatn-OFL.txt', '/Inter-OFL.txt', '/languages.json'}
         paths.update(re.findall(r'(?:src|href)="(/[^" ]+)"', (web / 'index.html').read_text(encoding='utf-8')))
         for path in sorted(paths):
             with urlopen(base + path, timeout=10) as reply:

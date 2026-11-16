@@ -20,7 +20,7 @@ public class PersianAppearanceTest {
         assertTrue(done.await(10,TimeUnit.SECONDS));return result.get();
     }
     private void ready(ActivityScenario<MainActivity> scenario)throws Exception{
-        for(int i=0;i<100;i++){if("true".equals(eval(scenario,"Boolean(window.CartwiseAppearance && window.CartwiseCheckout)")))return;Thread.sleep(100);}fail("Persian UI unavailable");
+        for(int i=0;i<100;i++){if("true".equals(eval(scenario,"Boolean(window.CartwiseAppearance && window.CartwiseCheckout && document.getElementById('app-language'))")))return;Thread.sleep(100);}fail("Persian UI unavailable");
     }
     private void rendered(ActivityScenario<MainActivity> scenario)throws Exception{
         CountDownLatch next=new CountDownLatch(1);
@@ -37,7 +37,7 @@ public class PersianAppearanceTest {
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم‌چرب ۱ لیتر',quantity:2},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];dirty.clear();save();showTab('list');true");
             for(String theme:new String[]{"simple","modern","traditional"}){
                 assertEquals("true",eval(scenario,"CartwiseAppearance.setTheme('"+theme+"');document.documentElement.dataset.theme==='"+theme+"' && document.documentElement.scrollWidth<=innerWidth"));
-                String green=theme.equals("simple")?"#286349":theme.equals("modern")?"#086c78":"#164c78";
+                String green=theme.equals("simple")?"#286349":theme.equals("modern")?"#165dce":"#164c78";
                 assertEquals("true",eval(scenario,"getComputedStyle(document.documentElement).getPropertyValue('--green').trim()==='"+green+"'"));
                 rendered(scenario);progress(theme+" checked");
                 // Android 16 headless emulator image capture can terminate the emulator.
@@ -47,6 +47,15 @@ public class PersianAppearanceTest {
                 assertNotNull(bitmap);AtomicReference<java.io.File> directory=new AtomicReference<>();scenario.onActivity(a->directory.set(new java.io.File(a.getFilesDir(),"store-screenshots")));
                 directory.get().mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(directory.get(),theme+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
                 }
+            }
+            // Exercise the real WebView/native bridge and saved locale, including both Kurdish scripts.
+            for(String language:new String[]{"en","ckb","ku","az-Arab","fa"}){
+                eval(scenario,"CartwiseI18n.setLanguage('"+language+"');true");
+                for(int i=0;i<50;i++){if(("\""+language+"\"").equals(eval(scenario,"CartwiseAndroid.savedLanguage()")))break;Thread.sleep(100);}
+                assertEquals("\""+language+"\"",eval(scenario,"CartwiseAndroid.savedLanguage()"));
+                final boolean rtl=!(language.equals("en")||language.equals("ku"));
+                scenario.onActivity(a->{assertEquals(language,AppLanguage.get(a));assertEquals(rtl?android.view.View.LAYOUT_DIRECTION_RTL:android.view.View.LAYOUT_DIRECTION_LTR,AppLanguage.direction(a));assertFalse(AppLanguage.text(a,"توقف جست‌وجو").isEmpty());});
+                assertEquals("true",eval(scenario,"document.documentElement.dir==='"+(rtl?"rtl":"ltr")+"' && document.documentElement.scrollWidth<=innerWidth"));
             }
             progress("recreating");scenario.recreate();ready(scenario);assertEquals("true",eval(scenario,"document.documentElement.dataset.theme==='traditional' && document.querySelectorAll('.item-row').length===2"));
             eval(scenario,"showTab('settings');true");assertEquals("true",eval(scenario,"!document.getElementById('tab-settings').hidden && document.querySelectorAll('[name=theme]').length===3"));

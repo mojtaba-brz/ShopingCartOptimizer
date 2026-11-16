@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppLanguage.apply(this);
         RetailerSession.initialize(this);
         preflightStarted=savedInstanceState!=null&&savedInstanceState.getBoolean("delivery-preflight-started",false);
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::handleBack);
@@ -47,7 +48,7 @@ public final class MainActivity extends Activity {
             for (String name : new String[]{"qwen2.5-1.5b-int8.litertlm", "qwen3-1.7b-int4.litertlm", "qwen3-0.6b-mixed-int4.litertlm", "offline-model.download"})
                 new java.io.File(getFilesDir(), name).delete();
         });
-        FrameLayout frame = new FrameLayout(this);frame.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+        FrameLayout frame = new FrameLayout(this);frame.setLayoutDirection(AppLanguage.direction(this));
         frame.setBackgroundColor(Color.rgb(245, 246, 241));
         webView = new WebView(this);
         frame.addView(webView, new FrameLayout.LayoutParams(-1, -1));
@@ -99,8 +100,8 @@ public final class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onJsConfirm(WebView view, String url, String text, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this).setMessage(text)
-                    .setPositiveButton("ادامه", (d, w) -> result.confirm())
-                    .setNegativeButton("انصراف", (d, w) -> result.cancel())
+                    .setPositiveButton(AppLanguage.text(MainActivity.this,"ادامه"), (d, w) -> result.confirm())
+                    .setNegativeButton(AppLanguage.text(MainActivity.this,"انصراف"), (d, w) -> result.cancel())
                     .setOnCancelListener(d -> result.cancel()).show();
                 return true;
             }
@@ -114,11 +115,13 @@ public final class MainActivity extends Activity {
     }
     private void openBrowser(Uri uri) {
         try { startActivity(new Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE)); }
-        catch (ActivityNotFoundException error) { toast("برای بازکردن پیوندها یک مرورگر نصب کنید."); }
+        catch (ActivityNotFoundException error) { toast(AppLanguage.text(MainActivity.this,"برای بازکردن پیوندها یک مرورگر نصب کنید.")); }
     }
     private void toast(String text) { runOnUiThread(() -> Toast.makeText(this, text, Toast.LENGTH_LONG).show()); }
 
     private final class Bridge {
+        @JavascriptInterface public String savedLanguage(){return AppLanguage.get(MainActivity.this);}
+        @JavascriptInterface public void setLanguage(String language){if(!AppLanguage.valid(language))return;getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("language",language).apply();runOnUiThread(()->AppLanguage.apply(MainActivity.this));}
         @JavascriptInterface public void setAppearance(String theme) {
             if("simple".equals(theme)||"modern".equals(theme)||"traditional".equals(theme))getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("theme",theme).apply();
         }
@@ -130,14 +133,14 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class).putExtra("checkout_only",true),CHECKOUT_DIGIKALA));
         }
         @JavascriptInterface public void clearPrivateData() {
-            runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle("پاک‌کردن اطلاعات این گوشی")
-                .setMessage("لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالاجت از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.")
-                .setPositiveButton("پاک شود",(dialog,which)->{
+            runOnUiThread(()->new AlertDialog.Builder(MainActivity.this).setTitle(AppLanguage.text(MainActivity.this,"پاک‌کردن اطلاعات این گوشی"))
+                .setMessage(AppLanguage.text(MainActivity.this,"لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالاجت از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند."))
+                .setPositiveButton(AppLanguage.text(MainActivity.this,"پاک شود"),(dialog,which)->{
                     android.webkit.GeolocationPermissions.getInstance().clearAll();ProductImages.clear();webView.clearCache(true);
                     SearchResult.clear(MainActivity.this);getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().clear().apply();
                     RetailerSession.discard();new DeliveryChoice(MainActivity.this).clear();
                     android.webkit.CookieManager.getInstance().removeAllCookies(ok->{android.webkit.WebStorage.getInstance().deleteAllData();webView.evaluateJavascript("localStorage.clear();location.reload()",null);});
-                }).setNegativeButton("انصراف",null).show());
+                }).setNegativeButton(AppLanguage.text(MainActivity.this,"انصراف"),null).show());
         }
         @JavascriptInterface public void openDigikala(String itemId, String query, boolean locationOnly) {
             if (itemId == null || itemId.length() > 100 || query == null || query.length() > 300) return;
@@ -155,18 +158,18 @@ public final class MainActivity extends Activity {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json")
                     .addCategory(Intent.CATEGORY_OPENABLE);
                 try { startActivityForResult(intent, IMPORT_JSON); }
-                catch (ActivityNotFoundException error) { toast("انتخاب‌گر فایل در دسترس نیست."); }
+                catch (ActivityNotFoundException error) { toast(AppLanguage.text(MainActivity.this,"انتخاب‌گر فایل در دسترس نیست.")); }
             });
         }
         @JavascriptInterface public void saveJSON(String name, String content) {
-            if (content == null || content.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) { toast("حجم پشتیبان بیش از یک مگابایت است."); return; }
+            if (content == null || content.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) { toast(AppLanguage.text(MainActivity.this,"حجم پشتیبان بیش از یک مگابایت است.")); return; }
             final String filename = "cartoptimizer-plan.json".equals(name) ? name : "cartoptimizer-snapshot.json";
             runOnUiThread(() -> {
                 pendingExport = content;
                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json")
                     .addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE, filename);
                 try { startActivityForResult(intent, EXPORT_JSON); }
-                catch (ActivityNotFoundException error) { pendingExport = null; toast("انتخاب‌گر فایل در دسترس نیست."); }
+                catch (ActivityNotFoundException error) { pendingExport = null; toast(AppLanguage.text(MainActivity.this,"انتخاب‌گر فایل در دسترس نیست.")); }
             });
         }
     }
@@ -197,12 +200,12 @@ public final class MainActivity extends Activity {
         Uri uri = data.getData();
         if (requestCode == EXPORT_JSON) {
             String content = pendingExport; pendingExport = null;
-            if (content == null) { toast("دوباره پشتیبان بگیرید."); return; }
+            if (content == null) { toast(AppLanguage.text(MainActivity.this,"دوباره پشتیبان بگیرید.")); return; }
             files.execute(() -> {
                 try (OutputStream out = getContentResolver().openOutputStream(uri, "wt")) {
                     if (out == null) throw new IllegalStateException();
-                    out.write(content.getBytes(StandardCharsets.UTF_8)); toast("فایل پشتیبان ذخیره شد.");
-                } catch (Exception error) { toast("ذخیره پشتیبان انجام نشد؛ پوشه دیگری را انتخاب کنید."); }
+                    out.write(content.getBytes(StandardCharsets.UTF_8)); toast(AppLanguage.text(MainActivity.this,"فایل پشتیبان ذخیره شد."));
+                } catch (Exception error) { toast(AppLanguage.text(MainActivity.this,"ذخیره پشتیبان انجام نشد؛ پوشه دیگری را انتخاب کنید.")); }
             });
         } else if (requestCode == IMPORT_JSON) {
             files.execute(() -> {
@@ -216,7 +219,7 @@ public final class MainActivity extends Activity {
                     String json = out.toString(StandardCharsets.UTF_8.name());
                     String script = "window.dispatchEvent(new CustomEvent('cartwise:import',{detail:" + JSONObject.quote(json) + "}));";
                     runOnUiThread(() -> { if (!isFinishing() && !isDestroyed() && webView!=null) webView.evaluateJavascript(script, null); });
-                } catch (Exception error) { toast("فایل خوانده نشد؛ یک فایل پشتیبان کوچک‌تر از یک مگابایت انتخاب کنید."); }
+                } catch (Exception error) { toast(AppLanguage.text(MainActivity.this,"فایل خوانده نشد؛ یک فایل پشتیبان کوچک‌تر از یک مگابایت انتخاب کنید.")); }
             });
         }
     }
@@ -225,8 +228,8 @@ public final class MainActivity extends Activity {
         webView.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return 'dialog';}return document.querySelector('.nav.active').dataset.tab})()", value -> {
             if("\"dialog\"".equals(value))return;
             if (!"\"list\"".equals(value)) webView.evaluateJavascript("document.querySelector('[data-tab=list]').click()", null);
-            else new AlertDialog.Builder(this).setMessage("از سبدچین خارج می‌شوید؟ لیست خرید روی این گوشی ذخیره می‌ماند.")
-                .setPositiveButton("خروج", (d, w) -> finish()).setNegativeButton("ماندن", null).show();
+            else new AlertDialog.Builder(this).setMessage(AppLanguage.text(MainActivity.this,"از سبدچین خارج می‌شوید؟ لیست خرید روی این گوشی ذخیره می‌ماند."))
+                .setPositiveButton(AppLanguage.text(MainActivity.this,"خروج"), (d, w) -> finish()).setNegativeButton(AppLanguage.text(MainActivity.this,"ماندن"), null).show();
         });
     }
     @Override public void onBackPressed() {handleBack();}
