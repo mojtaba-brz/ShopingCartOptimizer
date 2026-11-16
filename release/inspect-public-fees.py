@@ -4,14 +4,16 @@ from urllib.parse import urlsplit
 from cartoptimizer.desktop import browse
 samples=[];texts=set();details=[];opened=False;seen=set()
 async def setup(page):
- async def inspect(shop_id):
+ async def inspect(shop_id,shop_title):
   try:
    info=await page.context.new_page();info.on('response',response)
    await info.goto('https://www.digikalajet.com/user/add-address',wait_until='domcontentloaded');await info.locator('#root input[placeholder]').first.wait_for(timeout=20000)
    script=Path('cartoptimizer/web/jet-navigation.js').read_text()
-   await info.evaluate('(s)=>{const nav='+script+';return nav(s)}','https://www.digikalajet.com/search/shop?q=%D8%B4%DB%8C%D8%B1&shopId='+str(shop_id))
+   await info.evaluate('(s)=>{const nav='+script+';return nav(s)}','https://www.digikalajet.com/search/v2/result?q=%D8%B4%DB%8C%D8%B1')
    await info.wait_for_timeout(5000)
-   details.append({'path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:3000],'links':await info.locator('a[href]').evaluate_all("es=>es.map(e=>({text:e.innerText,url:e.getAttribute('href')})).filter(x=>x.url.includes('shop')).slice(0,15)"),'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>e.innerText).filter(t=>t&&t.length<100).slice(0,20)")})
+   clicked=await info.evaluate("name=>{const n=s=>s.replace(/[\\u200c\\s]+/g,' ').trim();const e=[...document.querySelectorAll('p.truncate')].find(e=>n(e.innerText)===n(name));if(e){e.click();return true;}return false;}",shop_title)
+   await info.wait_for_timeout(4000)
+   details.append({'clicked_header':clicked,'path':urlsplit(info.url).path,'text':(await info.locator('body').inner_text())[:3000],'links':await info.locator('a[href]').evaluate_all("es=>es.map(e=>({text:e.innerText,url:e.getAttribute('href')})).filter(x=>x.url.includes('shop')).slice(0,15)"),'fee_texts':await info.locator('p,span,div').evaluate_all("es=>es.map(e=>e.innerText?.trim()).filter(t=>t&&t.length<160&&/ارسال|کارمزد|خدمات|بسته|حداقل/.test(t)).slice(0,60)"),'buttons':await info.locator('button').evaluate_all("es=>es.map(e=>e.innerText).filter(t=>t&&t.length<100).slice(0,20)")})
    await info.close()
   except Exception as e:details.append({'error':type(e).__name__})
  async def response(reply):
@@ -27,7 +29,7 @@ async def setup(page):
     if x.get('id') is not None and isinstance(x.get('title'),str) and 'delivery' in x and len(samples)<20 and (str(x['id']),u.path) not in seen:
      seen.add((str(x['id']),u.path))
      if not opened:
-      opened=True;asyncio.create_task(inspect(x['id']))
+      opened=True;asyncio.create_task(inspect(x['id'],x['title']))
      keys=[k for k in x if any(w in k.lower() for w in ('fee','delivery','minimum','packag','service','order','minimum'))]
      samples.append({'path':u.path,'shop':x['title'],'keys':list(x),'business':x.get('business'),'activity':x.get('activity_type'),'fields':{k:x[k] for k in keys}})
     for k,v in x.items():
