@@ -19,17 +19,20 @@
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const check=()=>{if(state.cancelled)throw Error('cancelled');if(Date.now()>deadline)throw Error('budget');};
   const scroll=top=>{let more=false;for(const e of [document.scrollingElement,...document.querySelectorAll('*')])if(e&&e.clientHeight>200&&e.scrollHeight>e.clientHeight+200&&(e===document.scrollingElement||['auto','scroll'].includes(getComputedStyle(e).overflowY))){e.scrollTop=top?0:e.scrollTop+Math.max(400,e.clientHeight*.8);more=more||e.scrollTop+e.clientHeight<e.scrollHeight-20;}return more;};
-  const collect=()=>{
-   check();
+  const verifyLocation=()=>{
    const pref=a.preference('read',{}),xy=String(pref.coordinates||'').split('|').map(Number),expected=String(options.coordinates||'').split('|').map(Number);
    if(!pref.configured||xy.length!==2||expected.length!==2||xy.some((x,i)=>!Number.isFinite(x)||Math.abs(x-expected[i])>1e-7))throw Error('location');
+  };
+  const collect=()=>{
+   check();
+   verifyLocation();
    const d=a.reader({store_name:options.store_name||'',expected_shop_id:options.shop_id||'',store_type:options.store_type||options.department||'unknown',department:options.department});
    if(d.error&&/verify you are human|checking your browser|unusual traffic|captcha/i.test(document.body.innerText.slice(0,2000)))throw Error('challenge');
    for(const p of d.products||[]){const key=JSON.stringify([p.title,p.store_name,p.store_id,p.regular_price,p.promo_price]);if(rows.size<1000||rows.has(key))rows.set(key,p);}
    for(const s of d.shops||[])if(s.name)shops.set(s.name,s);
-   for(const q of d.checkout_quotes||[]){const key=JSON.stringify([q.store_name,q.store_id,q.store_type,q.fields]);if(quotes.length<100&&!quotes.some(x=>x.key===key))quotes.push({key,quote:q});}
-   const q=a.checkout();if(q&&options.kind==='store'&&location.pathname==='/search/shop'&&new URLSearchParams(location.search).get('shopId')===options.shop_id&&q.page_kind!=='cart'){q.page_kind='store';q.store_name=options.store_name;q.store_id=options.shop_id;q.store_type=d.products?.find(p=>p.store_type&&p.store_type!=='unknown')?.store_type||options.store_type||options.department||'unknown';Object.assign(q.fields,a.fees?.(document)||{});}
-   if(q&&Object.values(q.fields||{}).some(f=>f&&Number.isSafeInteger(f.value))&&quotes.length<100){const key=JSON.stringify([q.page_kind,q.fields,q.store_name,q.store_id,q.store_type]);if(!quotes.some(x=>x.key===key))quotes.push({key,quote:q});}
+   for(const q of d.checkout_quotes||[]){const key=JSON.stringify([q.store_name,q.store_id,q.store_type,q.fields,q.unknown_fields]);if(quotes.length<100&&!quotes.some(x=>x.key===key))quotes.push({key,quote:q});}
+   const q=a.checkout();if(q&&options.kind==='store'&&location.pathname==='/search/shop'&&new URLSearchParams(location.search).get('shopId')===options.shop_id&&q.page_kind!=='cart'){q.page_kind='store';q.store_name=options.store_name;q.store_id=options.shop_id;q.store_type=d.products?.find(p=>p.store_type&&p.store_type!=='unknown')?.store_type||options.store_type||options.department||'unknown';const meta=root.CartwiseCatalog?.find(options.shop_id,options.store_name)||{};Object.assign(q.fields,a.fees?.(document)||{},meta.fee_fields||{});q.unknown_fields=meta.unknown_fee_fields||[];for(const key of q.unknown_fields)delete q.fields[key];if(meta.fee_fields)q.source='digikala-public-store';}
+   if(q&&(Object.values(q.fields||{}).some(f=>f&&Number.isSafeInteger(f.value))||q.unknown_fields?.length)&&quotes.length<100){const key=JSON.stringify([q.page_kind,q.fields,q.store_name,q.store_id,q.store_type,q.unknown_fields]);if(!quotes.some(x=>x.key===key))quotes.push({key,quote:q});}
 
    state.products=rows.size;state.stores=shops.size;state.detail=options.store_name||'شناسایی کالاها و فروشگاه‌ها';
    return d;
@@ -70,7 +73,18 @@
      await navigate(new URL('/user/add-address',options.url).href);await navigate(options.url);await scan();
      if(rows.size)warnings.splice(0,firstWarnings);
     }
-    if(options.kind==='store'){const links=[...document.querySelectorAll('a[href]')].map(e=>{try{return new URL(e.href);}catch{return null;}});const info=links.find(u=>u&&u.origin===location.origin&&u.pathname==='/shop'&&u.searchParams.get('shopId')===options.shop_id);if(info){await navigate(info.href);const fields=a.fees(document);if(Object.keys(fields).length)quotes.push({quote:{source:'digikala-visible-checkout',page_kind:'store',page_url:location.origin+location.pathname,captured_at:new Date().toISOString(),store_name:options.store_name,store_id:options.shop_id,store_type:options.store_type||options.department,fields,notices:[]}});}}
+    if(options.kind==='store'&&deadline-Date.now()>1500){
+     state.detail='بررسی هزینه‌های فروشگاه';
+     const quoteFees=()=>{
+      check();verifyLocation();if(/verify you are human|checking your browser|unusual traffic|captcha/i.test(document.body.innerText.slice(0,2000)))throw Error('challenge');
+      const url=new URL(location.href);if(url.searchParams.get('shopId')!==options.shop_id)return;
+      const meta=root.CartwiseCatalog?.find(options.shop_id,options.store_name)||{},fields={...(a.fees(document)||{}),...meta.fee_fields},unknown=meta.unknown_fee_fields||[];
+      for(const key of unknown)delete fields[key];
+      if(quotes.length<100&&(Object.keys(fields).length||unknown.length))quotes.push({quote:{source:meta.fee_fields?'digikala-public-store':'digikala-visible-checkout',page_kind:'store',page_url:url.origin+url.pathname,captured_at:new Date().toISOString(),store_name:options.store_name,store_id:options.shop_id,store_type:meta.store_type||options.store_type||options.department,fields,unknown_fields:unknown,notices:[]}});
+     };
+     await navigate(new URL('/v4/shop?shopId='+encodeURIComponent(options.shop_id),options.url).href);quoteFees();
+
+    }
 
     if(options.kind!=='store')for(const [name,meta] of shops){
      if(tasks.length>=(options.max_stores||40)){warnings.push('سقف بررسی فروشگاه‌ها رسید.');break;}

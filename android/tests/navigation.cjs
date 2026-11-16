@@ -5,4 +5,5 @@ const nav=vm.runInNewContext(fs.readFileSync('cartoptimizer/web/jet-navigation.j
 assert.equal(nav('https://www.digikalajet.com/search/v2/result?q=milk'),true);assert.equal(history.state.idx,4);assert.equal(events.length,1);assert.equal(events[0].state,history.state);
 assert.equal(nav('https://www.digikalajet.com/user/add-address?MID=add-address-map'),false);assert.equal(nav('https://evil.example/search/v2/result'),false);assert.equal(events.length,1);
 assert.equal(nav('https://www.digikalajet.com/checkout/cart/'),true);assert.equal(history.state.idx,5);
+assert.equal(nav('https://www.digikalajet.com/v4/shop?shopId=a'),true);assert.equal(history.state.idx,6);
 console.log('Shared routes retain router history, allow read-only basket navigation and reject synthetic map modals/other origins');

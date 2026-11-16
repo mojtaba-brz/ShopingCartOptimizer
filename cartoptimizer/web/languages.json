@@ -2480,6 +2480,24 @@
       "ckb": "پشتیوانەی فایل (ئارەزوومەندانە)",
       "ku": "Kopiya pelê (vebijarkî)",
       "az-Arab": "فایل یئدکلمه‌سی (ایسته‌یه باغلی)"
+    },
+    "بررسی هزینه‌های فروشگاه": {
+      "en": "Checking shop fees",
+      "ckb": "پشکنینی تێچووی فرۆشگا",
+      "ku": "Mesrefên firoşgehê tên kontrolkirin",
+      "az-Arab": "ماغازانین خرجلری یوخلانیر"
+    },
+    "سایر هزینه‌ها": {
+      "en": "Other charges",
+      "ckb": "تێچووەکانی تر",
+      "ku": "Mesrefên din",
+      "az-Arab": "باشقا خرجلر"
+    },
+    "تأیید نشده": {
+      "en": "Not verified",
+      "ckb": "پشتڕاست نەکراوەتەوە",
+      "ku": "Nehatiye piştrastkirin",
+      "az-Arab": "تصدیق اولونماییب"
     }
   }
 }

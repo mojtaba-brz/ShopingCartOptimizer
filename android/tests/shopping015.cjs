@@ -38,7 +38,7 @@ function invariant(plan,items){assert.ok(plan);for(const i of items){const parts
  for(let seed=1;seed<=12;seed++){
   const qs=[1+seed%2,1,1],base=[80+seed,90+seed,100+seed],special=[10+seed,15+seed,20+seed],fees=seed%4*12,min=seed%3?0:55,free=seed%2?90:150;
   const units=qs.flatMap((q,i)=>Array(q).fill(i)),den=qs.map((q,i)=>base[i]*q-base[i]+special[i]);
-  const better=(a,b)=>!b||a.score<b.score-1e-9||Math.abs(a.score-b.score)<1e-9&&(a.total<b.total||a.total===b.total&&a.orders<b.orders);
+  const better=(a,b)=>!b||a.total<b.total||a.total===b.total&&(a.score<b.score-1e-9||Math.abs(a.score-b.score)<1e-9&&a.orders<b.orders);
   function price(bins){let best=null;const choices=[0,1,2].map(i=>[-1,...bins.map((b,k)=>b.includes(i)?k:-1).filter(k=>k>=0)]);
    for(const a of choices[0])for(const b of choices[1])for(const c of choices[2]){const promos=[a,b,c],slots=bins.map((_,k)=>promos.filter(x=>x===k).length);if(slots.some(n=>n>2))continue;let total=0,score=0,valid=true;
     bins.forEach((bin,k)=>{const counts=[0,1,2].map(i=>bin.filter(x=>x===i).length),costs=counts.map((n,i)=>n*base[i]-(promos[i]===k?base[i]-special[i]:0)),subtotal=costs.reduce((n,v)=>n+v,0);if(subtotal<min)valid=false;total+=subtotal+(subtotal>=free?0:fees);score+=costs.reduce((n,v,i)=>n+v/den[i],0);});const v={total,score,orders:bins.length};if(valid&&better(v,best))best=v;

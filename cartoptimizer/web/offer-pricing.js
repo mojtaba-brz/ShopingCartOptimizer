@@ -13,10 +13,10 @@
  }
  function limit(type){return type==='supermarket'?2:1;}
  function estimated(p,q){const t=tiers(p),n=t.amazing===null?0:Math.min(q,1);return q*t.base-n*Math.max(0,t.base-t.amazing);}
- function variants(picks,type,thresholds=false,weights=null){
+ function variants(picks,type,thresholds=false){
   const cap=limit(type),base=picks.map(x=>tiers(x.product)),units=[];
   base.forEach((t,i)=>{if(t.amazing!==null&&picks[i].quantity>0)units.push({i,n:0,key:identity(picks[i].product),saving:t.base-t.amazing});});
-  units.sort((a,b)=>b.saving*(weights?.[b.i]??1)-a.saving*(weights?.[a.i]??1)||b.saving-a.saving||a.i-b.i||a.n-b.n);
+  units.sort((a,b)=>b.saving-a.saving||a.i-b.i);
   const unique=new Set(),greedy=units.filter(x=>{if(unique.has(x.key))return false;unique.add(x.key);return true;}).slice(0,cap);
   const combos=thresholds?[[],...units.map(x=>[x])]:[greedy];
   if(thresholds&&cap===2)for(let i=0;i<units.length;i++)for(let j=i+1;j<units.length;j++)if(units[i].key!==units[j].key)combos.push([units[i],units[j]]);

@@ -6,7 +6,7 @@
   const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
   const text=e=>(e?.innerText||'').trim().replace(/[\u200c\s]+/g,' ');
   const digits=s=>String(s).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));
-  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,packaging_fee:/^(?:هزینه\s*)?بسته بندی(?:\s|:|$)/,processing_fee:/^هزینه پردازش(?:\s|:|$)/,tax_fee:/^مالیات(?:\s|:|$)/,service_fee:/^(?:هزینه\s*خدمات|کارمزد)(?:\s|:|\(|$)/,
+  const rules={delivery_fee:/^هزینه\s*(?:ارسال|پیک)(?:\s|:|\(|$)/,packaging_fee:/^(?:هزینه\s*)?بسته بندی(?:\s|:|$)/,processing_fee:/^هزینه (?:پردازش|آماده سازی|توسعه خدمات)(?:\s|:|$)/,tax_fee:/^مالیات(?:\s|:|$)/,service_fee:/^(?:هزینه\s*خدمات|کارمزد)(?:\s|:|\(|$)/,
     minimum_order:/^حداقل\s*(?:مبلغ\s*)?(?:خرید|سفارش)(?:\s|:|$)/,free_delivery_over:/^ارسال رایگان (?:برای|با|از|در) (?:خرید|سفارش|مبلغ)/,
     subtotal:/^(?:قیمت کالاها|جمع کالاها|مبلغ کالاها)(?:\s|:|\(|$)/,total:/^(?:مبلغ قابل پرداخت|جمع کل|جمع سبد خرید)(?:\s|:|\(|$)/};
   function pricedText(node,s){
@@ -23,11 +23,13 @@
     const v=Number(xs[0][1].replace(/[,٬]/g,''))*(xs[0][2]==='تومان'?10:1);
     return Number.isSafeInteger(v)&&v>=0&&v<=1e13?v:null;
   }
+  const productTitles=[...document.querySelectorAll('img[alt]')].map(e=>String(e.alt||'').replace(/[\u200c\s]+/g,' ').trim()).filter(s=>s.length>=4);
   const fields={},notices=[],seen=new Set();for(const key of Object.keys(rules))fields[key]=null;
   const values={};for(const key of Object.keys(rules))values[key]=new Map();
   for(const node of document.querySelectorAll('p,span,div,li,section')){
     if(!visible(node))continue;let s=text(node);if(!s||s.length>180)continue;
     for(const [key,re] of Object.entries(rules))if(re.test(s)){
+      if(productTitles.some(title=>s.startsWith(title)))continue;
       let evidence=pricedText(node,s),value=monetary(evidence);
       if(value===null&&node.parentElement&&visible(node.parentElement)){
         const parent=text(node.parentElement);
