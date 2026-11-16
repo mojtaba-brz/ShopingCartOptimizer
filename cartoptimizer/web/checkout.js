@@ -14,12 +14,12 @@
       if(!Object.keys(fields).length&&!notices.length&&!unknown.length)continue;
       const cartItems=(Array.isArray(q.cart_items)?q.cart_items:[]).filter(i=>i&&typeof i.title==='string'&&i.title.length<=300&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=50).slice(0,1000).map(i=>({title:i.title,quantity:i.quantity,store_name:typeof i.store_name==='string'?i.store_name.trim().slice(0,160):'',store_id:typeof i.store_id==='string'?i.store_id.slice(0,200):'',store_type:typeof i.store_type==='string'?i.store_type:''}));
       const signature=JSON.stringify([q.page_kind,url.pathname,q.store_id,q.store_name,q.store_type,fields,unknown,notices,cartItems]);if(seen.has(signature))continue;seen.add(signature);
-      quotes.push({source:q.source,store_type:typeof q.store_type==='string'?q.store_type:'',store_name:typeof q.store_name==='string'?q.store_name.trim().slice(0,160):'',store_id:typeof q.store_id==='string'?q.store_id.slice(0,200):'',page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,unknown_fields:unknown,notices,cart_items:cartItems,reported_units:q.reported_units,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length&&Number.isInteger(q.reported_units)&&q.reported_units===cartItems.reduce((n,i)=>n+i.quantity,0)});
+      quotes.push({...((q.delivery_verified===true||q.delivery_verified===false)?{delivery_verified:q.delivery_verified}:{}),source:q.source,store_type:typeof q.store_type==='string'?q.store_type:'',store_name:typeof q.store_name==='string'?q.store_name.trim().slice(0,160):'',store_id:typeof q.store_id==='string'?q.store_id.slice(0,200):'',page_kind:q.page_kind,page_url:url.origin+url.pathname,captured_at:q.captured_at,fields,unknown_fields:unknown,notices,cart_items:cartItems,reported_units:q.reported_units,items_complete:q.items_complete===true&&cartItems.length===q.cart_items?.length&&Number.isInteger(q.reported_units)&&q.reported_units===cartItems.reduce((n,i)=>n+i.quantity,0)});
     }
     return quotes.slice(-300);
   }
   function reconcile(quote,proposed){
-    if(quote?.page_kind!=='cart'||!quote.items_complete||!quote.fields?.total||!proposed?.length)return {verified:false};
+    if(quote?.delivery_verified===false||quote?.page_kind!=='cart'||!quote.items_complete||!quote.fields?.total||!proposed?.length)return {verified:false};
     if(quote.fields.subtotal&&proposed.every(p=>Number.isSafeInteger(p.subtotal))&&quote.fields.subtotal.value!==proposed.reduce((n,p)=>n+p.subtotal,0))return {verified:false};
     const norm=s=>String(s).normalize('NFKC').replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[\u200c\s]+/g,' ').trim();
     const combined=[...quote.cart_items,...proposed],hasStores=combined.some(x=>x.store_name||x.store_id);

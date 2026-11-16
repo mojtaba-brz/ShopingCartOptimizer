@@ -66,6 +66,7 @@ tasks.register('syncWebAssets', Copy) {
             .replace('href="/fonts.css"', 'href="/assets/fonts.css"')
             .replace('href="/design.css"', 'href="/assets/design.css"')
             .replace('src="/design.js"', 'src="/assets/design.js"')
+            .replace('src="/account-ui.js"', 'src="/assets/account-ui.js"')
             .replace('src="/i18n.js"', 'src="/assets/i18n.js"') }
     }
     from('../../cartoptimizer/web') { include '*.ttf', '*.woff2', '*-OFL.txt', 'languages.json' }
