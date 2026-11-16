@@ -172,6 +172,9 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
+          # Match Chromium's workaround for the 37.2.13 EGL context teardown crash.
+          # https://chromium.googlesource.com/chromium/src/tools/android/+/53a24f44b2957a8937bb63f3d150081c73df0532
+          emulator-build: '15917651'
           api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64

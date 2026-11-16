@@ -46,7 +46,7 @@ public class ParallelSearchTest {
             assertEquals("Cached inspections do not navigate to the storefront",cached?0:2,headerReads.get());
             java.util.Map<String,Long> deliveryFees=new java.util.HashMap<>();
             for(int i=0;i<feeQuotes.get().length();i++){JSONObject quote=feeQuotes.get().getJSONObject(i),field=quote.getJSONObject("fields").optJSONObject("delivery_fee");if(field!=null)deliveryFees.put(quote.getString("store_id"),field.getLong("value"));}
-            assertEquals("Current storefront shipping in rials",Long.valueOf(404000),deliveryFees.get("a"));assertEquals(Long.valueOf(429500),deliveryFees.get("b"));
+            if(!cached){assertEquals("Current storefront shipping in rials",Long.valueOf(404000),deliveryFees.get("a"));assertEquals(Long.valueOf(429500),deliveryFees.get("b"));}else assertEquals("Cached observations do not acquire a new inspection timestamp",0,finalBudget.get().getJSONArray("fee_checks").length());
             scenario.onActivity(a->assertEquals("Worker views removed after completion",1,frame.get().getChildCount()));
         }finally{InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{if(pool.get()!=null)pool.get().stop();RetailerSession.discard();});}
     }
