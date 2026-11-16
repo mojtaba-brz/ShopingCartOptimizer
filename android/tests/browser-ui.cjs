@@ -54,11 +54,11 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  const capture=await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-checkout.js','utf8'));
  assert.equal(capture.fields.delivery_fee?.value,250000,JSON.stringify(capture));assert.equal(capture.cart_items[0].quantity,2);assert.equal(capture.cart_items[0].store_name,'بهار');assert.equal(capture.items_complete,true);
  html=`<div id="root"><div data-store-name="بهار" data-store-id="s1"><img src="${image_url}" alt="شیر کم چرب ۱ لیتر" width="60" height="60"><p>شگفت‌انگیز</p><div><p>۹۰٬۰۰۰</p><img src="/supermarket/i/toman.svg"></div><p class="line-through">۱۲۰٬۰۰۰</p><button data-cro-id="add-one-more-to-cart">+</button></div></div>`;
- await retailer.goto('https://www.digikala.com/supermarket/search/shop?q=milk');
+ await retailer.goto('https://www.digikala.com/supermarket/search/shop?q=milk',{waitUntil:'domcontentloaded'});
  const p=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products[0];
  assert.ok(p,'Visible product not captured');assert.equal(p.store_name,'بهار');assert.equal(p.image_url,image_url);assert.equal(p.amazing,true);assert.equal(p.regular_price,1200000);assert.equal(p.promo_price,900000);
  html='<div id="root">'+['', 'بهار'].map(name=>`<div ${name?'data-store-name="'+name+'"':''}><img alt="نان تست" width="60" height="60"><div><p>100</p><img src="/supermarket/i/toman.svg"></div><button data-cro-id="add-one-more-to-cart">+</button></div>`).join('')+'</div>';
- await retailer.reload();const names=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products.map(p=>p.store_name);assert.deepEqual(names,['','بهار']);
+ await retailer.reload({waitUntil:'domcontentloaded'});const names=(await retailer.evaluate(fs.readFileSync('cartoptimizer/web/digikala-capture.js','utf8'))).products.map(p=>p.store_name);assert.deepEqual(names,['','بهار']);
  const replay=fs.readFileSync('cartoptimizer/web/digikala-location.js','utf8');
  html=`<div role="dialog"><button onclick="document.body.dataset.clicked='other'">آزادی</button><button onclick="document.body.dataset.clicked='saved'">ونک</button></div>`;
  await retailer.goto('https://www.digikala.com/supermarket/?MID=main-change-address');

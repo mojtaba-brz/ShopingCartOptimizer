@@ -2690,6 +2690,36 @@
       "ckb": "خوێندنەوەی تێچوو بەبێ گۆڕینی سەبەد…",
       "ku": "Lêçûn bê guherandina sepetê tên xwendin…",
       "az-Arab": "سبدی دَییشدیرمه‌دن خرجلر اوخونور…"
+    },
+    "ترکیب چند کالا برای یک درخواست": {
+      "en": "Several products for one request",
+      "ckb": "چەند بەرهەم بۆ یەک داواکاری",
+      "ku": "Çend berhem ji bo yek daxwazê",
+      "az-Arab": "بیر ایسته‌ک اوچون بیر نئچه محصول"
+    },
+    "میانگین کل ترکیب برای مقدار خرید شما": {
+      "en": "Average for the full combination you buy",
+      "ckb": "تێکڕای کۆی پێکهاتەکە بۆ بڕی کڕینی تۆ",
+      "ku": "Navîniya tevahiya berheman ji bo qasê kirîna te",
+      "az-Arab": "آلدیغینیز میقدار اوچون قارېشیغین اورتالاماسی"
+    },
+    "کاهش تعداد درخواستی": {
+      "en": "Decrease requested quantity",
+      "ckb": "کەمکردنەوەی بڕی داواکراو",
+      "ku": "Qasa daxwazkirî kêm bike",
+      "az-Arab": "ایسته‌نن میقداری آزالت"
+    },
+    "افزایش تعداد درخواستی": {
+      "en": "Increase requested quantity",
+      "ckb": "زیادکردنی بڕی داواکراو",
+      "ku": "Qasa daxwazkirî zêde bike",
+      "az-Arab": "ایسته‌نن میقداری آرتیر"
+    },
+    "درخواست": {
+      "en": "requested",
+      "ckb": "داواکراو",
+      "ku": "daxwazkirî",
+      "az-Arab": "ایسته‌نن"
     }
   }
 }

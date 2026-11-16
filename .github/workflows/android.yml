@@ -51,6 +51,7 @@ jobs:
           node android/tests/shopping013.cjs
           node android/tests/shopping015.cjs
           node android/tests/amazing-cost.cjs
+          node android/tests/mixed-products.cjs
           node android/tests/store-fees.cjs
           node android/tests/release018.cjs
           node android/tests/search-recovery.cjs
@@ -136,6 +137,7 @@ jobs:
           node android/tests/ui016.cjs
           node android/tests/workflow017.cjs
           node android/tests/account-ui.cjs
+          node android/tests/mixed-ui.cjs
           python -m tests.desktop_browser_check
           python -m tests.account_browser_check
       - name: Check public desktop catalogue access
