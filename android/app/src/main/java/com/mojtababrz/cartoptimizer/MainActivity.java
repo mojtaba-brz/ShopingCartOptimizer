@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppAppearance.apply(this);
         AppLanguage.apply(this);
         RetailerSession.initialize(this);
         preflightStarted=savedInstanceState!=null&&savedInstanceState.getBoolean("delivery-preflight-started",false);
@@ -49,8 +50,8 @@ public final class MainActivity extends Activity {
                 new java.io.File(getFilesDir(), name).delete();
         });
         FrameLayout frame = new FrameLayout(this);frame.setLayoutDirection(AppLanguage.direction(this));
-        frame.setBackgroundColor(Color.rgb(245, 246, 241));
-        webView = new WebView(this);
+        frame.setBackgroundColor(AppAppearance.paper(this));
+        webView = new WebView(this);webView.setBackgroundColor(AppAppearance.paper(this));
         frame.addView(webView, new FrameLayout.LayoutParams(-1, -1));
         setContentView(frame);
         if (Build.VERSION.SDK_INT >= 35) {
@@ -121,9 +122,11 @@ public final class MainActivity extends Activity {
 
     private final class Bridge {
         @JavascriptInterface public String savedLanguage(){return AppLanguage.get(MainActivity.this);}
+        @JavascriptInterface public void setNightMode(boolean night){getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putBoolean("night",night).apply();runOnUiThread(()->AppAppearance.apply(MainActivity.this));}
         @JavascriptInterface public void setLanguage(String language){if(!AppLanguage.valid(language))return;getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("language",language).apply();runOnUiThread(()->AppLanguage.apply(MainActivity.this));}
         @JavascriptInterface public void setAppearance(String theme) {
             if("simple".equals(theme)||"modern".equals(theme)||"traditional".equals(theme))getSharedPreferences("cartwise-preferences",MODE_PRIVATE).edit().putString("theme",theme).apply();
+            runOnUiThread(()->AppAppearance.apply(MainActivity.this));
         }
         @JavascriptInterface public String savedDelivery() {
             try {DeliveryChoice c=new DeliveryChoice(MainActivity.this);return new JSONObject().put("location",c.location()).put("coordinates",c.coordinates()).put("shipment_type",c.mode()).put("updated_at",c.updatedAt()).toString();}catch(Exception e){return "{}";}

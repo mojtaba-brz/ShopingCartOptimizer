@@ -1,4 +1,4 @@
-# سبدچین — Sabadchin 0.16.0
+# سبدچین — Sabadchin 0.17.0
 
 **Use `main` for the latest completed version.** Finished updates are merged here; working branches are temporary and fully merged inactive branches are removed automatically.
 
@@ -127,7 +127,7 @@ The interface uses bundled Amiri 1.003 (regular and bold) in all themes, map con
 
 The [GitHub Releases page](https://github.com/mojtaba-brz/ShopingCartOptimizer/releases) provides a direct APK, a portable Windows x64 EXE and SHA256SUMS. The EXE includes Python and the Playwright driver; it uses installed Chrome or Edge for background retrieval. Launch it to open the local web interface, and close its console window to exit. It also accepts `--check-browser` for a local browser-driver diagnostic. Windows downloads are not publisher-code-signed, and the APK is a test-signed build.
 
-The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.16.0 APK in the workflow; update them alongside the app version for a later release.
+The downloadable-release workflow builds and tests the real one-file EXE from an empty working directory before publishing. Publication runs only on `main`, first creating a draft, attaching both binaries/checksums, then publishing as a prerelease. Existing releases/assets are not overwritten. The Android run/hash are pinned to the verified 0.17.0 APK in the workflow; update them alongside the app version for a later release.
 
 Windows initializes at most two retailer pages at once, then allows warmed pages to search up to the adaptive limit. An auxiliary startup failure retires that slot and preserves the healthy worker queue. The first page retries initialization once; a persistent failure reports its actual cause. The EXE workflow also exercises the real background search through the local HTTP service at a public test landmark; live network availability is reported separately from deterministic checks.
 
@@ -138,3 +138,7 @@ Search startup reports its current stage and warming pages instead of a fixed 0%
 Three distinct layouts share the same accessible navigation: Simple, Windows 11 inspired Modern, and Iranian-architecture inspired Traditional. Wide desktop windows show list and basket together. Offline interface languages include Persian, English, Sorani, Kurmanji and Iranian Azerbaijani (Arabic script). Vazirmatn and Inter are bundled alongside Amiri; original font licences are included. See [design references](release/design-notes.md).
 
 The initial proposal uses up to two shops per department. All shop checkboxes start selected; unticking shops is a draft until **به‌روزرسانی بهینه‌سازی** is pressed. A single best-unit-price option replaces duplicate modes. Search task scrolling does not move the stop action out of reach.
+
+## Reliability and lists 0.17
+
+Empty catalogue pages wait for pending responses and re-enter the search route once within the existing time budget. Human verification and address changes stop the task. A retry-unmatched-items action preserves valid results and manual choices, while refreshing missing, expired or address-invalid data. Named shopping lists (names, goods, quantities and departments) save/load inside app storage on desktop and Android; file backup remains optional in Settings. Product review cards share rows when space allows. Light/night mode works with all three themes and persists, including app-owned Android address dialogs and progress.

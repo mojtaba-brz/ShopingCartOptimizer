@@ -1507,7 +1507,7 @@
       "en": "Stop the current search first.",
       "ckb": "سەرەتا گەڕانی ئێستا بوەستێنە.",
       "ku": "Pêşî lêgerîna niha rawestîne.",
-      "az-Arab": "اؤنجه ایندیکی آختاریشی دایاندیرین."
+      "az-Arab": "اؤنجە ایندیکی آختاریشی دایاندیرین."
     },
     "ارتباط با برنامه کامل نشد.": {
       "en": "Could not connect to the app.",
@@ -2348,6 +2348,138 @@
       "ckb": "شوێن لەسەر نەخشە",
       "ku": "Cih li ser nexşeyê",
       "az-Arab": "خریطه‌ده یئر"
+    },
+    "جست‌وجوی کالاهای یافت‌نشده": {
+      "en": "Search unfound items",
+      "ckb": "گەڕان بۆ کاڵا نەدۆزراوەکان",
+      "ku": "Li kelûpelên nedîtî bigere",
+      "az-Arab": "تاپیلمایان ماللاری آختار"
+    },
+    "تلاش خودکار دوباره برای دریافت کالاها": {
+      "en": "Automatically retrying product retrieval",
+      "ckb": "هەوڵی خۆکارانەی دووبارە بۆ وەرگرتنی کاڵاکان",
+      "ku": "Dîsa bixwe daneyên kelûpelan distîne",
+      "az-Arab": "ماللاری آلماق اوچون اوتوماتیک یئنی‌دن جهد"
+    },
+    "حالت شب": {
+      "en": "Night mode",
+      "ckb": "دۆخی شەو",
+      "ku": "Moda şevê",
+      "az-Arab": "گئجه حالتی"
+    },
+    "لیست‌های من": {
+      "en": "My lists",
+      "ckb": "لیستەکانم",
+      "ku": "Lîsteyên min",
+      "az-Arab": "لیست‌لریم"
+    },
+    "بستن لیست‌ها": {
+      "en": "Close lists",
+      "ckb": "داخستنی لیستەکان",
+      "ku": "Lîsteyan bigire",
+      "az-Arab": "لیست‌لری باغلا"
+    },
+    "نام لیست": {
+      "en": "List name",
+      "ckb": "ناوی لیست",
+      "ku": "Navê lîsteyê",
+      "az-Arab": "لیستین آدی"
+    },
+    "مثلاً خرید هفتگی": {
+      "en": "e.g. Weekly shopping",
+      "ckb": "بۆ نموونە کڕینی هەفتانە",
+      "ku": "Mînak: Kirîna heftane",
+      "az-Arab": "مثلاً هفتلیک آلیش"
+    },
+    "ذخیرهٔ لیست فعلی": {
+      "en": "Save current list",
+      "ckb": "پاشەکەوتکردنی لیستی ئێستا",
+      "ku": "Lîsteya niha tomar bike",
+      "az-Arab": "ایندیکی لیستی ساخلا"
+    },
+    "ذخیره با نام یکسان، همان لیست را به‌روزرسانی می‌کند. لیست‌ها فقط روی این دستگاه می‌مانند.": {
+      "en": "Saving with the same name updates that list. Lists stay on this device.",
+      "ckb": "پاشەکەوتکردن بە هەمان ناو، هەمان لیست نوێ دەکاتەوە. لیستەکان تەنها لەم ئامێرەدا دەمێننەوە.",
+      "ku": "Tomarkirina bi heman navî wê lîsteyê nû dike. Lîste tenê li ser vê amûrê dimînin.",
+      "az-Arab": "ائینی آدلا ساخلاماق همان لیستی یئنی‌له‌ییر. لیست‌لر یالنیز بو جیهازدا قالیر."
+    },
+    "خواندن لیست‌های ذخیره‌شده کامل نشد.": {
+      "en": "Saved lists could not be read.",
+      "ckb": "خوێندنەوەی لیستە پاشەکەوتکراوەکان تەواو نەبوو.",
+      "ku": "Lîsteyên tomarkirî nehatin xwendin.",
+      "az-Arab": "ساخلانمیش لیست‌لر اوخونمادی."
+    },
+    "بارگذاری": {
+      "en": "Load",
+      "ckb": "بارکردنەوە",
+      "ku": "Bar bike",
+      "az-Arab": "یوکله"
+    },
+    "حذف": {
+      "en": "Delete",
+      "ckb": "سڕینەوە",
+      "ku": "Jê bibe",
+      "az-Arab": "سیل"
+    },
+    "هنوز لیستی ذخیره نکرده‌اید.": {
+      "en": "No saved lists yet.",
+      "ckb": "هێشتا هیچ لیستێکت پاشەکەوت نەکردووە.",
+      "ku": "Hîn lîsteyeke tomarkirî tune ye.",
+      "az-Arab": "هله لیست ساخلامامیسینیز."
+    },
+    "لیست پیدا نشد.": {
+      "en": "List not found.",
+      "ckb": "لیست نەدۆزرایەوە.",
+      "ku": "Lîste nehat dîtin.",
+      "az-Arab": "لیست تاپیلمادی."
+    },
+    "لیست بارگذاری شد.": {
+      "en": "List loaded.",
+      "ckb": "لیست بارکرایەوە.",
+      "ku": "Lîste hat barkirin.",
+      "az-Arab": "لیست یوکلندی."
+    },
+    "لیست ذخیره‌شده حذف شد.": {
+      "en": "Saved list deleted.",
+      "ckb": "لیستی پاشەکەوتکراو سڕایەوە.",
+      "ku": "Lîsteya tomarkirî hat jêbirin.",
+      "az-Arab": "ساخلانمیش لیست سیلیندی."
+    },
+    "ذخیره‌سازی در دسترس نیست؛ لیست‌ها تغییر نکردند.": {
+      "en": "Storage is unavailable; saved lists were not changed.",
+      "ckb": "پاشەکەوتکردن بەردەست نییە؛ لیستەکان نەگۆڕدراون.",
+      "ku": "Tomarkirin ne li ber dest e; lîste nehatin guhertin.",
+      "az-Arab": "ساخلاماق مومکون دئییل؛ لیست‌لر دَییشمه‌دی."
+    },
+    "نام لیست را وارد کنید.": {
+      "en": "Enter a list name.",
+      "ckb": "ناوی لیست بنووسە.",
+      "ku": "Navê lîsteyê binivîse.",
+      "az-Arab": "لیستین آدینی یازین."
+    },
+    "لیست داخل برنامه ذخیره شد.": {
+      "en": "List saved in the app.",
+      "ckb": "لیست لە ناو بەرنامەکە پاشەکەوت کرا.",
+      "ku": "Lîste di sepanê de hat tomarkirin.",
+      "az-Arab": "لیست اویغولامادا ساخلاندی."
+    },
+    "فضای ذخیره‌سازی دستگاه کافی نیست؛ لیست‌های قبلی حفظ شدند.": {
+      "en": "Device storage is full; your previous lists are preserved.",
+      "ckb": "بۆشایی ئامێرەکە بەس نییە؛ لیستە پێشووەکان پارێزراون.",
+      "ku": "Cihê tomarkirinê tije ye; lîsteyên te yên berê hatin parastin.",
+      "az-Arab": "جیهازین یاتداشی دولودور؛ اؤنجکی لیست‌لر ساخ لاندی."
+    },
+    "لیست فعلی خالی شود؟ لیست‌های ذخیره‌شده باقی می‌مانند.": {
+      "en": "Clear the current list? Your saved lists will remain.",
+      "ckb": "لیستی ئێستا بەتاڵ بکرێت؟ لیستە پاشەکەوتکراوەکان دەمێننەوە.",
+      "ku": "Lîsteya niha vala bike? Lîsteyên tomarkirî dimînin.",
+      "az-Arab": "ایندیکی لیست بوشالدیلسین؟ ساخلانمیش لیست‌لر قالاجاق."
+    },
+    "پشتیبان‌گیری فایلی (اختیاری)": {
+      "en": "File backup (optional)",
+      "ckb": "پشتیوانەی فایل (ئارەزوومەندانە)",
+      "ku": "Kopiya pelê (vebijarkî)",
+      "az-Arab": "فایل یئدکلمه‌سی (ایسته‌یه باغلی)"
     }
   }
 }
