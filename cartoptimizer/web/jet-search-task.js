@@ -12,9 +12,12 @@
   const send=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){network.pending++;let ended=false;const finish=()=>{if(!ended){ended=true;network.pending--;network.completed++;}};this.addEventListener('loadend',finish,{once:true});try{return send.apply(this,args);}catch(e){finish();throw e;}};
  }
  root.CartwiseSearchTask={start(options){
+  options={...options,department:options.department||'supermarket'};
   const state={done:false,products:0,stores:0,detail:'آماده‌سازی صفحه…'};
   root.cartwiseTask=state;
-  const a=root.CartwiseSearchAdapters,rows=new Map(),shops=new Map(),quotes=[],tasks=[],warnings=[];
+  const a=root.CartwiseSearchAdapters,rows=new Map(),shops=new Map(),quotes=[],tasks=[],warnings=[],feeChecks=[];
+  const cached=options.fee_cache,point=s=>String(s||'').split('|').map(Number),samePoint=(a,b)=>point(a).length===2&&point(b).length===2&&point(a).every((n,i)=>Number.isFinite(n)&&n===point(b)[i]);
+  const feesFresh=()=>cached&&cached.shipment_type==='on_demand'&&samePoint(cached.coordinates,options.coordinates)&&Array.isArray(cached.checks)&&cached.checks.slice(0,100).some(q=>{if(!q)return false;const age=Date.now()-Date.parse(q.captured_at);return q.store_id===options.shop_id&&q.store_type===(options.store_type||options.department)&&age>=-60000&&age<(q.observed===true?604800000:3600000);});
   const deadline=Date.now()+Math.max(1000,Math.min(180000,options.seconds*1000||60000));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const check=()=>{if(state.cancelled)throw Error('cancelled');if(Date.now()>deadline)throw Error('budget');};
@@ -65,6 +68,20 @@
   (async()=>{
    try{
     for(let n=0;(!document.querySelector('#root')||(location.pathname==='/user/add-address'&&!document.querySelector('#root input[placeholder]')))&&n<80;n++){check();await sleep(250);}
+    if(options.kind==='store'&&!feesFresh()&&deadline-Date.now()>1500){
+     state.detail='بررسی هزینه‌های فروشگاه';
+     const quoteFees=()=>{
+      check();verifyLocation();if(/verify you are human|checking your browser|unusual traffic|captcha/i.test(document.body.innerText.slice(0,2000)))throw Error('challenge');
+      const url=new URL(location.href);if(url.searchParams.get('shopId')!==options.shop_id)return;
+      const meta=root.CartwiseCatalog?.find(options.shop_id,options.store_name)||{},fields={...(a.fees(document)||{}),...meta.fee_fields},unknown=meta.unknown_fee_fields||[];
+      for(const key of unknown)delete fields[key];
+      feeChecks.push({store_id:options.shop_id,store_type:meta.store_type||options.store_type||options.department,captured_at:new Date().toISOString(),observed:Object.keys(fields).length>0});
+      if(quotes.length<100&&(Object.keys(fields).length||unknown.length))quotes.push({quote:{source:meta.fee_fields?'digikala-public-store':'digikala-visible-checkout',page_kind:'store',page_url:url.origin+url.pathname,captured_at:new Date().toISOString(),store_name:options.store_name,store_id:options.shop_id,store_type:meta.store_type||options.store_type||options.department,fields,unknown_fields:unknown,notices:[]}});
+     };
+     await navigate(new URL('/v4/shop?shopId='+encodeURIComponent(options.shop_id),options.url).href);quoteFees();
+
+    }
+
     await navigate(options.url);await scan();
     // The same SPA URL is a no-op. Re-enter through the address route once to
     // request fresh catalogue data, retaining the verified delivery selection.
@@ -73,19 +90,6 @@
      await navigate(new URL('/user/add-address',options.url).href);await navigate(options.url);await scan();
      if(rows.size)warnings.splice(0,firstWarnings);
     }
-    if(options.kind==='store'&&deadline-Date.now()>1500){
-     state.detail='بررسی هزینه‌های فروشگاه';
-     const quoteFees=()=>{
-      check();verifyLocation();if(/verify you are human|checking your browser|unusual traffic|captcha/i.test(document.body.innerText.slice(0,2000)))throw Error('challenge');
-      const url=new URL(location.href);if(url.searchParams.get('shopId')!==options.shop_id)return;
-      const meta=root.CartwiseCatalog?.find(options.shop_id,options.store_name)||{},fields={...(a.fees(document)||{}),...meta.fee_fields},unknown=meta.unknown_fee_fields||[];
-      for(const key of unknown)delete fields[key];
-      if(quotes.length<100&&(Object.keys(fields).length||unknown.length))quotes.push({quote:{source:meta.fee_fields?'digikala-public-store':'digikala-visible-checkout',page_kind:'store',page_url:url.origin+url.pathname,captured_at:new Date().toISOString(),store_name:options.store_name,store_id:options.shop_id,store_type:meta.store_type||options.store_type||options.department,fields,unknown_fields:unknown,notices:[]}});
-     };
-     await navigate(new URL('/v4/shop?shopId='+encodeURIComponent(options.shop_id),options.url).href);quoteFees();
-
-    }
-
     if(options.kind!=='store')for(const [name,meta] of shops){
      if(tasks.length>=(options.max_stores||40)){warnings.push('سقف بررسی فروشگاه‌ها رسید.');break;}
      await navigate(options.url);scroll(true);await sleep(100);let opened=false;
@@ -102,7 +106,7 @@
     if(e.message==='location'||e.message==='challenge')state.fatal=e.message==='location'?'موقعیت جت تغییر کرد؛ جست‌وجو متوقف شد.':'جت درخواست تأیید انسانی داد؛ جست‌وجو متوقف شد.';
     else if(e.message!=='cancelled')warnings.push(e.message==='budget'?'بودجهٔ زمانی جست‌وجو تمام شد؛ نتایج بررسی‌شده نمایش داده می‌شوند.':'خواندن بخشی از صفحه کامل نشد.');
    }finally{
-    state.result={products:[...rows.values()],store_tasks:tasks,checkout_quotes:quotes.map(x=>x.quote),error:[...new Set(warnings)].join('؛ ')||null};state.done=true;
+    state.result={products:[...rows.values()],store_tasks:tasks,checkout_quotes:quotes.map(x=>x.quote),fee_checks:feeChecks,error:[...new Set(warnings)].join('؛ ')||null};state.done=true;
    }
   })();
   return true;

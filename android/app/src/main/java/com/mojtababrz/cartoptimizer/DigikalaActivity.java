@@ -481,7 +481,7 @@ public final class DigikalaActivity extends Activity {
                     public void complete(JSONArray items,JSONArray quotes,JSONObject resources){if(!scanLocation.equals(RetailerSession.deliveryLocation())||!scanMode.equals(RetailerSession.deliveryMode())){finishAutoError("موقعیت تغییر کرد؛ دوباره جست‌وجو کنید.");return;}autoResults=items;searchResources=resources;for(int n=0;n<quotes.length();n++)checkoutQuotes.put(quotes.optJSONObject(n));finishAuto();}
                     public void tasks(JSONArray tasks){StringBuilder text=new StringBuilder();for(int i=0;i<tasks.length();i++){JSONObject t=tasks.optJSONObject(i);text.append("● ").append(t.optString("name")).append(" · ").append(t.optString("store").isEmpty()?AppLanguage.text(DigikalaActivity.this,"شناسایی فروشگاه‌ها"):t.optString("store")).append(" · ").append(fa(t.optInt("products"))).append(AppLanguage.text(DigikalaActivity.this," کالا\n"));}progressTasks.setText(text.toString());}
                     public void failed(String error){finishAutoError(error);}
-                });searchPool.start();}catch(Exception e){finishAutoError("آماده‌سازی جست‌وجوی موازی ناموفق بود.");}
+                });searchPool.useCachedFees(getIntent().getStringExtra("fee_cache"));searchPool.start();}catch(Exception e){finishAutoError("آماده‌سازی جست‌وجوی موازی ناموفق بود.");}
             }else scanHandler.postDelayed(this::nextSearch,500);return;
         }
         data.put("checkout_only",cartOnly);
@@ -651,7 +651,7 @@ public final class DigikalaActivity extends Activity {
             cartReadStarted=true;showProgress(AppLanguage.text(DigikalaActivity.this,"بررسی هزینه‌ها و اصلاحات سبد"),AppLanguage.text(DigikalaActivity.this,"جست‌وجوی اقلام تمام شد؛ اکنون مبلغ و پیام‌های سبد بررسی می‌شوند."));status.setText(AppLanguage.text(DigikalaActivity.this,"در حال بررسی هزینه ارسال و پیام‌های سبد دیجی‌کالاجت…"));
             RetailerSession.navigate(shop,checkoutUrl);scanHandler.postDelayed(()->readAutomaticCart(0),900);return;
         }
-        try {JSONObject result=new JSONObject();result.put("source","digikala-automatic");result.put("location",scanLocation);result.put("coordinates",RetailerSession.deliveryCoordinates());result.put("shipment_type",scanMode);result.put("captured_at",new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX",java.util.Locale.US).format(new java.util.Date()));result.put("items",autoResults);result.put("resources",searchResources==null?SearchBudget.read(this):searchResources);result.put("checkout_quotes",checkoutQuotes);returnAuto(result);}
+        try {JSONObject result=new JSONObject();result.put("source","digikala-automatic");result.put("location",scanLocation);result.put("coordinates",RetailerSession.deliveryCoordinates());result.put("shipment_type",scanMode);result.put("captured_at",new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX",java.util.Locale.US).format(new java.util.Date()));result.put("items",autoResults);result.put("resources",searchResources==null?SearchBudget.read(this):searchResources);result.put("checkout_quotes",checkoutQuotes);result.put("fee_checks",searchResources==null?new JSONArray():searchResources.optJSONArray("fee_checks"));returnAuto(result);}
         catch(Exception e){finishAutoError("آماده‌سازی نتیجه ناموفق بود.");}
     }
     private void returnAuto(JSONObject result) {

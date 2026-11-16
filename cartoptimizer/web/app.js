@@ -255,7 +255,27 @@ $('demo').addEventListener('click', async () => {
 $('reset').addEventListener('click', () => {
   if (confirm('لیست خرید پاک شود؟ در صورت نیاز ابتدا پشتیبان بگیرید.')) { replaceWorkspace(initialState()); message('لیست خرید پاک شد.'); }
 });
-$('export').addEventListener('click', () => download(state, 'cartoptimizer-snapshot.json'));
+// Backups carry every named list, so migration from old temporary APK signatures
+// does not discard the library. Authentication/browser state is never exported.
+function backupLists(value) {
+  if(value.app_backup===undefined)return null;
+  const extra=value.app_backup;
+  if(extra?.schema!==1||!Array.isArray(extra.lists)||extra.lists.length>1000)throw Error('فهرست لیست‌های پشتیبان معتبر نیست.');
+  return extra.lists.map(row=>{
+    if(!row||typeof row.name!=='string'||!Array.isArray(row.items)||!row.name.trim()||row.name.length>80)throw Error('نام لیست پشتیبان معتبر نیست.');
+    return {name:row.name.trim(),items:CartwiseEngine.normalize({...initialState(),items:row.items}).items};
+  });
+}
+$('export').addEventListener('click', () => {
+  try{commitShoppingDraft();const value={...state,app_backup:{schema:1,lists:JSON.parse(localStorage.getItem('cartwise.lists.v1')||'[]')}};backupLists(value);if(new Blob([JSON.stringify(value,null,2)]).size>1000000)throw Error('حجم پشتیبان نباید بیش از یک مگابایت باشد.');download(value,'sabadchin-backup.json');}
+  catch(error){message(error.message,true);}
+});
+async function restoreBackup(value) {
+  const lists=backupLists(value),validated=await api('/api/validate',value);
+  if((state.items.length||dirty.size||lists&&localStorage.getItem('cartwise.lists.v1'))&&!confirm('فایل پشتیبان جایگزین لیست فعلی شود؟'))return;
+  if(lists!==null)localStorage.setItem('cartwise.lists.v1',JSON.stringify(lists));
+  replaceWorkspace(validated.snapshot);message('پشتیبان بازیابی شد؛ تاریخ قیمت‌ها و آدرس را پیش از خرید بررسی کنید.');
+}
 $('export-plan').addEventListener('click', () => { if (plan) download({snapshot: state, plan}, 'cartoptimizer-plan.json'); });
 $('import').addEventListener('click', () => {
   if (window.CartwiseAndroid) window.CartwiseAndroid.pickSnapshot();
@@ -263,9 +283,7 @@ $('import').addEventListener('click', () => {
 });
 window.addEventListener('cartwise:import', async (event) => {
   try {
-    const validated = await api('/api/validate', JSON.parse(event.detail));
-    if ((state.items.length || dirty.size) && !confirm('فایل پشتیبان جایگزین لیست فعلی شود؟')) return;
-    replaceWorkspace(validated.snapshot); message('پشتیبان بازیابی شد؛ تاریخ قیمت‌ها و آدرس را پیش از خرید بررسی کنید.');
+    await restoreBackup(JSON.parse(event.detail));
   } catch (error) { message(error.message, true); }
 });
 $('file').addEventListener('change', async (event) => {
@@ -274,9 +292,7 @@ $('file').addEventListener('change', async (event) => {
   try {
     if (file.size > 1000000) throw new Error('حجم پشتیبان نباید بیش از یک مگابایت باشد.');
     const value = JSON.parse(await file.text());
-    const validated = await api('/api/validate', value);
-    if ((state.items.length || dirty.size) && !confirm('فایل پشتیبان جایگزین لیست فعلی شود؟')) return;
-    replaceWorkspace(validated.snapshot); message('پشتیبان بازیابی شد؛ تاریخ قیمت‌ها و آدرس را پیش از خرید بررسی کنید.');
+    await restoreBackup(value);
   } catch (error) { message(error.message, true); }
   finally { event.target.value = ''; }
 });

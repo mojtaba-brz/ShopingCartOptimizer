@@ -1,14 +1,38 @@
 name: Signed store packages
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [cartoptimizer/release.json, release/publication.json]
 permissions:
   contents: read
 concurrency:
   group: signed-store-packages
   cancel-in-progress: false
 jobs:
-  package:
+  readiness:
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if python release/check-publication.py; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Signed store packages await the owner publisher/signing checklist.' >> "$GITHUB_STEP_SUMMARY"
+            if [ "$EVENT_NAME" = workflow_dispatch ]; then exit 1; fi
+          fi
+  package:
+    needs: readiness
+    if: needs.readiness.outputs.ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

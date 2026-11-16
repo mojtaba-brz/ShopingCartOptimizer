@@ -127,7 +127,7 @@ class Handler(BaseHTTPRequestHandler):
                 service = desktop(self.server)
                 routes = {'/api/live/addresses': lambda: service.addresses(data.get('query')),
                           '/api/live/location': lambda: service.select(data),
-                          '/api/live/search': lambda: service.start(data.get('items')),
+                          '/api/live/search': lambda: service.start(data.get('items'),data.get('fee_cache')),
                           '/api/live/clear': lambda: service.clear(),
                           '/api/live/cancel': lambda: service.cancel(data.get('id'))}
                 if self.path not in routes:

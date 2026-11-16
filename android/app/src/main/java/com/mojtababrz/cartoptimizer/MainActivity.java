@@ -156,6 +156,12 @@ public final class MainActivity extends Activity {
                 .putExtra("item_id",itemId).putExtra("query",query).putExtra("location_only",locationOnly), LIVE_DIGIKALA));
         }
 
+        @JavascriptInterface public void findAutomaticallyWithFees(String items,String cache) {
+            if(items==null||items.getBytes(StandardCharsets.UTF_8).length>20000||cache==null||cache.length()>64000)return;
+            try{new JSONObject(cache);}catch(Exception e){return;}
+            runOnUiThread(()->startActivityForResult(new Intent(MainActivity.this,DigikalaActivity.class)
+                .putExtra("automatic_items",items).putExtra("fee_cache",cache),AUTO_DIGIKALA));
+        }
         @JavascriptInterface public void findAutomatically(String items) {
             if(items==null || items.getBytes(StandardCharsets.UTF_8).length>20000) return;
             runOnUiThread(() -> startActivityForResult(new Intent(MainActivity.this, DigikalaActivity.class)

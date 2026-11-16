@@ -66,7 +66,7 @@ jobs:
         run: python release/package-desktop.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-Desktop-0.18.0
+          name: Sabadchin-Desktop-0.19.0
           path: desktop-package/**
           retention-days: 90
       - name: Install Android platform
@@ -78,7 +78,7 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p apk-download
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.18.0-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-download/Cartwise-Android-0.19.0-debug.apk
           sha256sum apk-download/*.apk > apk-download/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
@@ -127,6 +127,7 @@ jobs:
           node android/tests/jet-browser.cjs
           node android/tests/fees-browser.cjs
           node android/tests/store-mode.cjs
+          node android/tests/backup.cjs
           node android/tests/desktop-ui.cjs
           node android/tests/workflow012.cjs
           node android/tests/workflow013.cjs
@@ -171,12 +172,15 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
+          # Match Chromium's workaround for the 37.2.13 EGL context teardown crash.
+          # https://chromium.googlesource.com/chromium/src/tools/android/+/53a24f44b2957a8937bb63f3d150081c73df0532
+          emulator-build: '15917651'
           api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader -feature -Vulkan -memory 3072 -cores 2
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu ${{ matrix.api == 36 && 'swangle' || 'swiftshader' }} -feature -Vulkan -memory 3072 -cores 2
           script: |
             adb install apks/debug/app-debug.apk
             adb install apks/androidTest/debug/app-debug-androidTest.apk
@@ -233,6 +237,6 @@ jobs:
         run: python3 release/prepare-publication-kit.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Sabadchin-0.18.0-Publication-Kit
+          name: Sabadchin-0.19.0-Publication-Kit
           path: publication-kit/**
           retention-days: 90
