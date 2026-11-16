@@ -67,14 +67,6 @@
   (async()=>{
    try{
     for(let n=0;(!document.querySelector('#root')||(location.pathname==='/user/add-address'&&!document.querySelector('#root input[placeholder]')))&&n<80;n++){check();await sleep(250);}
-    await navigate(options.url);await scan();
-    // The same SPA URL is a no-op. Re-enter through the address route once to
-    // request fresh catalogue data, retaining the verified delivery selection.
-    if(!rows.size&&deadline-Date.now()>4000){
-     state.detail='تلاش خودکار دوباره برای دریافت کالاها';const firstWarnings=warnings.length;
-     await navigate(new URL('/user/add-address',options.url).href);await navigate(options.url);await scan();
-     if(rows.size)warnings.splice(0,firstWarnings);
-    }
     if(options.kind==='store'&&!feesFresh()&&deadline-Date.now()>1500){
      state.detail='بررسی هزینه‌های فروشگاه';
      const quoteFees=()=>{
@@ -89,6 +81,14 @@
 
     }
 
+    await navigate(options.url);await scan();
+    // The same SPA URL is a no-op. Re-enter through the address route once to
+    // request fresh catalogue data, retaining the verified delivery selection.
+    if(!rows.size&&deadline-Date.now()>4000){
+     state.detail='تلاش خودکار دوباره برای دریافت کالاها';const firstWarnings=warnings.length;
+     await navigate(new URL('/user/add-address',options.url).href);await navigate(options.url);await scan();
+     if(rows.size)warnings.splice(0,firstWarnings);
+    }
     if(options.kind!=='store')for(const [name,meta] of shops){
      if(tasks.length>=(options.max_stores||40)){warnings.push('سقف بررسی فروشگاه‌ها رسید.');break;}
      await navigate(options.url);scroll(true);await sleep(100);let opened=false;

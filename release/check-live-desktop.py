@@ -41,7 +41,7 @@ try:
     quotes = result.get('checkout_quotes', [])
     shipping = [q for q in quotes if q.get('page_kind') == 'store' and isinstance(q.get('fields', {}).get('delivery_fee', {}).get('value'), int)]
     record['public_fee_response_fields'] = public_fee_fields
-    record['observed_fee_fields'] = sorted({key for q in quotes for key in q.get('fields',{}) if key.endswith('_fee')})
+    record['observed_fee_fields'] = sorted({key for q in quotes for key,value in q.get('fields',{}).items() if key.endswith('_fee') and isinstance(value,dict) and type(value.get('value')) is int})
     record['fee_headers_checked'] = len(result.get('fee_checks',[]))
     record['stores_with_shipping'] = len({q.get('store_id') or q.get('store_name') for q in shipping})
     record['shipping_samples_rials'] = [{key:q.get(key) for key in ('store_id','store_name','store_type')} | {'delivery_fee':q['fields']['delivery_fee']['value']} for q in shipping][-3:]
