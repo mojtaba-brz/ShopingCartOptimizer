@@ -31,6 +31,11 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await repeat({...cache,shipment_type:'scheduled'},['/v4/shop','/search/shop']);
  await repeat({...cache,checks:checks.map(c=>({...c,store_type:'produce'}))},['/v4/shop','/search/shop']);
  const bounded=await repeat(null,['/v4/shop','/search/shop'],2.5);assert.equal(bounded.result.fee_checks.length,1);assert.ok(bounded.result.checkout_quotes.some(q=>q.fields.service_fee?.value===20000),'A product scan timeout must not erase observed fees');
+ // A long global carousel must retain verified store tasks on timeout.
+ await page.evaluate(()=>{history.replaceState({},'', '/user/add-address');document.body.style.minHeight='100000px';document.getElementById('root').innerHTML='<input placeholder=آدرس>';window.savedReader=CartwiseSearchAdapters.reader;CartwiseSearchAdapters.reader=()=>location.pathname==='/search/v2/result'?{products:[{title:'شیر یک لیتر',regular_price:100000,store_name:'فروشگاه الف',store_id:'a'}],shops:[{name:'فروشگاه الف'}]}:{products:[],shops:[]};CartwiseSearchTask.start({kind:'global',query:'milk',url:'https://www.digikalajet.com/search/v2/result?q=milk',coordinates:'35.75|51.4',seconds:2.5,max_stores:1});});
+ await page.waitForFunction(()=>cartwiseTask.done,{},{timeout:10000});
+ const boundedDiscovery=await page.evaluate(()=>cartwiseTask.result);assert.match(boundedDiscovery.error,/بودجه/);assert.equal(boundedDiscovery.store_tasks.length,1,'A global timeout must not discard already verified merchants');assert.equal(new URL(boundedDiscovery.store_tasks[0].url).searchParams.get('shopId'),'a');assert.equal(new URL(boundedDiscovery.store_tasks[0].url).searchParams.get('q'),'milk');
+ await page.evaluate(()=>{CartwiseSearchAdapters.reader=window.savedReader;document.body.style.minHeight='';});
  // The shared app must label the actual winning SKUs, not every amazing offer.
  await page.addInitScript(()=>{window.CartwiseAndroid={findAutomatically:()=>{},savedDelivery:()=>JSON.stringify({location:'ارسال به ونک',shipment_type:'on_demand'}),openDigikala:()=>{},setAppearance:()=>{}};});
  await page.goto('http://127.0.0.1:8765');await page.waitForSelector('#search-new');await page.evaluate(()=>{localStorage.clear();state=initialState();state.items=[1,10,1].map((quantity,n)=>({id:'i'+n,name:'کالا'+n,quantity}));save();});await page.click('#optimize');
