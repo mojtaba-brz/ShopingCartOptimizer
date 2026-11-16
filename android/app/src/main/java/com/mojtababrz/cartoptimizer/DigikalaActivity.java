@@ -446,7 +446,6 @@ public final class DigikalaActivity extends Activity {
     }
     private void buildProgress(FrameLayout parent) {
         progressLayer=new LinearLayout(this);progressLayer.setOrientation(LinearLayout.VERTICAL);progressLayer.setGravity(android.view.Gravity.CENTER);progressLayer.setPadding(36,32,36,32);
-        String theme=getSharedPreferences("cartwise-preferences",MODE_PRIVATE).getString("theme","simple");
         int paper=AppAppearance.paper(this);progressLayer.setBackgroundColor(paper);
         progressTitle=new TextView(this);progressTitle.setTextSize(22);progressTitle.setTextColor(AppAppearance.accent(this));progressTitle.setGravity(android.view.Gravity.CENTER);progressLayer.addView(progressTitle);
         progressDetail=new TextView(this);progressDetail.setTextSize(15);progressDetail.setGravity(android.view.Gravity.CENTER);progressDetail.setPadding(0,20,0,20);progressLayer.addView(progressDetail);
