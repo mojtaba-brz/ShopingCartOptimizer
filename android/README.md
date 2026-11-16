@@ -1,4 +1,4 @@
-# Cartwise for Android 0.17.0
+# Cartwise for Android 0.17.1
 
 
 The app is branded **سبدچین**, with Persian RTL layout, Persian numbers/toman,

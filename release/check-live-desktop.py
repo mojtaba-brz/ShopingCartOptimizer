@@ -18,6 +18,11 @@ try:
     record['known_post_amazing_prices'] = sum(p.get('amazing') is True and p.get('post_amazing_verified') is True for p in products)
     record['public_price_samples'] = [{key:p.get(key) for key in ('title','store_name','regular_price','promo_price','amazing','post_amazing_price','post_amazing_verified')} for p in products if p.get('amazing') is True][:3]
     record['store_pages'] = len({p.get('store_id') for p in products if p.get('store_id')})
+    quotes = result.get('checkout_quotes', [])
+    shipping = [q for q in quotes if q.get('page_kind') == 'store' and isinstance(q.get('fields', {}).get('delivery_fee', {}).get('value'), int)]
+    record['stores_with_shipping'] = len({q.get('store_id') or q.get('store_name') for q in shipping})
+    record['shipping_samples_rials'] = [{key:q.get(key) for key in ('store_id','store_name','store_type')} | {'delivery_fee':q['fields']['delivery_fee']['value']} for q in shipping][-3:]
+    assert shipping, 'No public store shipping fee verified'
     record['coverage_notice'] = result['items'][0].get('error')
     assert record['products'] > 0 and record['stores'] > 0, 'No public product/store data verified'
     record['status'] = 'success'

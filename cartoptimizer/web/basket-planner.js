@@ -12,7 +12,7 @@
   for(const e of results)for(const p of e.products||[])if(p.store_name){const name=types.store(p)+'|'+norm(p.store_name);if(!aliases.has(name))aliases.set(name,new Set());if(p.store_id)aliases.get(name).add(p.store_id);if(p.store_id)names.set(types.store(p)+'|id:'+p.store_id,p.store_name);else names.set('name:'+name,p.store_name);}
   function merchant(p){const prefix=types.store(p)+'|';if(p.store_id)return prefix+'id:'+p.store_id;const n=norm(p.store_name),ids=aliases.get(prefix+n);if(!n||ids?.size>1)return '';return ids?.size===1?prefix+'id:'+[...ids][0]:prefix+'name:'+n;}
   const feeCache=new Map();
-  function rule(key){if(feeCache.has(key))return feeCache.get(key);const relevant=observations.filter(q=>q.page_kind==='store'&&merchant(q)===key);const latest=relevant[relevant.length-1];const fields=latest?.fields||{};feeCache.set(key,fields);return fields;}
+  function rule(key){if(feeCache.has(key))return feeCache.get(key);const relevant=observations.filter(q=>q.page_kind==='store'&&merchant(q)===key).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at)),fields={};for(const q of relevant){for(const k of q.unknown_fields||[])delete fields[k];Object.assign(fields,q.fields);}feeCache.set(key,fields);return fields;}
   const priceCache=new Map(),hasAmazing=results.some(e=>(e.products||[]).some(p=>p.amazing===true));
   const hasQuotedCart=observations.some(q=>q.page_kind==='cart'&&q.items_complete&&q.fields.total);
   const required=[],unresolved=[];
@@ -47,17 +47,19 @@
    const cacheKey=JSON.stringify([c.id,split,c.picks.map(p=>[p.item_id,p.product.key,p.quantity]).sort()]);
    if(priceCache.has(cacheKey))return priceCache.get(cacheKey);
    const options=[];
-   for(const v of pricing.variants(c.picks,type,sensitive,c.picks.map(p=>p.score_weight))){
+   for(const v of pricing.variants(c.picks,type,sensitive)){
     if(minimum!==undefined&&v.subtotal<minimum)continue;
-    let delivery=fields.delivery_fee?.value??null;if(free!==undefined&&v.subtotal>=free)delivery=0;
-    const service=fields.service_fee?.value??null,extra={};for(const key of ['packaging_fee','processing_fee','tax_fee'])if(fields[key])extra[key]=fields[key].value;
-    const lines=v.picks.map(p=>p.line),matched=split?null:observations.map(q=>checkout.reconcile(q,lines)).filter(x=>x.verified).pop();
+    const lines=v.picks.map(p=>p.line),matchedQuote=split?null:observations.filter(q=>checkout.reconcile(q,lines).verified).pop(),matched=matchedQuote?checkout.reconcile(matchedQuote,lines):null,amounts={...fields,...matchedQuote?.fields};
+    let delivery=amounts.delivery_fee?.value??null;if(!matchedQuote?.fields.delivery_fee&&free!==undefined&&v.subtotal>=free)delivery=0;
+    const service=amounts.service_fee?.value??null,extra={};for(const key of ['packaging_fee','processing_fee','tax_fee'])if(amounts[key])extra[key]=amounts[key].value;
     options.push({...c,...v,unit_score:score(v.picks),lines,extra_fees:extra,delivery_fee:delivery,service_fee:service,minimum_order:minimum??null,free_delivery_over:free??null,verified:!!matched,unknown_fees:!matched&&(delivery===null||service===null),price_unknown:v.price_unknown,known_total:matched?matched.total:v.subtotal+(delivery??0)+(service??0)+Object.values(extra).reduce((n,v)=>n+v,0)});
    }
    if(priceCache.size>=300)priceCache.clear();priceCache.set(cacheKey,options);return options;
   }
-  const cheaper=(x,y)=>!y||less(x.unit_score,y.unit_score)||same(x.unit_score,y.unit_score)&&(x.known_total<y.known_total||x.known_total===y.known_total&&x.price_unknown<y.price_unknown);
-  function summary(carts){return {carts,unit_score:carts.reduce((n,c)=>n+c.unit_score,0),known_total:carts.reduce((n,c)=>n+c.known_total,0),price_unknown:carts.reduce((n,c)=>n+c.price_unknown,0)};}
+  // For fixed goods, amazing allocation and order splits minimize payable cost.
+  // The outer product/store comparison retains its normalized unit-price score.
+  const cheaper=(x,y)=>!y||x.known_total<y.known_total||x.known_total===y.known_total&&(x.price_unknown<y.price_unknown||x.price_unknown===y.price_unknown&&(x.subtotal<y.subtotal||x.subtotal===y.subtotal&&less(x.unit_score,y.unit_score)));
+  function summary(carts){return {carts,subtotal:carts.reduce((n,c)=>n+c.subtotal,0),unit_score:carts.reduce((n,c)=>n+c.unit_score,0),known_total:carts.reduce((n,c)=>n+c.known_total,0),price_unknown:carts.reduce((n,c)=>n+c.price_unknown,0)};}
   function portion(p,quantity){return {...p,quantity,total:p.total===null?null:p.total*quantity/p.quantity,cost:p.cost*quantity/p.quantity,line:{...p.line,quantity}};}
   async function merchantPlans(c,maxOrders){
    const cacheKey=JSON.stringify([c.id,maxOrders,c.picks.map(p=>[p.item_id,p.product.key,p.quantity]).sort()]);if(splitCache.has(cacheKey))return splitCache.get(cacheKey);
