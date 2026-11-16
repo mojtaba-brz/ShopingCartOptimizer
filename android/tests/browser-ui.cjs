@@ -8,7 +8,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  await context.route('**/assets/product-image?**',r=>r.fulfill({contentType:'image/png',body:png}));
  await page.addInitScript(()=>{window.CartwiseAndroid={findAutomatically:()=>{},readCheckout:()=>{},savedDelivery:()=>JSON.stringify({location:'ارسال به تهران، انقلاب',shipment_type:'scheduled'}),openDigikala:()=>{},saveJSON:()=>{},setAppearance:()=>{}};});
  await page.goto('http://127.0.0.1:8765');await page.waitForFunction(()=>window.CartwiseAppearance&&document.querySelector('#live-card'));
- await page.evaluate(()=>Promise.all([document.fonts.load('16px Amiri','سبدچین گچپژ ۱۲۳'),document.fonts.load('700 16px Amiri','سبدچین')]));assert.ok(await page.evaluate(()=>document.fonts.check('16px Amiri')&&document.fonts.check('700 16px Amiri')));assert.match(await page.locator('body').evaluate(e=>getComputedStyle(e).fontFamily),/Amiri/);
+ await page.evaluate(()=>Promise.all([document.fonts.load('16px Amiri','سبدچین گچپژ ۱۲۳'),document.fonts.load('700 16px Amiri','سبدچین')]));assert.ok(await page.evaluate(()=>document.fonts.check('16px Amiri')&&document.fonts.check('700 16px Amiri')));assert.match(await page.locator('body').evaluate(e=>getComputedStyle(e).fontFamily),/Vazirmatn/);
  assert.equal(await page.locator('html').getAttribute('dir'),'rtl');assert.match(await page.locator('#live-location').innerText(),/انقلاب/);
  await page.evaluate(()=>{localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم چرب ۱ لیتر',quantity:1},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];save();});
  fs.mkdirSync('/tmp/cartwise-ui',{recursive:true});
@@ -25,7 +25,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('nod
  const quote={source:'digikala-visible-checkout',captured_at:new Date().toISOString(),page_kind:'cart',page_url:'https://www.digikala.com/supermarket/cart/',fields:{delivery_fee:{value:250000,evidence:'هزینه ارسال ۲۵۰۰۰ تومان'},total:{value:1750000,evidence:'مبلغ قابل پرداخت ۱۷۵۰۰۰ تومان'}},notices:['قیمت کالا تغییر کرده است'],cart_items:[{title:'شیر کم چرب ۱٫۵ لیتر',quantity:1,store_name:'بهار'},{title:'برنج ایرانی ۱ کیلوگرم',quantity:1,store_name:'بهار'}],reported_units:2,items_complete:true};
  await page.evaluate(data=>window.dispatchEvent(new CustomEvent('cartwise:auto-results',{detail:data})),{source:'digikala-automatic',location:'ارسال به تهران، انقلاب',shipment_type:'scheduled',checkout_quotes:[quote],items:[{id:'milk',products},{id:'rice',products:[offer('برنج ایرانی ۵۰۰ گرم',400000,'بهار'),offer('برنج ایرانی ۱ کیلوگرم',600000,'بهار')]}]});
  await page.waitForFunction(()=>document.querySelectorAll('.product-result').length===2);
- await page.locator('[data-proposal-mode=unit]').click();
+ await page.locator('[data-proposal-mode=best]').click();
  await page.waitForFunction(()=>document.querySelector('#results')?.textContent.includes('مبلغ سبد مطابق'));
  const result=await page.locator('#results').innerText();assert.match(result,/۱۷۵٬۰۰۰/);assert.match(result,/قیمت کالا تغییر/);assert.match(result,/بهار/);assert.match(result,/شگفت‌انگیز/);assert.match(result,/۱۲۰٬۰۰۰/);
  assert.match(await page.locator('[data-selected-product]').first().innerText(),/۱٫۵ لیتر/);

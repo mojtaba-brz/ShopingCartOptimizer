@@ -37,7 +37,7 @@ public class PersianAppearanceTest {
             eval(scenario,"localStorage.clear();state=initialState();state.items=[{id:'milk',name:'شیر کم‌چرب ۱ لیتر',quantity:2},{id:'rice',name:'برنج ایرانی ۱ کیلوگرم',quantity:1}];dirty.clear();save();showTab('list');true");
             for(String theme:new String[]{"simple","modern","traditional"}){
                 assertEquals("true",eval(scenario,"CartwiseAppearance.setTheme('"+theme+"');document.documentElement.dataset.theme==='"+theme+"' && document.documentElement.scrollWidth<=innerWidth"));
-                String green=theme.equals("simple")?"#286349":theme.equals("modern")?"#086c78":"#164c78";
+                String green=theme.equals("simple")?"#286349":theme.equals("modern")?"#165dce":"#164c78";
                 assertEquals("true",eval(scenario,"getComputedStyle(document.documentElement).getPropertyValue('--green').trim()==='"+green+"'"));
                 rendered(scenario);progress(theme+" checked");
                 // Android 16 headless emulator image capture can terminate the emulator.

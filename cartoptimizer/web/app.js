@@ -2,7 +2,7 @@
 const $ = (id) => document.getElementById(id);
 const STORAGE = 'cartoptimizer.workspace.v1';
 const moneyFormat = new Intl.NumberFormat('fa-IR', {maximumFractionDigits: 1});
-const money = (rials) => moneyFormat.format(rials / 10);
+const money = (rials) => window.CartwiseI18n?.number(rials / 10,1)??moneyFormat.format(rials / 10);
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id = () => typeof crypto.randomUUID==='function'?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
 const dirty = new Set();

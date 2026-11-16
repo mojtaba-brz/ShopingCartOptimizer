@@ -1,0 +1,1777 @@
+{
+  "locales": {
+    "fa": {
+      "name": "فارسی",
+      "dir": "rtl",
+      "number": "fa-IR"
+    },
+    "en": {
+      "name": "English",
+      "dir": "ltr",
+      "number": "en-US"
+    },
+    "ckb": {
+      "name": "کوردی · سۆرانی",
+      "dir": "rtl",
+      "number": "ckb-IQ"
+    },
+    "ku": {
+      "name": "Kurdî · Kurmancî",
+      "dir": "ltr",
+      "number": "en-US"
+    },
+    "az-Arab": {
+      "name": "تۆرکجه · آذربایجانی",
+      "dir": "rtl",
+      "number": "fa-IR"
+    }
+  },
+  "phrases": {
+    "سبدچین": {
+      "en": "Sabadchin",
+      "ckb": "سەبەدچین",
+      "ku": "Sabadçîn",
+      "az-Arab": "سبدچین"
+    },
+    "لیست خرید": {
+      "en": "Shopping list",
+      "ckb": "لیستی کڕین",
+      "ku": "Lîsteya kirînê",
+      "az-Arab": "آلیش لیستی"
+    },
+    "سبد پیشنهادی": {
+      "en": "Suggested basket",
+      "ckb": "سەبەتەی پێشنیارکراو",
+      "ku": "Sepeta pêşniyarkirî",
+      "az-Arab": "تکلیف اولونان سبد"
+    },
+    "تنظیمات": {
+      "en": "Settings",
+      "ckb": "ڕێکخستنەکان",
+      "ku": "Mîheng",
+      "az-Arab": "تنظیملر"
+    },
+    "تنظیمات و حریم خصوصی": {
+      "en": "Settings & privacy",
+      "ckb": "ڕێکخستن و تایبەتمەندی",
+      "ku": "Mîheng û nepenî",
+      "az-Arab": "تنظیملر و گیزلیلیک"
+    },
+    "بخش‌های برنامه": {
+      "en": "App navigation",
+      "ckb": "بەشەکانی بەرنامە",
+      "ku": "Beşên sepanê",
+      "az-Arab": "پروقرامین بؤلوملری"
+    },
+    "زبان": {
+      "en": "Language",
+      "ckb": "زمان",
+      "ku": "Ziman",
+      "az-Arab": "دیل"
+    },
+    "زبان برنامه": {
+      "en": "App language",
+      "ckb": "زمانی بەرنامە",
+      "ku": "Zimanê sepanê",
+      "az-Arab": "پروقرامین دیلی"
+    },
+    "خرید حساب‌شده، به سلیقه شما": {
+      "en": "Thoughtful everyday shopping",
+      "ckb": "کڕینی زیرەک بە دڵی تۆ",
+      "ku": "Kirîna bi hesab, li gorî te",
+      "az-Arab": "سلیقه‌نیزه اویغون آلیش"
+    },
+    "سوپرمارکت دیجی‌کالاجت": {
+      "en": "Digikala Jet supermarket",
+      "ckb": "سوپەرمارکێتی دیجی‌کاڵاجێت",
+      "ku": "Supermarketa Digikala Jet",
+      "az-Arab": "دیجی‌کالاجت سوپرمارکتی"
+    },
+    "همراه خرید روزمره شما": {
+      "en": "Your everyday shopping companion",
+      "ckb": "هاوڕێی کڕینی ڕۆژانەت",
+      "ku": "Hevalê kirîna rojane",
+      "az-Arab": "گوندلیک آلیش یولداشینیز"
+    },
+    "ذخیره روی این دستگاه": {
+      "en": "Saved on this device",
+      "ckb": "لەسەر ئەم ئامێرە پاشەکەوت دەکرێت",
+      "ku": "Li ser vê amûrê tê tomarkirin",
+      "az-Arab": "بو دستگاهدا ساقلانیر"
+    },
+    "ذخیره روی این گوشی": {
+      "en": "Saved on this phone",
+      "ckb": "لەسەر ئەم مۆبایلە پاشەکەوت دەکرێت",
+      "ku": "Li ser vê telefonê tê tomarkirin",
+      "az-Arab": "بو تلفوندا ساقلانیر"
+    },
+    "از لیست خود پشتیبان بگیرید.": {
+      "en": "Back up your list.",
+      "ckb": "پاشەکەوتێک لە لیستەکەت هەڵبگرە.",
+      "ku": "Ji lîsteya xwe kopiyeke ewle bigire.",
+      "az-Arab": "لیستینیزین یئدکینی آلین."
+    },
+    "قیمت‌ها از فروشگاه خوانده می‌شوند.": {
+      "en": "Prices come from the store.",
+      "ckb": "نرخەکان لە فرۆشگا دەخوێندرێنەوە.",
+      "ku": "Biha ji dikanê tên xwendin.",
+      "az-Arab": "قییمت‌لر ماغازادان آلینیر."
+    },
+    "خرید بعدی شما": {
+      "en": "Your next shop",
+      "ckb": "کڕینی داهاتووت",
+      "ku": "Kirîna te ya pêş",
+      "az-Arab": "نؤوبتی آلیشینیز"
+    },
+    "نام کالا و مقدار مورد نیاز را بنویسید؛ مثلاً برنج ۲ کیلوگرم یا تخم‌مرغ ۶ عدد.": {
+      "en": "Enter an item and amount, e.g. 2 kg rice or 6 eggs.",
+      "ckb": "ناوی کاڵا و بڕەکەی بنووسە، وەک ٢ کیلۆ برنج یان ٦ هێلکە.",
+      "ku": "Nav û mîqdarê binivîse, mînak 2 kg birinc an 6 hêk.",
+      "az-Arab": "مالین آدینی و میقدارینی یازین؛ مثلاً ۲ کیلو دویو یا ۶ یومورتا."
+    },
+    "چه چیزهایی نیاز دارید؟": {
+      "en": "What do you need?",
+      "ckb": "پێویستت بە چییە؟",
+      "ku": "Çi pêdiviya te ye?",
+      "az-Arab": "نه‌لره احتیاجینیز وار؟"
+    },
+    "نام کالا": {
+      "en": "Item name",
+      "ckb": "ناوی کاڵا",
+      "ku": "Navê tiştê",
+      "az-Arab": "مالین آدی"
+    },
+    "تعداد": {
+      "en": "Quantity",
+      "ckb": "ژمارە",
+      "ku": "Hejmara",
+      "az-Arab": "سای"
+    },
+    "افزودن به لیست": {
+      "en": "Add to list",
+      "ckb": "زیادکردن بۆ لیست",
+      "ku": "Li lîsteyê zêde bike",
+      "az-Arab": "لیسته آرتیر"
+    },
+    "مثلاً شیر کم‌چرب یک لیتر": {
+      "en": "e.g. «شیر کم‌چرب ۱ لیتر»",
+      "ckb": "وەک «شیر کم‌چرب ۱ لیتر»",
+      "ku": "e.g. «شیر کم‌چرب ۱ لیتر»",
+      "az-Arab": "مثلاً «شیر کم‌چرب ۱ لیتر»"
+    },
+    "آدرس تحویل شما": {
+      "en": "Your delivery address",
+      "ckb": "ناونیشانی گەیاندنت",
+      "ku": "Navnîşana te ya radestkirinê",
+      "az-Arab": "تحویل آدرسینیز"
+    },
+    "تغییر نشانی": {
+      "en": "Change address",
+      "ckb": "گۆڕینی ناونیشان",
+      "ku": "Navnîşanê biguherîne",
+      "az-Arab": "آدرسی دَییش"
+    },
+    "انتخاب نشانی": {
+      "en": "Choose address",
+      "ckb": "هەڵبژاردنی ناونیشان",
+      "ku": "Navnîşan hilbijêre",
+      "az-Arab": "آدرس سئچ"
+    },
+    "انتخاب موقعیت تحویل": {
+      "en": "Choose delivery location",
+      "ckb": "شوێنی گەیاندن هەڵبژێرە",
+      "ku": "Cihê radestkirinê hilbijêre",
+      "az-Arab": "تحویل یئرینی سئچ"
+    },
+    "موقعیت تحویل": {
+      "en": "Delivery location",
+      "ckb": "شوێنی گەیاندن",
+      "ku": "Cihê radestkirinê",
+      "az-Arab": "تحویل یئری"
+    },
+    "جست‌وجوی نشانی": {
+      "en": "Find address",
+      "ckb": "گەڕان بۆ ناونیشان",
+      "ku": "Li navnîşanê bigere",
+      "az-Arab": "آدرس آختاریشی"
+    },
+    "جست‌وجوی آدرس": {
+      "en": "Find address",
+      "ckb": "گەڕان بۆ ناونیشان",
+      "ku": "Li navnîşanê bigere",
+      "az-Arab": "آدرس آختاریشی"
+    },
+    "شهر، محله یا خیابان را جست‌وجو کنید؛ نیازی به GPS نیست.": {
+      "en": "Search your city, neighbourhood or street. GPS is optional.",
+      "ckb": "بەدوای شار، گەڕەک یان شەقامدا بگەڕێ؛ GPS پێویست نییە.",
+      "ku": "Bajar, tax an kolanê bigere; GPS ne mecbûrî ye.",
+      "az-Arab": "شهر، محله یا کوچه‌نی آختارین؛ GPS لازیم دئییل."
+    },
+    "مثلاً تهران، میدان ونک": {
+      "en": "e.g. Tehran, Vanak Square",
+      "ckb": "وەک تاران، مەیدانی وەنەک",
+      "ku": "Mînak Tehran, Meydana Vanak",
+      "az-Arab": "مثلاً تهران، ونک میدانی"
+    },
+    "نشانی یک‌بار روی همین کامپیوتر ذخیره می‌شود.": {
+      "en": "Your address is remembered on this computer.",
+      "ckb": "ناونیشانت لەم کۆمپیوتەرەدا دەمێنێتەوە.",
+      "ku": "Navnîşana te li ser vê komputerê tê parastin.",
+      "az-Arab": "آدرسینیز بو کامپیوترده ساقلانیر."
+    },
+    "انتخاب روی نقشهٔ برنامه": {
+      "en": "Choose on the map",
+      "ckb": "هەڵبژاردن لە نەخشە",
+      "ku": "Li ser nexşeyê hilbijêre",
+      "az-Arab": "خریطه‌ده سئچ"
+    },
+    "انتخاب مرکز نقشه و بررسی خدمات": {
+      "en": "Use map centre and check service",
+      "ckb": "ناوەڕاستی نەخشە و پشکنینی خزمەتگوزاری",
+      "ku": "Navenda nexşeyê û xizmetê kontrol bike",
+      "az-Arab": "خریطه مرکزینی سئچ و خیدمتی یوخلا"
+    },
+    "در حال جست‌وجوی نشانی…": {
+      "en": "Finding addresses…",
+      "ckb": "گەڕان بۆ ناونیشان…",
+      "ku": "Li navnîşanan digere…",
+      "az-Arab": "آدرس آختاریلیر…"
+    },
+    "نشانی موردنظر را انتخاب کنید.": {
+      "en": "Choose your address.",
+      "ckb": "ناونیشانەکەت هەڵبژێرە.",
+      "ku": "Navnîşana xwe hilbijêre.",
+      "az-Arab": "آدرسینیزی سئچین."
+    },
+    "نشانی پیدا نشد؛ شهر و خیابان را کامل‌تر بنویسید.": {
+      "en": "No address found. Add the city and street.",
+      "ckb": "ناونیشان نەدۆزرایەوە؛ شار و شەقام ڕوونتر بنووسە.",
+      "ku": "Navnîşan nehat dîtin; bajar û kolanê zêde bike.",
+      "az-Arab": "آدرس تاپیلمادی؛ شهر و کوچه‌نی تام یازین."
+    },
+    "در حال تأیید خدمات جت در این موقعیت…": {
+      "en": "Checking Jet service at this location…",
+      "ckb": "پشکنینی خزمەتگوزاریی جێت لەم شوێنە…",
+      "ku": "Xizmeta Jet li vî cihî tê kontrolkirin…",
+      "az-Arab": "بو یئرده جت خیدمتی یوخلانیر…"
+    },
+    "در حال بررسی موقعیت…": {
+      "en": "Checking location…",
+      "ckb": "پشکنینی شوێن…",
+      "ku": "Cih tê kontrolkirin…",
+      "az-Arab": "یئر یوخلانیر…"
+    },
+    "جست‌وجوی کل لیست": {
+      "en": "Search entire list",
+      "ckb": "گەڕان بۆ هەموو لیست",
+      "ku": "Li hemû lîsteyê bigere",
+      "az-Arab": "بوتون لیستی آختار"
+    },
+    "جست‌وجوی موارد جدید": {
+      "en": "Search new items",
+      "ckb": "گەڕان بۆ کاڵا نوێکان",
+      "ku": "Li tiştên nû bigere",
+      "az-Arab": "یئنی ماللاری آختار"
+    },
+    "در حال جست‌وجو…": {
+      "en": "Searching…",
+      "ckb": "گەڕان…",
+      "ku": "Lê digere…",
+      "az-Arab": "آختاریلیر…"
+    },
+    "توقف جست‌وجو": {
+      "en": "Stop search",
+      "ckb": "وەستاندنی گەڕان",
+      "ku": "Lêgerînê rawestîne",
+      "az-Arab": "آختاریشی دایاندیر"
+    },
+    "پیشرفت جست‌وجو": {
+      "en": "Search progress",
+      "ckb": "پێشکەوتنی گەڕان",
+      "ku": "Pêşveçûna lêgerînê",
+      "az-Arab": "آختاریشین گئدیشی"
+    },
+    "جست‌وجوی دیجی‌کالاجت": {
+      "en": "Searching Digikala Jet",
+      "ckb": "گەڕان لە دیجی‌کاڵاجێت",
+      "ku": "Li Digikala Jet digere",
+      "az-Arab": "دیجی‌کالاجت آختاریشی"
+    },
+    "آماده‌سازی جست‌وجو…": {
+      "en": "Preparing search…",
+      "ckb": "ئامادەکردنی گەڕان…",
+      "ku": "Lêgerînê amade dike…",
+      "az-Arab": "آختاریش حاضیرلانیر…"
+    },
+    "در حال راه‌اندازی موتور مرورگر…": {
+      "en": "Starting the browser engine…",
+      "ckb": "دەستپێکردنی بزوێنەری وێبگەڕ…",
+      "ku": "Motora gerokê dest pê dike…",
+      "az-Arab": "براوزر موتورونا باشلانیر…"
+    },
+    "در حال باز کردن مرورگر جست‌وجو…": {
+      "en": "Opening the search browser…",
+      "ckb": "کردنەوەی وێبگەڕی گەڕان…",
+      "ku": "Geroka lêgerînê vedike…",
+      "az-Arab": "آختاریش براوزری آچیلیر…"
+    },
+    "در حال آماده‌سازی موقعیت و صفحه‌های جت…": {
+      "en": "Preparing Jet location and pages…",
+      "ckb": "ئامادەکردنی شوێن و پەڕەکانی جێت…",
+      "ku": "Cih û rûpelên Jet amade dike…",
+      "az-Arab": "جت یئری و صفحه‌لری حاضیرلانیر…"
+    },
+    "بارگیری صفحهٔ جت": {
+      "en": "Loading Jet page",
+      "ckb": "بارکردنی پەڕەی جێت",
+      "ku": "Rûpela Jet bar dike",
+      "az-Arab": "جت صفحه‌سی یوکلنیر"
+    },
+    "در انتظار آماده شدن صفحهٔ جت": {
+      "en": "Waiting for Jet to load",
+      "ckb": "چاوەڕێی ئامادەبوونی جێت",
+      "ku": "Li benda amadekirina Jet e",
+      "az-Arab": "جت صفحه‌سینین حاضیرلانماسینی گؤزلَییر"
+    },
+    "تلاش دوباره برای راه‌اندازی": {
+      "en": "Retrying startup",
+      "ckb": "هەوڵی نوێ بۆ دەستپێکردن",
+      "ku": "Destpêkirinê dîsa diceribîne",
+      "az-Arab": "باشلاتما یئنی‌دن یوخلانیر"
+    },
+    "صفحهٔ جت آمادهٔ جست‌وجو است.": {
+      "en": "Jet is ready to search.",
+      "ckb": "جێت بۆ گەڕان ئامادەیە.",
+      "ku": "Jet ji bo lêgerînê amade ye.",
+      "az-Arab": "جت آختاریشا حاضیردیر."
+    },
+    "مقایسه آماده است.": {
+      "en": "Comparison ready.",
+      "ckb": "بەراورد ئامادەیە.",
+      "ku": "Berawird amade ye.",
+      "az-Arab": "موقایسه حاضیردیر."
+    },
+    "شناسایی فروشگاه‌ها": {
+      "en": "Finding shops",
+      "ckb": "دۆزینەوەی فرۆشگاکان",
+      "ku": "Dikanan dibîne",
+      "az-Arab": "ماغازالار تاپیلیر"
+    },
+    "آماده‌سازی صفحه": {
+      "en": "Preparing page",
+      "ckb": "ئامادەکردنی پەڕە",
+      "ku": "Rûpel amade dike",
+      "az-Arab": "صفحه حاضیرلانیر"
+    },
+    "کارهای هم‌زمان": {
+      "en": "Parallel tasks",
+      "ckb": "ئەرکە هاوکاتەکان",
+      "ku": "Karên hevdem",
+      "az-Arab": "پارالل ایشلر"
+    },
+    "مرورگر": {
+      "en": "Browser",
+      "ckb": "وێبگەڕ",
+      "ku": "Gerok",
+      "az-Arab": "براوزر"
+    },
+    "صفحهٔ موازی": {
+      "en": "parallel pages",
+      "ckb": "پەڕەی هاوکات",
+      "ku": "rûpelên hevdem",
+      "az-Arab": "پارالل صفحه"
+    },
+    "صفحه در حال آماده‌سازی": {
+      "en": "pages starting",
+      "ckb": "پەڕە لە ئامادەکردندان",
+      "ku": "rûpel tên amadekirin",
+      "az-Arab": "صفحه حاضیرلانیر"
+    },
+    "صفحه بررسی شد": {
+      "en": "Page checked",
+      "ckb": "پەڕە پشکنرا",
+      "ku": "Rûpel hat kontrolkirin",
+      "az-Arab": "صفحه یوخلاندی"
+    },
+    "جست‌وجوی موازی": {
+      "en": "Parallel search",
+      "ckb": "گەڕانی هاوکات",
+      "ku": "Lêgerîna hevdem",
+      "az-Arab": "پارالل آختاریش"
+    },
+    "شناسایی کالاها و فروشگاه‌ها": {
+      "en": "Finding products and shops",
+      "ckb": "دۆزینەوەی کاڵا و فرۆشگا",
+      "ku": "Berhem û dikanan dibîne",
+      "az-Arab": "ماللار و ماغازالار تاپیلیر"
+    },
+    "نتیجه خرید": {
+      "en": "Shopping results",
+      "ckb": "ئەنجامی کڕین",
+      "ku": "Encama kirînê",
+      "az-Arab": "آلیش نتیجه‌سی"
+    },
+    "انتخاب بهتر، با قیمت واحد": {
+      "en": "Better choices by unit price",
+      "ckb": "هەڵبژاردنی باشتر بە نرخی یەکە",
+      "ku": "Hilbijartina baştir bi bihayê yekîneyê",
+      "az-Arab": "واحد قییمتی ایله یاخشی سئچیم"
+    },
+    "مقایسه بر پایه قیمت هر کیلو، لیتر یا عدد؛ مقدار خرید و مبلغ پرداخت جداگانه نمایش داده می‌شوند.": {
+      "en": "Compare unit prices, then review quantities and total cost.",
+      "ckb": "نرخی یەکە بەراورد بکە، پاشان بڕ و کۆی نرخ ببینە.",
+      "ku": "Bihayê yekîneyê berawird bike, paşê mîqdar û tevahî bibîne.",
+      "az-Arab": "واحد قییمتینی موقایسه ائدین، سونرا میقدار و جمعی یوخلایین."
+    },
+    "سبد دلخواه شما": {
+      "en": "Your basket preferences",
+      "ckb": "هەڵبژاردەکانی سەبەتەکەت",
+      "ku": "Vebijêrkên sepeta te",
+      "az-Arab": "سبد سئچیم‌لرینیز"
+    },
+    "بهترین قیمت واحد": {
+      "en": "Best unit price",
+      "ckb": "باشترین نرخی یەکە",
+      "ku": "Bihayê yekîneyê yê herî baş",
+      "az-Arab": "ان یاخشی واحد قییمتی"
+    },
+    "یک فروشگاه در هر گروه": {
+      "en": "One shop per category",
+      "ckb": "یەک فرۆشگا بۆ هەر بەش",
+      "ku": "Ji her beşê dikanek",
+      "az-Arab": "هر بؤلومده بیر ماغازا"
+    },
+    "حداکثر دو فروشگاه در هر گروه": {
+      "en": "Up to two shops per category",
+      "ckb": "زۆرترین دوو فرۆشگا بۆ هەر بەش",
+      "ku": "Ji her beşê herî zêde du dikan",
+      "az-Arab": "هر بؤلومده ان چوخ ایکی ماغازا"
+    },
+    "حداکثر سه فروشگاه در هر گروه": {
+      "en": "Up to three shops per category",
+      "ckb": "زۆرترین سێ فرۆشگا بۆ هەر بەش",
+      "ku": "Ji her beşê herî zêde sê dikan",
+      "az-Arab": "هر بؤلومده ان چوخ اوچ ماغازا"
+    },
+    "فروشگاه‌ها": {
+      "en": "Shops",
+      "ckb": "فرۆشگاکان",
+      "ku": "Dikan",
+      "az-Arab": "ماغازالار"
+    },
+    "به‌روزرسانی بهینه‌سازی": {
+      "en": "Update optimization",
+      "ckb": "نوێکردنەوەی باشترین سەبەتە",
+      "ku": "Sepetê nûve bike",
+      "az-Arab": "بهینه‌لشدیرمه‌نی یئنیله"
+    },
+    "سبد کامل با این انتخاب‌ها پیدا نشد.": {
+      "en": "No complete basket matches these choices.",
+      "ckb": "بەم هەڵبژاردنانە سەبەتەی تەواو نەدۆزرایەوە.",
+      "ku": "Sepeteke temam bi van hilbijartinan nehat dîtin.",
+      "az-Arab": "بو سئچیم‌لرله تام سبد تاپیلمادی."
+    },
+    "سبد پیشنهادی شما": {
+      "en": "Your suggested basket",
+      "ckb": "سەبەتەی پێشنیارکراوی تۆ",
+      "ku": "Sepeta te ya pêşniyarkirî",
+      "az-Arab": "سیزه تکلیف اولونان سبد"
+    },
+    "بررسی چند قلم باقی مانده": {
+      "en": "Some items need review",
+      "ckb": "هەندێک کاڵا پێویستی بە پشکنینە",
+      "ku": "Hin tişt pêdivî bi kontrolê ne",
+      "az-Arab": "بعضی ماللار یوخلانمالیدیر"
+    },
+    "ترکیب کامل در این حالت یافت نشد": {
+      "en": "No complete basket in this mode",
+      "ckb": "لەم دۆخەدا سەبەتەی تەواو نەدۆزرایەوە",
+      "ku": "Di vê awayê de sepeta temam nehat dîtin",
+      "az-Arab": "بو حالدا تام سبد تاپیلمادی"
+    },
+    "ترکیب کامل در سقف فعلی یافت نشد": {
+      "en": "No complete basket within the current limit",
+      "ckb": "لە سنووری ئێستادا سەبەتەی تەواو نییە",
+      "ku": "Di sînorê niha de sepeta temam tune",
+      "az-Arab": "ایندیکی حددَه تام سبد تاپیلمادی"
+    },
+    "مقایسهٔ قیمت واحد و سبدهای فروشگاه‌ها": {
+      "en": "Unit prices and shop baskets",
+      "ckb": "نرخی یەکە و سەبەتەی فرۆشگاکان",
+      "ku": "Bihayê yekîneyê û sepetên dikanan",
+      "az-Arab": "واحد قییمتلری و ماغازا سبدلری"
+    },
+    "مقایسهٔ قیمت واحد و هزینهٔ ارسال": {
+      "en": "Compare unit prices and delivery",
+      "ckb": "بەراوردی نرخی یەکە و گەیاندن",
+      "ku": "Bihayê yekîneyê û radestkirinê berawird bike",
+      "az-Arab": "واحد قییمتی و چاتدیرمانی موقایسه ائت"
+    },
+    "بررسی کامل نشده": {
+      "en": "Partial results",
+      "ckb": "ئەنجامی ناتەواو",
+      "ku": "Encamên netemam",
+      "az-Arab": "تام اولمایان نتیجه"
+    },
+    "مبلغ معلوم؛ بخشی از هزینه‌ها نامعلوم است": {
+      "en": "Known amount; some fees are unknown",
+      "ckb": "بڕی زانراو؛ هەندێک تێچوو نادیارە",
+      "ku": "Mîqdara zanîn; hin lêçûn nenas in",
+      "az-Arab": "بیلینن مبلغ؛ بعضی خَرجلر بیلینمیر"
+    },
+    "مبلغ معلوم؛ هزینهٔ نامعلوم اضافه نشده": {
+      "en": "Known amount; unknown fees excluded",
+      "ckb": "بڕی زانراو؛ تێچووی نادیار زیاد نەکراوە",
+      "ku": "Mîqdara zanîn; lêçûna nenas nehat zêdekirin",
+      "az-Arab": "بیلینن مبلغ؛ بیلینمه‌ین خَرج آرتیریلماییب"
+    },
+    "برآورد قیمت و هزینه‌های خوانده‌شده": {
+      "en": "Estimated price including known fees",
+      "ckb": "نرخی خەمڵێنراو لەگەڵ تێچووی زانراو",
+      "ku": "Bihayê texmînî bi lêçûnên zanîn",
+      "az-Arab": "بیلینن خَرجلرله تخمینی قییمت"
+    },
+    "مبلغ سبد مطابق دیجی‌کالاجت": {
+      "en": "Matched Jet basket total",
+      "ckb": "کۆی سەبەتەی هاوتای جێت",
+      "ku": "Tevahiya sepeta Jet a hevhatî",
+      "az-Arab": "جت سبدي ایله اویغون جمع"
+    },
+    "جمع اقلام قابل مقایسه": {
+      "en": "Comparable items total",
+      "ckb": "کۆی کاڵا بەراوردکراوەکان",
+      "ku": "Tevahiya tiştên têne berawirdkirin",
+      "az-Arab": "موقایسه اولونان ماللارین جمعی"
+    },
+    "برآورد؛ قیمت پس از شگفت‌انگیز نامعلوم است": {
+      "en": "Estimate; price after the deal is unknown",
+      "ckb": "خەمڵاندن؛ نرخ دوای ئۆفەر نادیارە",
+      "ku": "Texmîn; bihayê piştî derfetê nenas e",
+      "az-Arab": "تخمین؛ اؤزل اندیریمدن سونرا قییمت بیلینمیر"
+    },
+    "قیمت‌ها و هزینه‌ها": {
+      "en": "Prices and fees",
+      "ckb": "نرخ و تێچووەکان",
+      "ku": "Biha û lêçûn",
+      "az-Arab": "قییمتلر و خَرجلر"
+    },
+    "به‌روزرسانی خودکار قیمت و هزینه‌ها": {
+      "en": "Refresh prices and fees",
+      "ckb": "نوێکردنەوەی نرخ و تێچوو",
+      "ku": "Biha û lêçûnan nûve bike",
+      "az-Arab": "قییمت و خَرجلری یئنیله"
+    },
+    "نتیجه خرید اینجا نمایش داده می‌شود.": {
+      "en": "Your basket will appear here.",
+      "ckb": "سەبەتەکەت لێرە نیشان دەدرێت.",
+      "ku": "Sepeta te li vir tê nîşandan.",
+      "az-Arab": "سبدینیز بورادا گؤستریله‌جک."
+    },
+    "لیست و آدرس را مشخص کنید؛ ادامه کار با برنامه است.": {
+      "en": "Add your list and address. The app takes it from there.",
+      "ckb": "لیست و ناونیشان بنووسە؛ بەرنامە کارەکە تەواو دەکات.",
+      "ku": "Lîste û navnîşanê binivîse; sepan berdewam dike.",
+      "az-Arab": "لیست و آدرسی یازین؛ قالان ایشی پروقرام گؤره‌جک."
+    },
+    "لیست خرید خالی است": {
+      "en": "Your list is empty",
+      "ckb": "لیستی کڕین بەتاڵە",
+      "ku": "Lîsteya te vala ye",
+      "az-Arab": "آلیش لیستی بوشدور"
+    },
+    "اولین کالا را به لیست اضافه کنید.": {
+      "en": "Add your first item.",
+      "ckb": "یەکەم کاڵا زیاد بکە.",
+      "ku": "Tiştê yekem zêde bike.",
+      "az-Arab": "ایلک مالی لیسته آرتیرین."
+    },
+    "آماده مقایسه قیمت‌ها": {
+      "en": "Ready to compare prices",
+      "ckb": "ئامادەی بەراوردی نرخ",
+      "ku": "Ji bo berawirdkirina bihaa amade ye",
+      "az-Arab": "قییمت موقایسه‌سینه حاضیر"
+    },
+    "لیست تغییر کرد؛ برای به‌روزرسانی نتیجه دوباره جست‌وجو کنید.": {
+      "en": "Your list changed. Search again to update the basket.",
+      "ckb": "لیست گۆڕاوە؛ بۆ نوێکردنەوە دووبارە بگەڕێ.",
+      "ku": "Lîste hat guhertin; dîsa lê bigere.",
+      "az-Arab": "لیست دَییشدی؛ نتیجه‌نی یئنیله‌مک اوچون یئنی‌دن آختارین."
+    },
+    "ذخیره شد.": {
+      "en": "Saved.",
+      "ckb": "پاشەکەوت کرا.",
+      "ku": "Hat tomarkirin.",
+      "az-Arab": "ساقلان‌دی."
+    },
+    "به سلیقه شما": {
+      "en": "Make it yours",
+      "ckb": "بە دڵی خۆت",
+      "ku": "Li gorî te",
+      "az-Arab": "سلیقه‌نیزه گؤره"
+    },
+    "رنگ و حال سبدچین": {
+      "en": "Make Sabadchin yours",
+      "ckb": "سەبەدچین بە دڵی خۆت",
+      "ku": "Sabadçîn li gorî te",
+      "az-Arab": "سبدچینی اؤزونوزون ائدین"
+    },
+    "ظاهر دلخواه روی همین گوشی ذخیره می‌شود.": {
+      "en": "Your preferences are remembered on this device.",
+      "ckb": "هەڵبژاردنەکانت لەم ئامێرە دەمێننەوە.",
+      "ku": "Vebijêrkên te li ser vê amûrê tên parastin.",
+      "az-Arab": "سئچیم‌لرینیز بو دستگاهدا ساقلانیر."
+    },
+    "ظاهر برنامه": {
+      "en": "Appearance",
+      "ckb": "ڕووکار",
+      "ku": "Rûkar",
+      "az-Arab": "گؤرونوش"
+    },
+    "ساده": {
+      "en": "Simple",
+      "ckb": "سادە",
+      "ku": "Sade",
+      "az-Arab": "ساده"
+    },
+    "مدرن": {
+      "en": "Modern",
+      "ckb": "مۆدێرن",
+      "ku": "Nûjen",
+      "az-Arab": "مودرن"
+    },
+    "سنتی": {
+      "en": "Traditional",
+      "ckb": "نەریتی",
+      "ku": "Kevneşopî",
+      "az-Arab": "سنتی"
+    },
+    "آرام، روشن و بی‌حاشیه": {
+      "en": "Quiet, clear and focused",
+      "ckb": "ئارام و ڕوون و سادە",
+      "ku": "Aram, zelal û sade",
+      "az-Arab": "آرام، آیدین و ساده"
+    },
+    "آرام، منظم و الهام‌گرفته از Windows 11": {
+      "en": "Calm and structured, inspired by Windows 11",
+      "ckb": "ئارام و ڕێکخراو، لە Windows 11 وەرگیراو",
+      "ku": "Aram û rêkûpêk, ji Windows 11 îlhamgirtî",
+      "az-Arab": "آرام و منظم، Windows 11‌دن ایلهام‌لانان"
+    },
+    "ایوان، کاشی فیروزه‌ای و رنگ خاک": {
+      "en": "Courtyards, turquoise tiles and earth tones",
+      "ckb": "هەیوان، کاشی شین و ڕەنگی خاک",
+      "ku": "Hewş, kaşiyên şîn û rengên axê",
+      "az-Arab": "ایوان، فیروزه‌ای کاشی و تورپاق رنگلری"
+    },
+    "انتخاب‌های دستی": {
+      "en": "Manual choices",
+      "ckb": "هەڵبژاردنی دەستی",
+      "ku": "Hilbijartinên destî",
+      "az-Arab": "ال ایله سئچیم‌لر"
+    },
+    "هنگام تغییر حالت بهینه‌سازی": {
+      "en": "When changing optimization mode",
+      "ckb": "لە گۆڕینی شێوازی هەڵبژاردندا",
+      "ku": "Dema guhertina awayê hilbijartinê",
+      "az-Arab": "بهینه‌لشدیرمه حالینی دَییشَنده"
+    },
+    "هر بار بپرس": {
+      "en": "Ask every time",
+      "ckb": "هەموو جارێک بپرسە",
+      "ku": "Her car bipirse",
+      "az-Arab": "هر دفعه سوروش"
+    },
+    "همیشه انتخاب‌های من حفظ شوند": {
+      "en": "Always keep my choices",
+      "ckb": "هەمیشە هەڵبژاردنەکانم بپارێزە",
+      "ku": "Her gav hilbijartinên min biparêze",
+      "az-Arab": "سئچیم‌لریمی همیشه ساخلا"
+    },
+    "همیشه بازنشانی و دوباره بهینه‌سازی کن": {
+      "en": "Always reset and optimize again",
+      "ckb": "هەمیشە نوێ هەڵبژێرەوە",
+      "ku": "Her gav ji nû ve hilbijêre",
+      "az-Arab": "همیشه یئنی‌دن بهینه‌لشدیر"
+    },
+    "این تنظیم شامل انتخاب کالا و تعداد بسته‌های تغییر داده‌شده است؛ لیست خرید شما پاک نمی‌شود.": {
+      "en": "This applies to product and package choices, not your shopping list.",
+      "ckb": "ئەمە بۆ کاڵا و ژمارەی پاکەتەکانە؛ لیستی کڕین ناسڕێتەوە.",
+      "ku": "Ev ji bo berhem û paketan e; lîsteya te nayê jêbirin.",
+      "az-Arab": "بو تنظیم مال و بسته سئچیمینه آیددیر؛ آلیش لیستینیز سیلینمیر."
+    },
+    "درباره سبدچین": {
+      "en": "About Sabadchin",
+      "ckb": "دەربارەی سەبەدچین",
+      "ku": "Derbarê Sabadçîn",
+      "az-Arab": "سبدچین حاققیندا"
+    },
+    "همراه مستقل برنامه‌ریزی خرید؛ وابسته به دیجی‌کالاجت نیست. مبلغ و موجودی نهایی را فروشگاه تعیین می‌کند. برنامه سفارش یا پرداختی ثبت نمی‌کند.": {
+      "en": "An independent shopping planner. Final prices and stock come from the shop. This app does not place orders or payments.",
+      "ckb": "بەرنامەیەکی سەربەخۆی کڕینە. نرخ و کۆگای کۆتایی لەلایەن فرۆشگاوە دیاری دەکرێت. داوا و پارەدان تۆمار ناکات.",
+      "ku": "Planerê kirînê yê serbixwe ye. Biha û stokê dawî dikan diyar dike. Sipariş an dravdanê tomar nake.",
+      "az-Arab": "موستقیل آلیش پلانلاشدیریجیسی. سون قییمت و مووجودلوغو ماغازا معین ائدیر. سیفاریش یا اؤده‌مه قئید ائتمیر."
+    },
+    "حریم خصوصی شما": {
+      "en": "Your privacy",
+      "ckb": "تایبەتمەندیی تۆ",
+      "ku": "Nepenîya te",
+      "az-Arab": "گیزلیلیگینیز"
+    },
+    "پشتیبان‌گیری و مدیریت لیست": {
+      "en": "Backups and list management",
+      "ckb": "پاشەکەوت و بەڕێوەبردنی لیست",
+      "ku": "Kopiyên ewle û rêveberiya lîsteyê",
+      "az-Arab": "یئدک و لیستین ایداره‌سی"
+    },
+    "بازیابی لیست": {
+      "en": "Restore list",
+      "ckb": "گەڕاندنەوەی لیست",
+      "ku": "Lîsteyê vegerîne",
+      "az-Arab": "لیستی قایتار"
+    },
+    "پشتیبان‌گیری": {
+      "en": "Back up",
+      "ckb": "پاشەکەوتکردن",
+      "ku": "Kopiyeke ewle bigire",
+      "az-Arab": "یئدک آل"
+    },
+    "لیست جدید": {
+      "en": "New list",
+      "ckb": "لیستی نوێ",
+      "ku": "Lîsteya nû",
+      "az-Arab": "یئنی لیست"
+    },
+    "پاک‌کردن اطلاعات این گوشی": {
+      "en": "Clear device data",
+      "ckb": "سڕینەوەی زانیاریی ئامێر",
+      "ku": "Daneyên amûrê paqij bike",
+      "az-Arab": "دستگاهین معلوماتینی سیل"
+    },
+    "پاک شود": {
+      "en": "Clear",
+      "ckb": "بسڕەوە",
+      "ku": "Paqij bike",
+      "az-Arab": "سیل"
+    },
+    "انصراف": {
+      "en": "Cancel",
+      "ckb": "پاشگەزبوونەوە",
+      "ku": "Betal bike",
+      "az-Arab": "واز کئچ"
+    },
+    "بستن": {
+      "en": "Close",
+      "ckb": "داخستن",
+      "ku": "Bigire",
+      "az-Arab": "باغلا"
+    },
+    "بستن موقعیت": {
+      "en": "Close location",
+      "ckb": "داخستنی شوێن",
+      "ku": "Cih bigire",
+      "az-Arab": "یئری باغلا"
+    },
+    "بستن گزینه‌ها": {
+      "en": "Close choices",
+      "ckb": "داخستنی هەڵبژاردەکان",
+      "ku": "Vebijêrkan bigire",
+      "az-Arab": "سئچیم‌لری باغلا"
+    },
+    "ذخیره نتیجه": {
+      "en": "Save result",
+      "ckb": "پاشەکەوتکردنی ئەنجام",
+      "ku": "Encamê tomar bike",
+      "az-Arab": "نتیجه‌نی ساخلا"
+    },
+    "تغییر انتخاب": {
+      "en": "Change choice",
+      "ckb": "گۆڕینی هەڵبژاردن",
+      "ku": "Hilbijartinê biguherîne",
+      "az-Arab": "سئچیمی دَییش"
+    },
+    "تغییر انتخاب کالا": {
+      "en": "Change product",
+      "ckb": "گۆڕینی کاڵا",
+      "ku": "Berhemê biguherîne",
+      "az-Arab": "مالی دَییش"
+    },
+    "گزینه‌ها از کم به زیاد بر پایه قیمت واحد": {
+      "en": "Sorted by unit price, lowest first",
+      "ckb": "ڕیزکراو بە نرخی یەکە، لە کەمەوە",
+      "ku": "Li gorî bihayê yekîneyê, herî kêm pêşî",
+      "az-Arab": "واحد قییمتینه گؤره آزدان چوخا"
+    },
+    "جست‌وجوی برند یا فروشگاه": {
+      "en": "Search brand or shop",
+      "ckb": "گەڕان بۆ براند یان فرۆشگا",
+      "ku": "Li marka an dikanê bigere",
+      "az-Arab": "مارکا یا ماغازا آختار"
+    },
+    "جست‌وجوی گزینه‌ها": {
+      "en": "Search choices",
+      "ckb": "گەڕان لە هەڵبژاردەکان",
+      "ku": "Li vebijêrkan bigere",
+      "az-Arab": "سئچیم‌لری آختار"
+    },
+    "انتخاب این کالا": {
+      "en": "Choose this product",
+      "ckb": "ئەم کاڵایە هەڵبژێرە",
+      "ku": "Vê berhemê hilbijêre",
+      "az-Arab": "بو مالی سئچ"
+    },
+    "✓ انتخاب فعلی": {
+      "en": "✓ Current choice",
+      "ckb": "✓ هەڵبژاردنی ئێستا",
+      "ku": "✓ Hilbijartina niha",
+      "az-Arab": "✓ ایندیکی سئچیم"
+    },
+    "انتخاب شما": {
+      "en": "Your choice",
+      "ckb": "هەڵبژاردنی تۆ",
+      "ku": "Hilbijartina te",
+      "az-Arab": "سیزین سئچیمینیز"
+    },
+    "قیمت واحد در ترکیب فروشگاه‌ها": {
+      "en": "Unit price in this basket",
+      "ckb": "نرخی یەکە لەم سەبەتەیە",
+      "ku": "Bihayê yekîneyê di vê sepetê de",
+      "az-Arab": "بو سبدده واحد قییمتی"
+    },
+    "درخواست شما": {
+      "en": "Your request",
+      "ckb": "داواکاریی تۆ",
+      "ku": "Daxwaza te",
+      "az-Arab": "سیزین ایسته‌یینیز"
+    },
+    "مقدار خرید": {
+      "en": "Purchase amount",
+      "ckb": "بڕی کڕین",
+      "ku": "Mîqdara kirînê",
+      "az-Arab": "آلیش میقداری"
+    },
+    "میانگین برای مقدار خرید شما": {
+      "en": "Average for your purchase amount",
+      "ckb": "تێکڕا بۆ بڕی کڕینت",
+      "ku": "Navîn ji bo mîqdara kirîna te",
+      "az-Arab": "آلیش میقدارینیز اوچون اورتا"
+    },
+    "یک بسته کمتر": {
+      "en": "One package less",
+      "ckb": "یەک پاکەت کەمتر",
+      "ku": "Paketek kêmtir",
+      "az-Arab": "بیر بسته آز"
+    },
+    "یک بسته بیشتر": {
+      "en": "One package more",
+      "ckb": "یەک پاکەت زیاتر",
+      "ku": "Paketek zêdetir",
+      "az-Arab": "بیر بسته چوخ"
+    },
+    "کمتر از مقدار درخواستی": {
+      "en": "Below requested amount",
+      "ckb": "کەمتر لە بڕی داواکراو",
+      "ku": "Ji mîqdara xwestî kêmtir",
+      "az-Arab": "ایستنَن میقداردان آز"
+    },
+    "مقدار بیشتر از درخواست؛ انتخاب دستی": {
+      "en": "Extra quantity; manual choice",
+      "ckb": "بڕی زیاتر؛ هەڵبژاردنی دەستی",
+      "ku": "Mîqdara zêde; hilbijartina destî",
+      "az-Arab": "آرتیق میقدار؛ ال ایله سئچیم"
+    },
+    "واحد با درخواست شما سازگار نیست": {
+      "en": "Unit does not match your request",
+      "ckb": "یەکە لەگەڵ داواکاریی تۆ ناگونجێت",
+      "ku": "Yekîne bi daxwaza te re nagunce",
+      "az-Arab": "واحد ایسته‌یینیزه اویغون دئییل"
+    },
+    "گزینه‌ای با این عبارت پیدا نشد.": {
+      "en": "No matching choices found.",
+      "ckb": "هیچ هەڵبژاردەیەک نەدۆزرایەوە.",
+      "ku": "Vebijêrkeke hevhatî nehat dîtin.",
+      "az-Arab": "اویغون سئچیم تاپیلمادی."
+    },
+    "نمایش گزینه‌های بیشتر": {
+      "en": "Show more choices",
+      "ckb": "هەڵبژاردەی زیاتر نیشان بدە",
+      "ku": "Vebijêrkên zêdetir nîşan bide",
+      "az-Arab": "داها چوخ سئچیم گؤستر"
+    },
+    "تطبیق پیشنهادی؛ عنوان را بررسی کنید": {
+      "en": "Suggested match; check the title",
+      "ckb": "هاوتای پێشنیارکراو؛ ناوەکە بپشکنە",
+      "ku": "Hevhatina pêşniyarkirî; navê kontrol bike",
+      "az-Arab": "تکلیف اولونان اویغونلوخ؛ آدی یوخلایین"
+    },
+    "برای مقایسه قابل اتکا، کالا یا اندازه مناسب پیدا نشد.": {
+      "en": "No suitable product or size found.",
+      "ckb": "کاڵا یان قەبارەی گونجاو نەدۆزرایەوە.",
+      "ku": "Berhem an mezinahiya guncaw nehat dîtin.",
+      "az-Arab": "اویغون مال یا اؤلچو تاپیلمادی."
+    },
+    "دیدن و بررسی گزینه‌ها": {
+      "en": "Review alternatives",
+      "ckb": "پشکنینی هەڵبژاردەکان",
+      "ku": "Vebijêrkan kontrol bike",
+      "az-Arab": "باشقا سئچیم‌لری یوخلا"
+    },
+    "انتخاب‌های دستی چه شوند؟": {
+      "en": "What about your manual choices?",
+      "ckb": "هەڵبژاردنە دەستییەکان چی لێ بکرێت؟",
+      "ku": "Bi hilbijartinên te yên destî çi bikin?",
+      "az-Arab": "ال ایله سئچیم‌لرینیز نه اولسون؟"
+    },
+    "کالاها و تعداد بسته‌هایی که خودتان تغییر داده‌اید، حفظ شوند یا برنامه دوباره آن‌ها را انتخاب کند؟": {
+      "en": "Keep your product and package choices, or let the app choose again?",
+      "ckb": "کاڵا و ژمارەی پاکەتەکانی خۆت بپارێزین، یان بەرنامە دووبارە هەڵبژێرێت؟",
+      "ku": "Hilbijartinên te biparêzin, an sepan dîsa hilbijêre?",
+      "az-Arab": "مال و بسته سئچیم‌لرینیز قالسین، یا پروقرام یئنی‌دن سئچسین؟"
+    },
+    "دوباره نپرس": {
+      "en": "Don't ask again",
+      "ckb": "دووبارە مەپرسە",
+      "ku": "Dîsa nepirse",
+      "az-Arab": "بیر داها سوروشما"
+    },
+    "بازنشانی و بهینه‌سازی": {
+      "en": "Reset and optimize",
+      "ckb": "نوێکردنەوە و باشکردن",
+      "ku": "Ji nû ve hilbijêre",
+      "az-Arab": "یئنی‌دن بهینه‌لشدیر"
+    },
+    "حفظ انتخاب‌های من": {
+      "en": "Keep my choices",
+      "ckb": "هەڵبژاردنەکانم بپارێزە",
+      "ku": "Hilbijartinên min biparêze",
+      "az-Arab": "سئچیم‌لریمی ساخلا"
+    },
+    "محاسبهٔ دوباره": {
+      "en": "Recalculate",
+      "ckb": "دووبارە ژماردن",
+      "ku": "Dîsa hesab bike",
+      "az-Arab": "یئنی‌دن حسابلا"
+    },
+    "تومان": {
+      "en": "toman",
+      "ckb": "تمەن",
+      "ku": "toman",
+      "az-Arab": "تومن"
+    },
+    "کیلوگرم": {
+      "en": "kg",
+      "ckb": "کیلۆگرام",
+      "ku": "kg",
+      "az-Arab": "کیلوگرام"
+    },
+    "لیتر": {
+      "en": "litre",
+      "ckb": "لیتر",
+      "ku": "lître",
+      "az-Arab": "لیتر"
+    },
+    "عدد": {
+      "en": "item",
+      "ckb": "دانە",
+      "ku": "heb",
+      "az-Arab": "عدد"
+    },
+    "برگ دولا": {
+      "en": "two-ply sheets",
+      "ckb": "پەڕەی دووچین",
+      "ku": "pelên du-tebeqeyî",
+      "az-Arab": "ایکی‌قاتلی ورق"
+    },
+    "اندازه نامشخص": {
+      "en": "Unknown size",
+      "ckb": "قەبارەی نادیار",
+      "ku": "Mezinahiya nenas",
+      "az-Arab": "اؤلچو بیلینمیر"
+    },
+    "اندازه بسته نامشخص": {
+      "en": "Unknown package size",
+      "ckb": "قەبارەی پاکەت نادیارە",
+      "ku": "Mezinahiya paketê nenas e",
+      "az-Arab": "بسته اؤلچوسو بیلینمیر"
+    },
+    "قیمت واحد قابل محاسبه نیست": {
+      "en": "Unit price unavailable",
+      "ckb": "نرخی یەکە بەردەست نییە",
+      "ku": "Bihayê yekîneyê ne amade ye",
+      "az-Arab": "واحد قییمتی حسابلانمیر"
+    },
+    "قیمت عادی": {
+      "en": "Regular price",
+      "ckb": "نرخی ئاسایی",
+      "ku": "Bihayê asayî",
+      "az-Arab": "عادی قییمت"
+    },
+    "قیمت عادی؛ بدون تخفیف خوانده‌شده": {
+      "en": "Regular price; no discount found",
+      "ckb": "نرخی ئاسایی؛ داشکاندن نەدۆزرایەوە",
+      "ku": "Bihayê asayî; daxistin nehat dîtin",
+      "az-Arab": "عادی قییمت؛ اندیریم تاپیلمادی"
+    },
+    "قیمت عادی در صفحه خوانده نشد": {
+      "en": "Regular price not available",
+      "ckb": "نرخی ئاسایی بەردەست نییە",
+      "ku": "Bihayê asayî ne amade ye",
+      "az-Arab": "عادی قییمت آلینمادی"
+    },
+    "قیمت خوانده نشد؛ مبلغ بعدی برآوردی است": {
+      "en": "Next price unavailable; estimate only",
+      "ckb": "نرخی دواتر نادیارە؛ تەنها خەمڵاندنە",
+      "ku": "Bihayê piştre nenas e; tenê texmîn e",
+      "az-Arab": "سونراکی قییمت بیلینمیر؛ تخمیندیر"
+    },
+    "قیمت پس از شگفت‌انگیز خوانده نشده؛ مبلغ این قلم برآوردی است.": {
+      "en": "Post-deal price unknown; this item is estimated.",
+      "ckb": "نرخ دوای ئۆفەر نادیارە؛ ئەم کاڵایە خەمڵێنراوە.",
+      "ku": "Bihayê piştî derfetê nenas e; ev tişt texmînî ye.",
+      "az-Arab": "اؤزل اندیریمدن سونرا قییمت بیلینمیر؛ بو مال تخمیندیر."
+    },
+    "شگفت‌انگیز": {
+      "en": "Amazing deal",
+      "ckb": "ئۆفەری تایبەت",
+      "ku": "Derfeta taybet",
+      "az-Arab": "اؤزل اندیریم"
+    },
+    "تخفیف‌دار": {
+      "en": "Discounted",
+      "ckb": "داشکێنراو",
+      "ku": "Daxistî",
+      "az-Arab": "اندیریملی"
+    },
+    "عادی": {
+      "en": "Regular",
+      "ckb": "ئاسایی",
+      "ku": "Asayî",
+      "az-Arab": "عادی"
+    },
+    "پس از سهمیه": {
+      "en": "After deal allowance",
+      "ckb": "دوای بەشی ئۆفەر",
+      "ku": "Piştî para derfetê",
+      "az-Arab": "پای بیتَندن سونرا"
+    },
+    "(محاسبه از اجزای تخفیف)": {
+      "en": "(from discount components)",
+      "ckb": "(لە پێکهاتەکانی داشکاندن)",
+      "ku": "(ji beşên daxistinê)",
+      "az-Arab": "(اندیریم بؤلوملریندن)"
+    },
+    "بسته": {
+      "en": "package",
+      "ckb": "پاکەت",
+      "ku": "paket",
+      "az-Arab": "بسته"
+    },
+    "در بسته": {
+      "en": "per package",
+      "ckb": "لە پاکەتێکدا",
+      "ku": "di paketê de",
+      "az-Arab": "بسته‌ده"
+    },
+    "در پک": {
+      "en": "in multipack",
+      "ckb": "لە پاکەتی کۆمەڵەدا",
+      "ku": "di paketa pirhejmar de",
+      "az-Arab": "پکده"
+    },
+    "جعبه": {
+      "en": "box",
+      "ckb": "سندووق",
+      "ku": "qutî",
+      "az-Arab": "قوطو"
+    },
+    "برگ دولای معادل در کل بسته": {
+      "en": "equivalent two-ply sheets in the pack",
+      "ckb": "پەڕەی هاوتای دووچین لە پاکەتدا",
+      "ku": "pelên du-tebeqeyî yên hevta di paketê de",
+      "az-Arab": "بسته‌ده ایکی‌قاتلی ورق معادلی"
+    },
+    "با شگفت‌انگیز": {
+      "en": "at amazing price",
+      "ckb": "بە نرخی ئۆفەر",
+      "ku": "bi bihayê derfetê",
+      "az-Arab": "اؤزل اندیریملی"
+    },
+    "با قیمت پس از سهمیه؛ میانگین": {
+      "en": "at post-deal price; average",
+      "ckb": "بە نرخی دوای ئۆفەر؛ تێکڕا",
+      "ku": "bi bihayê piştî derfetê; navîn",
+      "az-Arab": "پای سونراسی قییمتی؛ اورتا"
+    },
+    "بیشتر از مقدار درخواستی": {
+      "en": "Above requested quantity",
+      "ckb": "زیاتر لە بڕی داواکراو",
+      "ku": "Ji mîqdara xwestî zêdetir",
+      "az-Arab": "ایستنَن میقداردان چوخ"
+    },
+    "قیمت برآوردی": {
+      "en": "Estimated price",
+      "ckb": "نرخی خەمڵێنراو",
+      "ku": "Bihayê texmînî",
+      "az-Arab": "تخمینی قییمت"
+    },
+    "فروشگاه": {
+      "en": "shop",
+      "ckb": "فرۆشگا",
+      "ku": "dikan",
+      "az-Arab": "ماغازا"
+    },
+    "کالا": {
+      "en": "products",
+      "ckb": "کاڵا",
+      "ku": "berhem",
+      "az-Arab": "مال"
+    },
+    "قلم": {
+      "en": "items",
+      "ckb": "کاڵا",
+      "ku": "tişt",
+      "az-Arab": "مال"
+    },
+    "قلم کالا": {
+      "en": "items",
+      "ckb": "کاڵا",
+      "ku": "tişt",
+      "az-Arab": "مال"
+    },
+    "نتیجه خوانده‌شده": {
+      "en": "results read",
+      "ckb": "ئەنجام خوێندراوەتەوە",
+      "ku": "encam hatine xwendin",
+      "az-Arab": "اوخونموش نتیجه"
+    },
+    "فروشگاه شناسایی‌شده": {
+      "en": "shops found",
+      "ckb": "فرۆشگا دۆزراوەتەوە",
+      "ku": "dikan hatine dîtin",
+      "az-Arab": "تاپیلان ماغازا"
+    },
+    "از": {
+      "en": "of",
+      "ckb": "لە",
+      "ku": "ji",
+      "az-Arab": "دن"
+    },
+    "سفارش از": {
+      "en": "orders from",
+      "ckb": "داوا لە",
+      "ku": "sipariş ji",
+      "az-Arab": "سیفاریش"
+    },
+    "سفارش": {
+      "en": "order",
+      "ckb": "داوا",
+      "ku": "sipariş",
+      "az-Arab": "سیفاریش"
+    },
+    "سبد": {
+      "en": "Basket",
+      "ckb": "سەبەتە",
+      "ku": "Sepet",
+      "az-Arab": "سبد"
+    },
+    "جمع کالاها": {
+      "en": "Items subtotal",
+      "ckb": "کۆی کاڵاکان",
+      "ku": "Tevahiya berheman",
+      "az-Arab": "ماللارین جمعی"
+    },
+    "ارسال": {
+      "en": "Delivery",
+      "ckb": "گەیاندن",
+      "ku": "Radestkirin",
+      "az-Arab": "چاتدیرما"
+    },
+    "خدمات": {
+      "en": "Service",
+      "ckb": "خزمەتگوزاری",
+      "ku": "Xizmet",
+      "az-Arab": "خیدمت"
+    },
+    "هزینه ارسال": {
+      "en": "Delivery fee",
+      "ckb": "تێچووی گەیاندن",
+      "ku": "Lêçûna radestkirinê",
+      "az-Arab": "چاتدیرما خَرجی"
+    },
+    "هزینه خدمات": {
+      "en": "Service fee",
+      "ckb": "تێچووی خزمەتگوزاری",
+      "ku": "Lêçûna xizmetê",
+      "az-Arab": "خیدمت خَرجی"
+    },
+    "حداقل سفارش": {
+      "en": "Minimum order",
+      "ckb": "کەمترین داوا",
+      "ku": "Kêmtirîn sipariş",
+      "az-Arab": "مینیموم سیفاریش"
+    },
+    "حد ارسال رایگان": {
+      "en": "Free-delivery threshold",
+      "ckb": "سنووری گەیاندنی بێبەرامبەر",
+      "ku": "Sînorê radestkirina bêpere",
+      "az-Arab": "پوولسوز چاتدیرما حدی"
+    },
+    "بسته‌بندی": {
+      "en": "Packaging",
+      "ckb": "پاکەتکردن",
+      "ku": "Pakêt kirin",
+      "az-Arab": "بسته‌لمه"
+    },
+    "پردازش": {
+      "en": "Handling",
+      "ckb": "ئامادەکردن",
+      "ku": "Amadekirin",
+      "az-Arab": "حاضیرلاما"
+    },
+    "مالیات": {
+      "en": "Tax",
+      "ckb": "باج",
+      "ku": "Bac",
+      "az-Arab": "وئرگی"
+    },
+    "نامعلوم": {
+      "en": "Unknown",
+      "ckb": "نادیار",
+      "ku": "Nenas",
+      "az-Arab": "بیلینمیر"
+    },
+    "برآورد با هزینه‌های خوانده‌شده": {
+      "en": "Estimate including known fees",
+      "ckb": "خەمڵاندن لەگەڵ تێچووی زانراو",
+      "ku": "Texmîn bi lêçûnên zanîn",
+      "az-Arab": "بیلینن خَرجلرله تخمین"
+    },
+    "برآورد این قلم": {
+      "en": "estimated item total",
+      "ckb": "کۆی خەمڵێنراوی کاڵا",
+      "ku": "tevahiya texmînî ya tiştê",
+      "az-Arab": "بو مالین تخمینی جمعی"
+    },
+    "قیمت پس از سهمیه برای بعضی اقلام برآوردی است": {
+      "en": "Some post-deal prices are estimates",
+      "ckb": "نرخی هەندێک کاڵا دوای ئۆفەر خەمڵاندنە",
+      "ku": "Hin bihayên piştî derfetê texmîn in",
+      "az-Arab": "بعضی ماللارین پای سونراسی قییمتی تخمیندیر"
+    },
+    "ارسال و هزینه‌ها جداگانه": {
+      "en": "delivery and fees charged separately",
+      "ckb": "گەیاندن و تێچوو جیاوازن",
+      "ku": "radestkirin û lêçûn cuda ne",
+      "az-Arab": "چاتدیرما و خَرجلر آیری‌دیر"
+    },
+    "از همین فروشگاه": {
+      "en": "from this shop",
+      "ckb": "لەم فرۆشگایە",
+      "ku": "ji vî dikanî",
+      "az-Arab": "بو ماغازادان"
+    },
+    "خرید چندمرحله‌ای با هزینهٔ جدا برای هر سفارش؛ سهمیه و هزینهٔ نهایی سفارش بعدی باید در فروشگاه تأیید شوند.": {
+      "en": "Separate orders have separate fees. Confirm the next order’s deal allowance and total at the shop.",
+      "ckb": "هەر داوایەک تێچووی خۆی هەیە؛ بەش و کۆی داوای دواتر لە فرۆشگا پشتڕاست بکەوە.",
+      "ku": "Her sipariş lêçûna xwe heye. Para derfetê û tevahiya siparişê li dikanê piştrast bike.",
+      "az-Arab": "هر سیفاریشین آیری خَرجی وار؛ نؤوبتی سیفاریشین پایینی و جمعینی ماغازادا تصدیق ائدین."
+    },
+    "تا روشن شدن هزینه‌های نامعلوم، ارزان‌تر بودن مبلغ نهایی این پیشنهاد قابل تأیید نیست.": {
+      "en": "Final savings cannot be confirmed until all fees are known.",
+      "ckb": "تا هەموو تێچووەکان دیار نەبن، پاشەکەوتی کۆتایی پشتڕاست نابێتەوە.",
+      "ku": "Heta hemû lêçûn ne diyar bin, teserûfa dawî nayê piştrastkirin.",
+      "az-Arab": "بوتون خَرجلر بیلینه‌نه‌دَک سون اوجوزلوق تصدیق اولونمور."
+    },
+    "قیمت پس از شگفت‌انگیز برای بعضی اقلام نامعلوم است؛ مبلغ نهایی این پیشنهاد تأیید نشده است.": {
+      "en": "Some post-deal prices are unknown; the total is unconfirmed.",
+      "ckb": "هەندێک نرخ دوای ئۆفەر نادیارە؛ کۆی کۆتایی پشتڕاست نەکراوەتەوە.",
+      "ku": "Hin bihayên piştî derfetê nenas in; tevahiya dawî ne piştrast e.",
+      "az-Arab": "بعضی اؤزل اندیریم سونراسی قییمت‌لر بیلینمیر؛ جمع تصدیق اولونماییب."
+    },
+    "سوپرمارکت": {
+      "en": "Supermarket",
+      "ckb": "سوپەرمارکێت",
+      "ku": "Supermarket",
+      "az-Arab": "سوپرمارکت"
+    },
+    "شیرینی و آجیل": {
+      "en": "Sweets & nuts",
+      "ckb": "شیرینی و گوێز",
+      "ku": "Şîrînî û fêkî hişk",
+      "az-Arab": "شیرنی و چره‌ز"
+    },
+    "میوه و سبزیجات": {
+      "en": "Fruit & vegetables",
+      "ckb": "میوە و سەوزە",
+      "ku": "Fêkî û sebze",
+      "az-Arab": "مئیوه و تَرَوَز"
+    },
+    "پروتئینی": {
+      "en": "Meat & poultry",
+      "ckb": "گۆشت و مریشک",
+      "ku": "Goşt û mirîşk",
+      "az-Arab": "اَت و تویوق"
+    },
+    "نانوایی": {
+      "en": "Bakery",
+      "ckb": "نانەواخانە",
+      "ku": "Firin",
+      "az-Arab": "چؤرکچی"
+    },
+    "پت‌شاپ": {
+      "en": "Pet shop",
+      "ckb": "کاڵای ئاژەڵی ماڵی",
+      "ku": "Dikana heywanan",
+      "az-Arab": "حیوان ماغازاسی"
+    },
+    "تازه‌بازار": {
+      "en": "Fresh market",
+      "ckb": "بازاڕی تازە",
+      "ku": "Bazara teze",
+      "az-Arab": "تَزه بازار"
+    },
+    "نوع نامشخص": {
+      "en": "Unknown category",
+      "ckb": "جۆری نادیار",
+      "ku": "Beşa nenas",
+      "az-Arab": "نوع بیلینمیر"
+    },
+    "(نوع پیشنهادی)": {
+      "en": "(suggested category)",
+      "ckb": "(جۆری پێشنیارکراو)",
+      "ku": "(beşa pêşniyarkirî)",
+      "az-Arab": "(تکلیف اولونان نوع)"
+    },
+    "نام فروشگاه در صفحه خوانده نشد": {
+      "en": "Shop name unavailable",
+      "ckb": "ناوی فرۆشگا بەردەست نییە",
+      "ku": "Navê dikanê ne amade ye",
+      "az-Arab": "ماغازانین آدی آلینمادی"
+    },
+    "نوع فروشگاه": {
+      "en": "Shop category",
+      "ckb": "جۆری فرۆشگا",
+      "ku": "Beşa dikanê",
+      "az-Arab": "ماغازا نوعو"
+    },
+    "افزایش تعداد": {
+      "en": "Increase quantity",
+      "ckb": "زیادکردنی ژمارە",
+      "ku": "Hejmarê zêde bike",
+      "az-Arab": "سایی آرتیر"
+    },
+    "کاهش تعداد": {
+      "en": "Decrease quantity",
+      "ckb": "کەمکردنی ژمارە",
+      "ku": "Hejmarê kêm bike",
+      "az-Arab": "سایی آزالت"
+    },
+    "جست‌وجو": {
+      "en": "Search",
+      "ckb": "گەڕان",
+      "ku": "Lêgerîn",
+      "az-Arab": "آختاریش"
+    },
+    "جست‌وجوی": {
+      "en": "Searching",
+      "ckb": "گەڕان بۆ",
+      "ku": "Lêgerîna",
+      "az-Arab": "آختاریلان"
+    },
+    "گزینه": {
+      "en": "choice",
+      "ckb": "هەڵبژاردە",
+      "ku": "vebijêrk",
+      "az-Arab": "سئچیم"
+    },
+    "گزینه‌ها": {
+      "en": "Choices",
+      "ckb": "هەڵبژاردەکان",
+      "ku": "Vebijêrk",
+      "az-Arab": "سئچیم‌لر"
+    },
+    "مرتب بر پایه": {
+      "en": "sorted by",
+      "ckb": "ڕیزکراو بە",
+      "ku": "rêzkirî li gorî",
+      "az-Arab": "بونا گؤره سیرالانیر"
+    },
+    "مقایسه": {
+      "en": "Compare",
+      "ckb": "بەراورد",
+      "ku": "Berawird bike",
+      "az-Arab": "موقایسه"
+    },
+    "عددی": {
+      "en": "per item",
+      "ckb": "بۆ هەر دانە",
+      "ku": "ji bo her hebê",
+      "az-Arab": "هر عدد اوچون"
+    },
+    "در برابر درخواست": {
+      "en": "against requested",
+      "ckb": "بەرامبەر داواکراو",
+      "ku": "li hember daxwazê",
+      "az-Arab": "ایسته‌یَه قارشی"
+    },
+    "ارسال فوری": {
+      "en": "Instant delivery",
+      "ckb": "گەیاندنی خێرا",
+      "ku": "Radestkirina lezgîn",
+      "az-Arab": "تئز چاتدیرما"
+    },
+    "ارسال زمان‌دار": {
+      "en": "Scheduled delivery",
+      "ckb": "گەیاندنی کات‌دیاریکراو",
+      "ku": "Radestkirina bi demê",
+      "az-Arab": "واختلی چاتدیرما"
+    },
+    "موقعیت یا روش ارسال تغییر کرد؛ برای این آدرس دوباره جست‌وجو کنید.": {
+      "en": "Delivery location or method changed. Search again.",
+      "ckb": "شوێن یان شێوازی گەیاندن گۆڕاوە؛ دووبارە بگەڕێ.",
+      "ku": "Cih an awayê radestkirinê guherî; dîsa lê bigere.",
+      "az-Arab": "یئر یا چاتدیرما اصولو دَییشدی؛ یئنی‌دن آختارین."
+    },
+    "نام کالا را وارد کنید.": {
+      "en": "Enter an item name.",
+      "ckb": "ناوی کاڵا بنووسە.",
+      "ku": "Navê tiştê binivîse.",
+      "az-Arab": "مالین آدینی یازین."
+    },
+    "تعداد هر قلم حداکثر ۵۰ است.": {
+      "en": "Each item is limited to 50.",
+      "ckb": "زۆرترین ژمارەی هەر کاڵا ٥٠ دانەیە.",
+      "ku": "Her tişt herî zêde 50 heb e.",
+      "az-Arab": "هر مال ان چوخ ۵۰ عدد اولا بیلر."
+    },
+    "تعداد باید بین ۱ و ۵۰ باشد.": {
+      "en": "Quantity must be between 1 and 50.",
+      "ckb": "ژمارە دەبێت لە ١ تا ٥٠ بێت.",
+      "ku": "Hejmar divê di navbera 1 û 50 de be.",
+      "az-Arab": "سای ۱ ایله ۵۰ آراسیندا اولمالیدیر."
+    },
+    "ابتدا لیست خرید را وارد کنید.": {
+      "en": "Add your shopping list first.",
+      "ckb": "سەرەتا لیستی کڕین بنووسە.",
+      "ku": "Pêşî lîsteya kirînê binivîse.",
+      "az-Arab": "اؤنجه آلیش لیستینی یازین."
+    },
+    "ابتدا کالا را به لیست اضافه کنید.": {
+      "en": "Add an item to the list first.",
+      "ckb": "سەرەتا کاڵایەک زیاد بکە.",
+      "ku": "Pêşî tiştek li lîsteyê zêde bike.",
+      "az-Arab": "اؤنجه لیسته مال آرتیرین."
+    },
+    "از نتایج معتبر قبلی استفاده شد؛ جست‌وجوی تکراری لازم نبود.": {
+      "en": "Reused valid results; no repeat search needed.",
+      "ckb": "ئەنجامە دروستەکانی پێشوو بەکارهاتن؛ گەڕانی نوێ پێویست نەبوو.",
+      "ku": "Encamên derbasdar hatin bikaranîn; lêgerîna nû ne pêwîst bû.",
+      "az-Arab": "قابیل نتیجه‌لر ایستیفاده اولوندو؛ تکرار آختاریش لازم اولمادی."
+    },
+    "نتایج فروشگاه ناقص است. دوباره تلاش کنید.": {
+      "en": "Shop results could not be read. Try again.",
+      "ckb": "ئەنجامی فرۆشگا نەخوێندرایەوە؛ دووبارە هەوڵ بدە.",
+      "ku": "Encamên dikanê nehatin xwendin; dîsa biceribîne.",
+      "az-Arab": "ماغازا نتیجه‌لری اوخونمادی؛ یئنی‌دن یوخلایین."
+    },
+    "موقعیت تحویل تغییر کرد؛ دوباره جست‌وجو کنید.": {
+      "en": "Delivery location changed. Search again.",
+      "ckb": "شوێنی گەیاندن گۆڕاوە؛ دووبارە بگەڕێ.",
+      "ku": "Cihê radestkirinê guherî; dîsa lê bigere.",
+      "az-Arab": "تحویل یئری دَییشدی؛ یئنی‌دن آختارین."
+    },
+    "محاسبهٔ سبد کامل نشد؛ دوباره تلاش کنید.": {
+      "en": "Basket calculation did not finish. Try again.",
+      "ckb": "ژماردنی سەبەتە تەواو نەبوو؛ دووبارە هەوڵ بدە.",
+      "ku": "Hesabê sepetê temam nebû; dîsa biceribîne.",
+      "az-Arab": "سبدین حسابی تام اولمادی؛ یئنی‌دن یوخلایین."
+    },
+    "ابتدا موقعیت تحویل را انتخاب کنید.": {
+      "en": "Choose a delivery location first.",
+      "ckb": "سەرەتا شوێنی گەیاندن هەڵبژێرە.",
+      "ku": "Pêşî cihê radestkirinê hilbijêre.",
+      "az-Arab": "اؤنجه تحویل یئرینی سئچین."
+    },
+    "جست‌وجو متوقف شد.": {
+      "en": "Search stopped.",
+      "ckb": "گەڕان وەستێنرا.",
+      "ku": "Lêgerîn hat rawestandin.",
+      "az-Arab": "آختاریش دایاندیریلدی."
+    },
+    "یک جست‌وجو در حال اجراست.": {
+      "en": "A search is already running.",
+      "ckb": "گەڕانێک لە کاردایە.",
+      "ku": "Lêgerînek jixwe dixebite.",
+      "az-Arab": "بیر آختاریش داوام ائدیر."
+    },
+    "ابتدا جست‌وجوی جاری را متوقف کنید.": {
+      "en": "Stop the current search first.",
+      "ckb": "سەرەتا گەڕانی ئێستا بوەستێنە.",
+      "ku": "Pêşî lêgerîna niha rawestîne.",
+      "az-Arab": "اؤنجه ایندیکی آختاریشی دایاندیرین."
+    },
+    "ارتباط با برنامه کامل نشد.": {
+      "en": "Could not connect to the app.",
+      "ckb": "پەیوەندی بە بەرنامەوە نەکرا.",
+      "ku": "Têkilî bi sepanê re nehat kirin.",
+      "az-Arab": "پروقراملا باغلانتی آلینمادی."
+    },
+    "ذخیره‌سازی در دسترس نیست؛ از لیست پشتیبان بگیرید.": {
+      "en": "Storage is unavailable. Back up your list.",
+      "ckb": "پاشەکەوتکردن بەردەست نییە؛ پاشەکەوتێک لە لیست هەڵبگرە.",
+      "ku": "Tomarkirin ne amade ye; kopiyeke ewle ji lîsteyê bigire.",
+      "az-Arab": "ساقلاما مومکون دئییل؛ لیستین یئدکینی آلین."
+    },
+    "لیست خرید پاک شود؟ در صورت نیاز ابتدا پشتیبان بگیرید.": {
+      "en": "Clear the shopping list? Back it up first if needed.",
+      "ckb": "لیستی کڕین بسڕێتەوە؟ ئەگەر پێویستە سەرەتا پاشەکەوتی بکە.",
+      "ku": "Lîsteya kirînê paqij bibe? Heke pêwîst e, pêşî kopiyeke ewle bigire.",
+      "az-Arab": "آلیش لیستی سیلینسین؟ لازیمسا اؤنجه یئدک آلین."
+    },
+    "لیست خرید پاک شد.": {
+      "en": "Shopping list cleared.",
+      "ckb": "لیستی کڕین سڕایەوە.",
+      "ku": "Lîsteya kirînê hat paqijkirin.",
+      "az-Arab": "آلیش لیستی سیلیندی."
+    },
+    "فایل پشتیبان جایگزین لیست فعلی شود؟": {
+      "en": "Replace the current list with this backup?",
+      "ckb": "ئەم پاشەکەوتە جێی لیستی ئێستا بگرێتەوە؟",
+      "ku": "Ev kopiya ewle li şûna lîsteya niha bê?",
+      "az-Arab": "یئدک فایل ایندیکی لیستین یئرینه قویولسون؟"
+    },
+    "پشتیبان بازیابی شد؛ تاریخ قیمت‌ها و آدرس را پیش از خرید بررسی کنید.": {
+      "en": "Backup restored. Check the prices and address before shopping.",
+      "ckb": "پاشەکەوت گەڕایەوە؛ پێش کڕین نرخ و ناونیشان بپشکنە.",
+      "ku": "Kopiya ewle hat vegerandin; berî kirînê biha û navnîşanê kontrol bike.",
+      "az-Arab": "یئدک قایتاریلدی؛ آلیشدان اؤنجه قییمت و آدرسی یوخلایین."
+    },
+    "لیست و تنظیمات روی این مرورگر پاک شوند؟": {
+      "en": "Clear this browser’s list and settings?",
+      "ckb": "لیست و ڕێکخستنەکانی ئەم وێبگەڕە بسڕێنەوە؟",
+      "ku": "Lîste û mîhengên vê gerokê paqij bibin?",
+      "az-Arab": "بو براوزرین لیست و تنظیملری سیلینسین؟"
+    },
+    "لیست، نشانی و تنظیمات این دستگاه پاک شوند؟": {
+      "en": "Clear this device’s list, address and settings?",
+      "ckb": "لیست، ناونیشان و ڕێکخستنەکانی ئەم ئامێرە بسڕێنەوە؟",
+      "ku": "Lîste, navnîşan û mîhengên vê amûrê paqij bibin?",
+      "az-Arab": "بو دستگاهین لیستی، آدرسی و تنظیملری سیلینسین؟"
+    },
+    "لیست خرید، آدرس ذخیره‌شده، تنظیمات و نشست دیجی‌کالاجت از این برنامه پاک شوند؟ فایل‌های پشتیبان شما حذف نمی‌شوند.": {
+      "en": "Clear the list, address, settings and Jet session? Backup files are kept.",
+      "ckb": "لیست، ناونیشان، ڕێکخستن و دانیشتنی جێت بسڕێنەوە؟ فایلە پاشەکەوتەکان دەمێننەوە.",
+      "ku": "Lîste, navnîşan, mîheng û daniştina Jet paqij bibin? Kopiyên ewle tên parastin.",
+      "az-Arab": "لیست، آدرس، تنظیملر و جت نشست سیلینسین؟ یئدک فایللار قالیر."
+    },
+    "انتخاب مرکز نقشه و بررسی نشانی": {
+      "en": "Use map centre and check address",
+      "ckb": "ناوەڕاستی نەخشە و پشکنینی ناونیشان",
+      "ku": "Navenda nexşeyê û navnîşanê kontrol bike",
+      "az-Arab": "خریطه مرکزینی سئچ و آدرسی یوخلا"
+    },
+    "بزرگ‌نمایی": {
+      "en": "Zoom in",
+      "ckb": "گەورەکردن",
+      "ku": "Mezin bike",
+      "az-Arab": "بؤیوت"
+    },
+    "کوچک‌نمایی": {
+      "en": "Zoom out",
+      "ckb": "بچووککردن",
+      "ku": "Biçûk bike",
+      "az-Arab": "کیچیلد"
+    },
+    "نسخهٔ": {
+      "en": "Version",
+      "ckb": "وەشان",
+      "ku": "Guherto",
+      "az-Arab": "نسخه"
+    },
+    "آزمایشی": {
+      "en": "test build",
+      "ckb": "تاقیکردنەوە",
+      "ku": "ceribandin",
+      "az-Arab": "سیناق نسخه‌سی"
+    },
+    "شمارهٔ نسخه در دسترس نیست": {
+      "en": "Version unavailable",
+      "ckb": "ژمارەی وەشان بەردەست نییە",
+      "ku": "Hejmara guhertoyê ne amade ye",
+      "az-Arab": "نسخه نومره‌سی بیلینمیر"
+    },
+    "بودجهٔ زمانی جست‌وجو تمام شد؛ نتایج بررسی‌شده نمایش داده می‌شوند.": {
+      "en": "Search time limit reached; showing checked results.",
+      "ckb": "کاتی گەڕان تەواو بوو؛ ئەنجامە پشکنراوەکان نیشان دەدرێن.",
+      "ku": "Dema lêgerînê qediya; encamên kontrolkirî tên nîşandan.",
+      "az-Arab": "آختاریش واختی بیتدی؛ یوخلانمیش نتیجه‌لر گؤستریلیر."
+    },
+    "موتور مرورگر ظرف ۲۰ ثانیه پاسخ نداد؛ راه‌اندازی جست‌وجو متوقف شد.": {
+      "en": "The browser engine did not respond within 20 seconds. Search startup stopped.",
+      "ckb": "بزوێنەری وێبگەڕ لە ٢٠ چرکەدا وەڵامی نەدایەوە؛ دەستپێکردن وەستا.",
+      "ku": "Motora gerokê di 20 çirkeyan de bersiv neda; destpêkirin rawestiya.",
+      "az-Arab": "براوزر موتورو ۲۰ ثانیه‌ده جواب وئرمه‌دی؛ آختاریشین باشلانماسی دایاندی."
+    },
+    "اطلاعات بیشتر": {
+      "en": "More information",
+      "ckb": "زانیاریی زیاتر",
+      "ku": "Zanyariyên zêdetir",
+      "az-Arab": "داها چوخ معلومات"
+    },
+    "لیست و نشانی روی این دستگاه ذخیره می‌شوند. برای دریافت قیمت‌ها، نام کالا و موقعیت تحویل به فروشگاه فرستاده می‌شوند.": {
+      "en": "Your list and address stay on this device. Product searches send the item name and delivery location to the shop.",
+      "ckb": "لیست و ناونیشان لەم ئامێرە دەمێننەوە. بۆ نرخ، ناوی کاڵا و شوێنی گەیاندن بۆ فرۆشگا دەنێردرێن.",
+      "ku": "Lîste û navnîşan li ser vê amûrê dimînin. Ji bo biha, navê tiştê û cihê radestkirinê ji dikanê re tên şandin.",
+      "az-Arab": "لیست و آدرس بو دستگاهدا ساقلانیر. قییمت اوچون مالین آدی و تحویل یئری ماغازایا گؤندریلیر."
+    },
+    "سبدچین تبلیغات یا سامانهٔ جمع‌آوری اطلاعات ندارد. برنامه رمز عبور یا توکن ورود فروشگاه را نمی‌خواند.": {
+      "en": "Sabadchin has no advertising or data-collection service. It does not read your shop password or sign-in token.",
+      "ckb": "سەبەدچین ڕیکلام یان سیستەمی کۆکردنەوەی زانیاری نییە. وشەی نهێنی یان تۆکنی چوونەژوورەوە ناخوێنێتەوە.",
+      "ku": "Sabadçîn reklam an servîsa berhevkirina daneyan nîne. Şîfre an tokena têketina te naxwîne.",
+      "az-Arab": "سبدچینده تبلیغات یا معلومات یغما سیستمی یوخدور. ماغازانین شیفره‌سینی یا گیریش توکنینی اوخومور."
+    },
+    "نقشه از OpenStreetMap بارگیری می‌شود؛ این سرویس IP و محدودهٔ نقشه را می‌بیند. لیست خرید و حساب فروشگاه برای نقشه ارسال نمی‌شوند.": {
+      "en": "Map tiles come from OpenStreetMap, which sees your IP and map area. Your shopping list and shop account are not sent to the map service.",
+      "ckb": "نەخشە لە OpenStreetMap دێت؛ ئەم خزمەتگوزارییە IP و ناوچەی نەخشە دەبینێت. لیستی کڕین و هەژماری فرۆشگا نانێردرێن.",
+      "ku": "Nexşe ji OpenStreetMap tê; ev servîs IP û herêma nexşeyê dibîne. Lîsteya kirînê û hesabê dikanê nayên şandin.",
+      "az-Arab": "خریطه OpenStreetMap‌دان یوکلنیر؛ بو خیدمت IP و خریطه بؤلگه‌سینی گؤرور. آلیش لیستی و ماغازا حسابی گؤندریلمیر."
+    },
+    "فروشگاه نشانی و نشست مرور خود را طبق سیاست حریم خصوصی‌اش پردازش می‌کند. موقعیت دستگاه تنها با انتخاب شما استفاده می‌شود.": {
+      "en": "The shop handles its address and browsing session under its privacy policy. Device location is used only when you choose it.",
+      "ckb": "فرۆشگا ناونیشان و دانیشتن بە پێی سیاسەتی تایبەتمەندیی خۆی بەڕێوە دەبات. شوێنی ئامێر تەنها بە هەڵبژاردنی تۆ بەکاردێت.",
+      "ku": "Dikan navnîşan û daniştina xwe li gorî siyaseta nepenîyê rêve dibe. Cihê amûrê tenê bi hilbijartina te tê bikaranîn.",
+      "az-Arab": "ماغازا آدرس و براوزر نشستینی اؤز گیزلیلیک قایداسینا گؤره ایشله‌ییر. دستگاهین یئری یالنیز سیزین سئچیمینیزله ایستیفاده اولونور."
+    },
+    "پاک‌کردن اطلاعات، لیست، نشانی، تنظیمات و نشست فروشگاه را حذف می‌کند؛ فایل‌های پشتیبان باقی می‌مانند.": {
+      "en": "Clearing data removes the list, address, settings and shop session. Backup files remain.",
+      "ckb": "سڕینەوەی زانیاری لیست، ناونیشان، ڕێکخستن و دانیشتن دەسڕێتەوە؛ فایلە پاشەکەوتەکان دەمێننەوە.",
+      "ku": "Paqijkirina daneyan lîste, navnîşan, mîheng û daniştinê jê dibe; kopiyên ewle dimînin.",
+      "az-Arab": "معلوماتین سیلینمه‌سی لیست، آدرس، تنظیملر و نشستینی حذف ائدیر؛ یئدک فایللار قالیر."
+    },
+    "پاک‌کردن اطلاعات این دستگاه": {
+      "en": "Clear device data",
+      "ckb": "سڕینەوەی زانیاریی ئامێر",
+      "ku": "Daneyên amûrê paqij bike",
+      "az-Arab": "دستگاه معلوماتینی سیل"
+    },
+    "انتخاب موقعیت روی نقشه": {
+      "en": "Choose a map location",
+      "ckb": "شوێن لە نەخشە هەڵبژێرە",
+      "ku": "Cih li ser nexşeyê hilbijêre",
+      "az-Arab": "خریطه‌ده یئر سئچ"
+    },
+    "بستن نقشه": {
+      "en": "Close map",
+      "ckb": "داخستنی نەخشە",
+      "ku": "Nexşeyê bigire",
+      "az-Arab": "خریطه‌نی باغلا"
+    },
+    "تأیید این موقعیت": {
+      "en": "Confirm location",
+      "ckb": "پشتڕاستکردنەوەی شوێن",
+      "ku": "Cih piştrast bike",
+      "az-Arab": "بو یئری تصدیق ائت"
+    },
+    "نام شهر و خیابان را وارد کنید.": {
+      "en": "Enter the city and street.",
+      "ckb": "ناوی شار و شەقام بنووسە.",
+      "ku": "Navê bajar û kolanê binivîse.",
+      "az-Arab": "شهر و کوچه‌نین آدینی یازین."
+    },
+    "شهر، محله یا خیابان را جست‌وجو کنید. برای انتخاب نشانی، نیازی به GPS یا بازشدن نقشه نیست.": {
+      "en": "Search city, neighbourhood or street. GPS and the map are optional.",
+      "ckb": "شار، گەڕەک یان شەقام بگەڕێ. GPS و نەخشە ئارەزوومەندانەن.",
+      "ku": "Bajar, tax an kolanê bigere. GPS û nexşe ne mecbûrî ne.",
+      "az-Arab": "شهر، محله یا کوچه‌نی آختارین. GPS و خریطه اختیاری‌دیر."
+    },
+    "یک نشانی را از نتایج انتخاب کنید.": {
+      "en": "Choose an address from the results.",
+      "ckb": "ناونیشانێک لە ئەنجامەکان هەڵبژێرە.",
+      "ku": "Ji encaman navnîşanek hilbijêre.",
+      "az-Arab": "نتیجه‌لردن بیر آدرس سئچین."
+    },
+    "در حال بررسی نشانی مرکز نقشه…": {
+      "en": "Checking the map-centre address…",
+      "ckb": "پشکنینی ناونیشانی ناوەڕاستی نەخشە…",
+      "ku": "Navnîşana navenda nexşeyê kontrol dike…",
+      "az-Arab": "خریطه مرکزینین آدرسی یوخلانیر…"
+    },
+    "در حال جست‌وجوی نشانی در جت…": {
+      "en": "Finding addresses in Jet…",
+      "ckb": "گەڕان بۆ ناونیشان لە جێت…",
+      "ku": "Li navnîşanê di Jet de digere…",
+      "az-Arab": "جتده آدرس آختاریلیر…"
+    },
+    "نشانی پیدا نشد؛ نام شهر و خیابان را کامل‌تر بنویسید.": {
+      "en": "No address found. Add the city and street.",
+      "ckb": "ناونیشان نەدۆزرایەوە؛ شار و شەقام ڕوونتر بنووسە.",
+      "ku": "Navnîşan nehat dîtin; bajar û kolanê zêde bike.",
+      "az-Arab": "آدرس تاپیلمادی؛ شهر و کوچه‌نی تام یازین."
+    },
+    "انتخاب شما:": {
+      "en": "Your choice:",
+      "ckb": "هەڵبژاردنی تۆ:",
+      "ku": "Hilbijartina te:",
+      "az-Arab": "سیزین سئچیمینیز:"
+    },
+    "پاسخی از جت دریافت نشد؛ دوباره جست‌وجو کنید یا از نقشه استفاده کنید.": {
+      "en": "No response from Jet. Search again or use the map.",
+      "ckb": "جێت وەڵامی نەدایەوە؛ دووبارە بگەڕێ یان نەخشە بەکاربهێنە.",
+      "ku": "Jet bersiv neda; dîsa bigere an nexşeyê bi kar bîne.",
+      "az-Arab": "جت جواب وئرمه‌دی؛ یئنی‌دن آختارین یا خریطه‌دن ایستیفاده ائدین."
+    },
+    "در حال بررسی خدمات جت در این موقعیت…": {
+      "en": "Checking Jet service at this location…",
+      "ckb": "پشکنینی خزمەتگوزاریی جێت لەم شوێنە…",
+      "ku": "Xizmeta Jet li vî cihî tê kontrolkirin…",
+      "az-Arab": "بو یئرده جت خیدمتی یوخلانیر…"
+    },
+    "جت این نقطه را خارج از محدودهٔ خدمات اعلام کرده است؛ نشانی دیگری انتخاب کنید.": {
+      "en": "Jet does not serve this location. Choose another address.",
+      "ckb": "جێت لەم شوێنە خزمەت ناکات؛ ناونیشانێکی تر هەڵبژێرە.",
+      "ku": "Jet li vî cihî xizmet nake; navnîşaneke din hilbijêre.",
+      "az-Arab": "جت بو یئرده خیدمت گؤسترمیر؛ باشقا آدرس سئچین."
+    },
+    "بررسی موقعیت کامل نشد؛ دوباره تأیید کنید یا نشانی دیگری انتخاب کنید.": {
+      "en": "Location check did not finish. Retry or choose another address.",
+      "ckb": "پشکنینی شوێن تەواو نەبوو؛ دووبارە هەوڵ بدە یان ناونیشانێکی تر هەڵبژێرە.",
+      "ku": "Kontrola cihê temam nebû; dîsa biceribîne an navnîşaneke din hilbijêre.",
+      "az-Arab": "یئرین یوخلانماسی تام اولمادی؛ یئنی‌دن تصدیق ائدین یا باشقا آدرس سئچین."
+    },
+    "سرور و رابط هماهنگ نیستند؛ Python را با Ctrl+C متوقف و از پوشهٔ نسخهٔ جدید دوباره اجرا کنید.": {
+      "en": "App and server versions differ. Close the old app and open the new version.",
+      "ckb": "وەشانی بەرنامە و ڕاژەکار جیاوازن؛ بەرنامەی کۆن دابخە و نوێیەکە بکەرەوە.",
+      "ku": "Guhertoyên sepan û serverê cuda ne; ya kevn bigire û ya nû veke.",
+      "az-Arab": "پروقرام و سرور نسخه‌لری فرقلی‌دیر؛ کؤهنه‌نی باغلایین و یئنی‌نی آچین."
+    },
+    "نسخهٔ سرور و رابط یکسان نیست؛ Python را با Ctrl+C متوقف و دوباره اجرا کنید.": {
+      "en": "App and server versions differ. Restart the app.",
+      "ckb": "وەشانی بەرنامە و ڕاژەکار جیاوازن؛ بەرنامە دووبارە بکەرەوە.",
+      "ku": "Guhertoyên sepan û serverê cuda ne; sepanê dîsa veke.",
+      "az-Arab": "پروقرام و سرور نسخه‌لری فرقلی‌دیر؛ پروقرامی یئنی‌دن آچین."
+    },
+    "راه‌اندازی یک صفحه کامل نشد؛ جست‌وجو با صفحه‌های آماده ادامه دارد.": {
+      "en": "An extra page failed to start; ready pages will continue.",
+      "ckb": "پەڕەیەک ئامادە نەبوو؛ پەڕە ئامادەکان بەردەوامن.",
+      "ku": "Rûpelek dest pê nekir; rûpelên amade berdewam dikin.",
+      "az-Arab": "بیر صفحه باشلانمادی؛ حاضیر صفحه‌لر داوام ائدیر."
+    },
+    "کاهش خودکار جست‌وجوی موازی برای روان ماندن دستگاه": {
+      "en": "Reducing parallel searches to keep the device responsive",
+      "ckb": "کەمکردنەوەی گەڕانی هاوکات بۆ خێرایی ئامێر",
+      "ku": "Lêgerînên hevdem kêm dike da amûr bilez bimîne",
+      "az-Arab": "دستگاهین روان ایشله‌مه‌سی اوچون پارالل آختاریش آزالیر"
+    },
+    "هنوز قیمتی خوانده نشده": {
+      "en": "No prices read yet",
+      "ckb": "هێشتا نرخ نەخوێندراوەتەوە",
+      "ku": "Hê biha nehatine xwendin",
+      "az-Arab": "هله قییمت آلینماییب"
+    },
+    "در حال خواندن نسخه…": {
+      "en": "Reading version…",
+      "ckb": "خوێندنەوەی وەشان…",
+      "ku": "Guherto tê xwendin…",
+      "az-Arab": "نسخه اوخونور…"
+    }
+  }
+}

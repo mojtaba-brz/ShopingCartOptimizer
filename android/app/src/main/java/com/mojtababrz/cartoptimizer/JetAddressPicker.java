@@ -29,17 +29,17 @@ final class JetAddressPicker {
     private final Runnable delayedSearch=this::search;
     JetAddressPicker(Activity activity,JetAddressClient client,Listener listener){
         this.activity=activity;this.client=client;this.listener=listener;
-        LinearLayout body=new LinearLayout(activity);body.setOrientation(LinearLayout.VERTICAL);body.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);body.setPadding(28,16,28,8);
-        TextView hint=new TextView(activity);hint.setText("شهر، محله یا خیابان را جست‌وجو کنید. برای انتخاب نشانی، نیازی به GPS یا بازشدن نقشه نیست.");hint.setTextSize(15);body.addView(hint);
-        query=new EditText(activity);query.setId(R.id.address_query);query.setSingleLine(true);query.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(200)});query.setHint("مثلاً تهران، میدان ونک");query.setImeOptions(EditorInfo.IME_ACTION_SEARCH);body.addView(query,new LinearLayout.LayoutParams(-1,-2));
-        search=button("جست‌وجوی نشانی",R.id.address_search);body.addView(search);search.setOnClickListener(v->search());
+        LinearLayout body=new LinearLayout(activity);body.setOrientation(LinearLayout.VERTICAL);body.setLayoutDirection(AppLanguage.direction(activity));body.setPadding(28,16,28,8);
+        TextView hint=new TextView(activity);hint.setText(AppLanguage.text(activity,"شهر، محله یا خیابان را جست‌وجو کنید. برای انتخاب نشانی، نیازی به GPS یا بازشدن نقشه نیست."));hint.setTextSize(15);body.addView(hint);
+        query=new EditText(activity);query.setId(R.id.address_query);query.setSingleLine(true);query.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(200)});query.setHint(AppLanguage.text(activity,"مثلاً تهران، میدان ونک"));query.setImeOptions(EditorInfo.IME_ACTION_SEARCH);body.addView(query,new LinearLayout.LayoutParams(-1,-2));
+        search=button(AppLanguage.text(activity,"جست‌وجوی نشانی"),R.id.address_search);body.addView(search);search.setOnClickListener(v->search());
         progress=new ProgressBar(activity);progress.setVisibility(View.GONE);body.addView(progress,new LinearLayout.LayoutParams(56,56));
-        message=new TextView(activity);message.setId(R.id.address_message);message.setPadding(0,12,0,12);message.setText("یک نشانی را از نتایج انتخاب کنید.");body.addView(message);
+        message=new TextView(activity);message.setId(R.id.address_message);message.setPadding(0,12,0,12);message.setText(AppLanguage.text(activity,"یک نشانی را از نتایج انتخاب کنید."));body.addView(message);
         ScrollView scroll=new ScrollView(activity);results=new LinearLayout(activity);results.setOrientation(LinearLayout.VERTICAL);results.setId(R.id.address_results);scroll.addView(results);body.addView(scroll,new LinearLayout.LayoutParams(-1,(int)(220*activity.getResources().getDisplayMetrics().density)));
-        confirm=button("تأیید این موقعیت",R.id.address_confirm);confirm.setEnabled(false);
-        Button map=button("انتخاب روی نقشهٔ برنامه",R.id.address_map);body.addView(map);map.setOnClickListener(v->{String point=selected==null?new DeliveryChoice(activity).coordinates():selected.coordinates;mapDialog=new DeliveryMap(activity,point,p->{if(closed)return;selected=p;confirm.setEnabled(true);message.setText("در حال بررسی نشانی مرکز نقشه…");verify();});mapDialog.show();});
+        confirm=button(AppLanguage.text(activity,"تأیید این موقعیت"),R.id.address_confirm);confirm.setEnabled(false);
+        Button map=button(AppLanguage.text(activity,"انتخاب روی نقشهٔ برنامه"),R.id.address_map);body.addView(map);map.setOnClickListener(v->{String point=selected==null?new DeliveryChoice(activity).coordinates():selected.coordinates;mapDialog=new DeliveryMap(activity,point,p->{if(closed)return;selected=p;confirm.setEnabled(true);message.setText(AppLanguage.text(activity,"در حال بررسی نشانی مرکز نقشه…"));verify();});mapDialog.show();});
         ScrollView content=new ScrollView(activity);content.addView(body);
-        dialog=new AlertDialog.Builder(activity).setTitle("موقعیت تحویل").setView(content).setPositiveButton("تأیید این موقعیت",null).setNegativeButton("انصراف",(d,w)->listener.cancelled()).create();
+        dialog=new AlertDialog.Builder(activity).setTitle(AppLanguage.text(activity,"موقعیت تحویل")).setView(content).setPositiveButton(AppLanguage.text(activity,"تأیید این موقعیت"),null).setNegativeButton(AppLanguage.text(activity,"انصراف"),(d,w)->listener.cancelled()).create();
         dialog.setOnCancelListener(d->listener.cancelled());dialog.setOnDismissListener(d->close());
         query.setOnEditorActionListener((v,action,event)->{if(action==EditorInfo.IME_ACTION_SEARCH){search();return true;}return false;});
         query.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int start,int count,int after){}public void onTextChanged(CharSequence s,int start,int before,int count){
@@ -55,19 +55,19 @@ final class JetAddressPicker {
     private void close(){if(closed)return;closed=true;if(mapDialog!=null)mapDialog.dismiss();generation++;main.removeCallbacksAndMessages(null);io.shutdownNow();}
     private void search(){
         if(closed||verifying)return;main.removeCallbacks(delayedSearch);String text=DeliveryChoice.label(query.getText().toString());
-        if(text.length()<2||text.length()>200){message.setText("نام شهر و خیابان را وارد کنید.");return;}
-        int ticket=++generation;selected=null;confirm.setEnabled(false);results.removeAllViews();progress.setVisibility(View.VISIBLE);message.setText("در حال جست‌وجوی نشانی در جت…");
+        if(text.length()<2||text.length()>200){message.setText(AppLanguage.text(activity,"نام شهر و خیابان را وارد کنید."));return;}
+        int ticket=++generation;selected=null;confirm.setEnabled(false);results.removeAllViews();progress.setVisibility(View.VISIBLE);message.setText(AppLanguage.text(activity,"در حال جست‌وجوی نشانی در جت…"));
         io.execute(()->{try{List<JetAddressClient.Point> points=client.search(text);main.post(()->{
-            if(!current(ticket))return;progress.setVisibility(View.GONE);message.setText(points.isEmpty()?"نشانی پیدا نشد؛ نام شهر و خیابان را کامل‌تر بنویسید.":"نشانی موردنظر را انتخاب کنید.");
-            for(JetAddressClient.Point point:points){Button row=button(point.title+"\n"+point.label,View.NO_ID);row.setAllCaps(false);results.addView(row);row.setOnClickListener(v->{if(verifying)return;selected=point;confirm.setEnabled(true);message.setText("انتخاب شما: "+point.label);android.view.inputmethod.InputMethodManager keyboard=(android.view.inputmethod.InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);if(keyboard!=null)keyboard.hideSoftInputFromWindow(query.getWindowToken(),0);});}
-        });}catch(Exception e){main.post(()->{if(current(ticket)){progress.setVisibility(View.GONE);message.setText("پاسخی از جت دریافت نشد؛ دوباره جست‌وجو کنید یا از نقشه استفاده کنید.");}});}});
+            if(!current(ticket))return;progress.setVisibility(View.GONE);message.setText(points.isEmpty()?AppLanguage.text(activity,"نشانی پیدا نشد؛ نام شهر و خیابان را کامل‌تر بنویسید."):AppLanguage.text(activity,"نشانی موردنظر را انتخاب کنید."));
+            for(JetAddressClient.Point point:points){Button row=button(point.title+"\n"+point.label,View.NO_ID);row.setAllCaps(false);results.addView(row);row.setOnClickListener(v->{if(verifying)return;selected=point;confirm.setEnabled(true);message.setText(AppLanguage.text(activity,"انتخاب شما: ")+point.label);android.view.inputmethod.InputMethodManager keyboard=(android.view.inputmethod.InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);if(keyboard!=null)keyboard.hideSoftInputFromWindow(query.getWindowToken(),0);});}
+        });}catch(Exception e){main.post(()->{if(current(ticket)){progress.setVisibility(View.GONE);message.setText(AppLanguage.text(activity,"پاسخی از جت دریافت نشد؛ دوباره جست‌وجو کنید یا از نقشه استفاده کنید."));}});}});
     }
     private void verify(){
-        if(closed||verifying||selected==null)return;JetAddressClient.Point choice=selected;int ticket=++generation;verifying=true;query.setEnabled(false);search.setEnabled(false);confirm.setEnabled(false);progress.setVisibility(View.VISIBLE);message.setText("در حال بررسی خدمات جت در این موقعیت…");
+        if(closed||verifying||selected==null)return;JetAddressClient.Point choice=selected;int ticket=++generation;verifying=true;query.setEnabled(false);search.setEnabled(false);confirm.setEnabled(false);progress.setVisibility(View.VISIBLE);message.setText(AppLanguage.text(activity,"در حال بررسی خدمات جت در این موقعیت…"));
         io.execute(()->{try{JetAddressClient.Verified result=client.verify(choice);main.post(()->{
-            if(!current(ticket))return;idle();if(!result.inService){message.setText("جت این نقطه را خارج از محدودهٔ خدمات اعلام کرده است؛ نشانی دیگری انتخاب کنید.");return;}
+            if(!current(ticket))return;idle();if(!result.inService){message.setText(AppLanguage.text(activity,"جت این نقطه را خارج از محدودهٔ خدمات اعلام کرده است؛ نشانی دیگری انتخاب کنید."));return;}
             dismiss();listener.selected(result);
-        });}catch(Exception e){main.post(()->{if(current(ticket)){idle();message.setText("بررسی موقعیت کامل نشد؛ دوباره تأیید کنید یا نشانی دیگری انتخاب کنید.");}});}});
+        });}catch(Exception e){main.post(()->{if(current(ticket)){idle();message.setText(AppLanguage.text(activity,"بررسی موقعیت کامل نشد؛ دوباره تأیید کنید یا نشانی دیگری انتخاب کنید."));}});}});
     }
     private void idle(){verifying=false;query.setEnabled(true);search.setEnabled(true);confirm.setEnabled(selected!=null);progress.setVisibility(View.GONE);}
 }

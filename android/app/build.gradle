@@ -63,16 +63,19 @@ tasks.register('syncWebAssets', Copy) {
             .replace('src="/basket-planner.js"', 'src="/assets/basket-planner.js"')
             .replace('src="/comparison.js"', 'src="/assets/comparison.js"')
             .replace('href="/fa.css"', 'href="/assets/fa.css"')
-            .replace('href="/fonts.css"', 'href="/assets/fonts.css"') }
+            .replace('href="/fonts.css"', 'href="/assets/fonts.css"')
+            .replace('href="/design.css"', 'href="/assets/design.css"')
+            .replace('src="/design.js"', 'src="/assets/design.js"')
+            .replace('src="/i18n.js"', 'src="/assets/i18n.js"') }
     }
-    from('../../cartoptimizer/web') { include 'Amiri-*.ttf', 'Amiri-OFL.txt' }
+    from('../../cartoptimizer/web') { include '*.ttf', '*.woff2', '*-OFL.txt', 'languages.json' }
     from('../../cartoptimizer') { include 'demo.json', 'release.json' }
     into(layout.buildDirectory.dir('generated/webAssets'))
 }
 tasks.register('syncAmiriFonts', Copy) {
     from('../../cartoptimizer/web') {
-        include 'Amiri-Regular.ttf', 'Amiri-Bold.ttf'
-        rename { it == 'Amiri-Regular.ttf' ? 'amiri_regular.ttf' : 'amiri_bold.ttf' }
+        include 'Amiri-Regular.ttf', 'Amiri-Bold.ttf', 'Vazirmatn.ttf'
+        rename { it == 'Vazirmatn.ttf' ? 'vazirmatn_regular.ttf' : it == 'Amiri-Regular.ttf' ? 'amiri_regular.ttf' : 'amiri_bold.ttf' }
     }
     into(layout.buildDirectory.dir('generated/fontResources/font'))
 }
